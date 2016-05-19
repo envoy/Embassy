@@ -9,11 +9,11 @@
 /* Begin PBXBuildFile section */
 		D85613ED1CEE6B160060CCB7 /* Embassy.h in Headers */ = {isa = PBXBuildFile; fileRef = D85613EC1CEE6B160060CCB7 /* Embassy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85613F41CEE6B160060CCB7 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
-		D85613F91CEE6B160060CCB7 /* EmbassyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85613F81CEE6B160060CCB7 /* EmbassyTests.swift */; };
 		D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
 		D85614081CEE6DB20060CCB7 /* HTTPServerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServerType.swift */; };
 		D856140C1CEE6FE60060CCB7 /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140B1CEE6FE60060CCB7 /* HTTPServer.swift */; };
 		D856140E1CEE70D70060CCB7 /* HTTPHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */; };
+		D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,12 +31,12 @@
 		D85613EC1CEE6B160060CCB7 /* Embassy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Embassy.h; sourceTree = "<group>"; };
 		D85613EE1CEE6B160060CCB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D85613F31CEE6B160060CCB7 /* EmbassyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EmbassyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D85613F81CEE6B160060CCB7 /* EmbassyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbassyTests.swift; sourceTree = "<group>"; };
 		D85613FA1CEE6B160060CCB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D85614051CEE6C0C0060CCB7 /* SWSGI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGI.swift; sourceTree = "<group>"; };
 		D85614071CEE6DB20060CCB7 /* HTTPServerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerType.swift; sourceTree = "<group>"; };
 		D856140B1CEE6FE60060CCB7 /* HTTPServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServer.swift; sourceTree = "<group>"; };
 		D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaderParser.swift; sourceTree = "<group>"; };
+		D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaderParserTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,7 +92,7 @@
 		D85613F71CEE6B160060CCB7 /* EmbassyTests */ = {
 			isa = PBXGroup;
 			children = (
-				D85613F81CEE6B160060CCB7 /* EmbassyTests.swift */,
+				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D85613FA1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = EmbassyTests;
@@ -217,7 +217,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85613F91CEE6B160060CCB7 /* EmbassyTests.swift in Sources */,
+				D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
