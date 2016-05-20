@@ -53,7 +53,6 @@ struct HTTPHeaderParser {
             // this server in real production, we should handle malform header then
             switch state {
             case .Head:
-                let string = String(bytes: bytes, encoding: NSUTF8StringEncoding)!
                 let parts = string.componentsSeparatedByString(" ")
                 elements.append(.Head(method: parts[0], path: parts[1], version: parts[2..<parts.count].joinWithSeparator(" ")))
                 state = .Headers
