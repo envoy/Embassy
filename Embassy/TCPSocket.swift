@@ -25,6 +25,25 @@ public final class TCPSocket {
     /// The file descriptor number for socket
     let fileDescriptor: Int32
     
+    /// Whether is this socket in block mode or not
+    var blocking: Bool {
+        get {
+            let flags = fcntl(fileDescriptor, F_GETFL, 0)
+            return flags & O_NONBLOCK == 0
+        }
+        
+        set {
+            let flags = fcntl(fileDescriptor, F_GETFL, 0)
+            let newFlags: Int32
+            if newValue {
+                newFlags = flags & ~O_NONBLOCK
+            } else {
+                newFlags = flags | O_NONBLOCK
+            }
+            let _ = fcntl(fileDescriptor, F_SETFL, newFlags)
+        }
+    }
+    
     init() throws {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
         guard fileDescriptor >= 0 else {
