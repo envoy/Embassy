@@ -8,8 +8,8 @@
 
 import Foundation
 
-class HTTPServer: HTTPServerType {
-    var app: SWSGI
+public class HTTPServer: HTTPServerType {
+    public var app: SWSGI
     
     /// Interface of TCP/IP to bind
     let interface: String
@@ -25,12 +25,12 @@ class HTTPServer: HTTPServerType {
         self.port = port
     }
     
-    func start(ready: Void -> Void) throws {
+    public func start(ready: Void -> Void) throws {
         acceptSocket = try! TCPSocket()
         try acceptSocket.bind(port, interface: interface)
     }
     
-    func stop(stopped: Void -> Void) {
+    public func stop(stopped: Void -> Void) {
         
     }
 }

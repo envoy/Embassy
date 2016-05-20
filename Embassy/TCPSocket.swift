@@ -8,12 +8,12 @@
 
 import Foundation
 
-enum TCPSocketError: ErrorType {
+public enum TCPSocketError: ErrorType {
     case Error(number: Int, message: String)
 }
 
 /// Class wrapping around TCP/IPv6 socket
-final class TCPSocket {
+public final class TCPSocket {
     /// The file descriptor number for socket
     let fileDescriptor: Int32
     
@@ -33,18 +33,13 @@ final class TCPSocket {
     ///  - Parameter interface: networking interface to bind to, in IPv6 format
     ///  - Parameter addressReusable: should we make address reusable
     func bind(port: Int, interface: String = "::", addressReusable: Bool = true) throws {
-        // convert interface string into IPv6 address struct
-        var interfaceAddress: in6_addr = in6_addr()
-        guard interface.withCString({ inet_pton(AF_INET6, $0, &interfaceAddress) >= 0 }) else {
-            throw TCPSocketError.Error(number: Int(errno), message: TCPSocket.lastErrorDescription())
-        }
         // create IPv6 socket address
         var address = sockaddr_in6(
             sin6_len: UInt8(strideof(sockaddr_in6)),
             sin6_family: UInt8(AF_INET6),
             sin6_port: UInt16(port).bigEndian,
             sin6_flowinfo: 0,
-            sin6_addr: interfaceAddress,
+            sin6_addr: try ipAddressToBinary(interface),
             sin6_scope_id: 0
         )
         // bind the address and port on socket
@@ -82,6 +77,35 @@ final class TCPSocket {
             throw TCPSocketError.Error(number: Int(errno), message: TCPSocket.lastErrorDescription())
         }
         return TCPSocket(fileDescriptor: clientFileDescriptor)
+    }
+    
+    /// Connect to a peer
+    func connect(host: String, port: Int) throws {
+        // create IPv6 socket address
+        var address = sockaddr_in6(
+            sin6_len: UInt8(strideof(sockaddr_in6)),
+            sin6_family: UInt8(AF_INET6),
+            sin6_port: UInt16(port).bigEndian,
+            sin6_flowinfo: 0,
+            sin6_addr: try ipAddressToBinary(host),
+            sin6_scope_id: 0
+        )
+        // connect to the host and port
+        guard withUnsafePointer(&address, { pointer in
+            return Darwin.connect(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) >= 0
+        }) else {
+            throw TCPSocketError.Error(number: Int(errno), message: TCPSocket.lastErrorDescription())
+        }
+    }
+    
+    // Convert IP address to binary struct
+    private func ipAddressToBinary(address: String) throws -> in6_addr {
+        // convert interface string into IPv6 address struct
+        var binary: in6_addr = in6_addr()
+        guard address.withCString({ inet_pton(AF_INET6, $0, &binary) >= 0 }) else {
+            throw TCPSocketError.Error(number: Int(errno), message: TCPSocket.lastErrorDescription())
+        }
+        return binary
     }
     
     class func lastErrorDescription() -> String {

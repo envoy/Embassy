@@ -9,7 +9,7 @@
 import Foundation
 
 /// HTTPServerType is the protocol for basic SWSGI server
-protocol HTTPServerType {
+public protocol HTTPServerType {
     /// The SWSGI app to serve
     var app: SWSGI { get set }
     /// Start the HTTP server

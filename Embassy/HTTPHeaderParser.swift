@@ -9,7 +9,7 @@
 import Foundation
 
 /// Parser for HTTP headers
-struct HTTPHeaderParser {
+public struct HTTPHeaderParser {
     private static let CR = UInt8(13)
     private static let LF = UInt8(10)
     private static let NEWLINE = (CR, LF)
