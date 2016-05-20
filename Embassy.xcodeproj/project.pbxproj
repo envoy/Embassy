@@ -15,6 +15,7 @@
 		D856140E1CEE70D70060CCB7 /* HTTPHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */; };
 		D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		D8F3D38B1CEF8AC800342389 /* TCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */; };
+		D8F3D38D1CEF9B9700342389 /* SelectorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38C1CEF9B9700342389 /* SelectorType.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +40,7 @@
 		D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaderParser.swift; sourceTree = "<group>"; };
 		D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaderParserTests.swift; sourceTree = "<group>"; };
 		D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TCPSocket.swift; sourceTree = "<group>"; };
+		D8F3D38C1CEF9B9700342389 /* SelectorType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 				D856140B1CEE6FE60060CCB7 /* HTTPServer.swift */,
 				D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */,
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
+				D8F3D38C1CEF9B9700342389 /* SelectorType.swift */,
 				D85613EE1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = Embassy;
@@ -211,6 +214,7 @@
 			files = (
 				D85614081CEE6DB20060CCB7 /* HTTPServerType.swift in Sources */,
 				D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */,
+				D8F3D38D1CEF9B9700342389 /* SelectorType.swift in Sources */,
 				D8F3D38B1CEF8AC800342389 /* TCPSocket.swift in Sources */,
 				D856140C1CEE6FE60060CCB7 /* HTTPServer.swift in Sources */,
 				D856140E1CEE70D70060CCB7 /* HTTPHeaderParser.swift in Sources */,

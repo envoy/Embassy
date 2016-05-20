@@ -16,14 +16,18 @@ class HTTPServer: HTTPServerType {
     /// Port of TCP/IP to bind
     let port: Int
     
-    init(app: SWSGI, interface: String = "127.0.0.1", port: Int = 8080) {
+    // the socket for accepting incoming connections
+    private var acceptSocket: TCPSocket!
+    
+    init(app: SWSGI, interface: String = "::1", port: Int = 8080) {
         self.app = app
         self.interface = interface
         self.port = port
     }
     
     func start(ready: Void -> Void) throws {
-        
+        acceptSocket = TCPSocket()
+        try acceptSocket.bind(port, interface: interface)
     }
     
     func stop(stopped: Void -> Void) {

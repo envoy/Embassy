@@ -9,25 +9,23 @@
 import Foundation
 
 /// Class wrapping around TCP/IPv6 socket
-class TCPSocket {
+final class TCPSocket {
     /// The file descriptor number for socket
     let fileDescriptor: Int32
     
     init() {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
-    }
-    
-    init(fileDescriptor: Int32) {
-        self.fileDescriptor = fileDescriptor
+        // TODO: set to non-blocking mode
     }
     
     /// Bind the socket at given port and interface
-    ///  - Parameter port: Port number to bind to
-    ///  - Parameter interface: Networking interface to bind to, in IPv6 format
-    func bind(port: Int, interface: String = "::") throws {
+    ///  - Parameter port: port number to bind to
+    ///  - Parameter interface: networking interface to bind to, in IPv6 format
+    ///  - Parameter addressReusable: should we make address reusable
+    func bind(port: Int, interface: String = "::", addressReusable: Bool = true) throws {
         // convert interface string into IPv6 address struct
         var interfaceAddress: in6_addr = in6_addr()
-        guard interface.withCString({ inet_pton(AF_INET6, $0, &interfaceAddress) != -1}) else {
+        guard interface.withCString({ inet_pton(AF_INET6, $0, &interfaceAddress) == 0 }) else {
             // TODO: raise error here
             return
         }
@@ -42,10 +40,19 @@ class TCPSocket {
         )
         // bind the address and port on socket
         guard withUnsafePointer(&address, { pointer in
-            return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6)))
-        }) != -1 else {
+            return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) == 0
+        }) else {
             // TODO: raise error here
             return
+        }
+        
+        // make address reusable
+        if addressReusable {
+            var reuse = Int32(1)
+            guard setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) == 0 else {
+                // TODO: raise error here
+                return
+            }
         }
     }
     
