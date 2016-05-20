@@ -125,7 +125,7 @@ public final class TCPSocket {
     func recv(size: Int) throws -> [UInt8] {
         var bytes = [UInt8](count: size, repeatedValue: 0)
         let bytesRead = bytes.withUnsafeMutableBufferPointer { pointer in
-            return Darwin.recv(fileDescriptor, pointer.baseAddress, bytes.count, Int32(0))
+            return Darwin.recv(fileDescriptor, pointer.baseAddress, size, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw Error.lastSocketError()
