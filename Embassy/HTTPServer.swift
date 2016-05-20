@@ -26,7 +26,7 @@ class HTTPServer: HTTPServerType {
     }
     
     func start(ready: Void -> Void) throws {
-        acceptSocket = TCPSocket()
+        acceptSocket = try! TCPSocket()
         try acceptSocket.bind(port, interface: interface)
     }
     

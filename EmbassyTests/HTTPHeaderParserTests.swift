@@ -10,7 +10,6 @@ import XCTest
 
 @testable import Embassy
 
-
 extension HTTPHeaderParser.Element: Equatable {
 }
 func ==(lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
