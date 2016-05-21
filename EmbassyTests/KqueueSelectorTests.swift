@@ -10,6 +10,24 @@ import XCTest
 
 @testable import Embassy
 
+struct FileDescriptorEvent {
+    let fileDescriptor: Int32
+    let ioEvent: IOEvent
+}
+
+extension FileDescriptorEvent: Equatable {
+}
+
+func ==(lhs: FileDescriptorEvent, rhs: FileDescriptorEvent) -> Bool {
+    return lhs.fileDescriptor == rhs.fileDescriptor && lhs.ioEvent == rhs.ioEvent
+}
+    
+extension FileDescriptorEvent: Hashable {
+    var hashValue: Int {
+        return fileDescriptor.hashValue + ioEvent.hashValue
+    }
+}
+
 class KqueueSelectorTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.kqueue", DISPATCH_QUEUE_SERIAL)
     
@@ -64,9 +82,10 @@ class KqueueSelectorTests: XCTestCase {
         let ioEvents = assertExecutingTime(1, accuracy: 1) {
             return try! selector.select(10.0)
         }
+        XCTAssertEqual(ioEvents.count, 1)
         XCTAssertEqual(ioEvents.first?.0.fileDescriptor, listenSocket.fileDescriptor)
-        XCTAssertNil(ioEvents.first?.0.data)
         XCTAssertEqual(ioEvents.first?.0.events, Set<IOEvent>([.Read]))
+        XCTAssertNil(ioEvents.first?.0.data)
     }
     
     func testSelectEventFilter() {
@@ -108,7 +127,24 @@ class KqueueSelectorTests: XCTestCase {
         try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
         try! selector.register(clientSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
         
-        XCTAssertEqual(try! selector.select(1.0).count, 0)
+        try! clientSocket.connect("::1", port: port)
+        
+        sleep(1)
+        
+        let ioEvents = assertExecutingTime(0, accuracy: 1) {
+            return try! selector.select(10.0)
+        }
+        let result = toEventSet(ioEvents)
+        XCTAssertEqual(result, Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .Write),
+            FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .Read),
+        ]))
+    }
+    
+    private func toEventSet(events: [(SelectorKey, Set<IOEvent>)]) -> Set<FileDescriptorEvent> {
+        return Set(events.flatMap { (key, ioEvents) in
+            return ioEvents.map { FileDescriptorEvent(fileDescriptor: key.fileDescriptor, ioEvent: $0) }
+        })
     }
     
     private func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {

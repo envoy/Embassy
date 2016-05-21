@@ -120,9 +120,10 @@ public final class TCPSocket {
             sin6_scope_id: 0
         )
         // connect to the host and port
-        guard withUnsafePointer(&address, { pointer in
-            return Darwin.connect(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) >= 0
-        }) else {
+        let connectResult = withUnsafePointer(&address) { pointer in
+            return Darwin.connect(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6)))
+        }
+        guard connectResult >= 0 || errno == EINPROGRESS else {
             throw Error.lastSocketError()
         }
     }
