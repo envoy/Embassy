@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import XCTest
 
 @testable import Embassy
 
@@ -52,4 +53,14 @@ func getUnusedTCPPort() throws -> Int {
         throw OSError.lastIOError()
     }
     return Int(ntohs(socketAddress.sin_port))
+}
+
+extension XCTestCase {
+    func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {
+        let begin = NSDate()
+        let result = closure()
+        let elapsed = NSDate().timeIntervalSinceDate(begin)
+        XCTAssertEqualWithAccuracy(elapsed, time, accuracy: accuracy, "Wrong executing time", file: file, line: line)
+        return result
+    }
 }

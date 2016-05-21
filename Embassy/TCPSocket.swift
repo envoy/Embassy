@@ -16,19 +16,11 @@ public final class TCPSocket {
     /// Whether is this socket in block mode or not
     var blocking: Bool {
         get {
-            let flags = fcntl(fileDescriptor, F_GETFL, 0)
-            return flags & O_NONBLOCK == 0
+            return IOUtils.getBlocking(fileDescriptor)
         }
         
         set {
-            let flags = fcntl(fileDescriptor, F_GETFL, 0)
-            let newFlags: Int32
-            if newValue {
-                newFlags = flags & ~O_NONBLOCK
-            } else {
-                newFlags = flags | O_NONBLOCK
-            }
-            let _ = fcntl(fileDescriptor, F_SETFL, newFlags)
+            IOUtils.setBlocking(fileDescriptor, blocking: newValue)
         }
     }
     

@@ -267,12 +267,4 @@ class KqueueSelectorTests: XCTestCase {
             return ioEvents.map { FileDescriptorEvent(fileDescriptor: key.fileDescriptor, ioEvent: $0) }
         })
     }
-    
-    private func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {
-        let begin = NSDate()
-        let result = closure()
-        let elapsed = NSDate().timeIntervalSinceDate(begin)
-        XCTAssertEqualWithAccuracy(elapsed, time, accuracy: accuracy, "Wrong executing time", file: file, line: line)
-        return result
-    }
 }

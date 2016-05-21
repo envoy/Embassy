@@ -18,8 +18,10 @@ public final class HTTPServer: HTTPServerType {
     
     // the socket for accepting incoming connections
     private var acceptSocket: TCPSocket!
+    private let eventLoop: EventLoop
     
-    init(app: SWSGI, interface: String = "::1", port: Int = 8080) {
+    init(eventLoop: EventLoop, app: SWSGI, interface: String = "::1", port: Int = 8080) {
+        self.eventLoop = eventLoop
         self.app = app
         self.interface = interface
         self.port = port

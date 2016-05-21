@@ -21,25 +21,25 @@ private class CallbackHandle {
 /// EventLoop uses given selector to monitor IO events, trigger callbacks when needed to
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
 public final class EventLoop {
+    private(set) var running: Bool = false
     private let selector: SelectorType
     // these are for self-pipe-trick ref: https://cr.yp.to/docs/selfpipe.html
     // to be able to interrupt the blocking selector, we create a pipe and add it to the
     // selector, whenever we want to interrupt the selector, we send a byte
     private let pipeSender: Int32
     private let pipeReceiver: Int32
-    private var running: Bool = true
     
     init(selector: SelectorType) throws {
         self.selector = selector
-        
         var pipeFds = [Int32](count: 2, repeatedValue: 0)
         let pipeResult = pipeFds.withUnsafeMutableBufferPointer { pipe($0.baseAddress) }
         guard pipeResult >= 0 else {
             throw OSError.lastIOError()
         }
-        pipeSender = pipeFds[0]
-        pipeReceiver = pipeFds[1]
-        
+        pipeReceiver = pipeFds[0]
+        pipeSender = pipeFds[1]
+        IOUtils.setBlocking(pipeSender, blocking: false)
+        IOUtils.setBlocking(pipeReceiver, blocking: false)
         // subscribe to pipe receiver read-ready event, do nothing, just allow selector
         // to be interrupted
         setReader(pipeReceiver) {}
@@ -122,6 +122,7 @@ public final class EventLoop {
     
     /// the event loop forever
     func runForever() {
+        running = true
         while running {
             runOnce()
         }
@@ -130,7 +131,7 @@ public final class EventLoop {
     // interrupt the selector
     private func interruptSelector() {
         let byte = [UInt8](count: 1, repeatedValue: 0)
-        assert(send(pipeSender, byte, byte.count, 0) >= 0, "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())")
+        assert(write(pipeSender, byte, byte.count) >= 0, "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())")
     }
     
     // Run once iteration for the event loop
