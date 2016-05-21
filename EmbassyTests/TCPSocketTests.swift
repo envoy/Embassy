@@ -11,7 +11,7 @@ import XCTest
 @testable import Embassy
 
 class TCPSocketTests: XCTestCase {
-    let queue = dispatch_queue_create("com.envoy.embassy-tcpsocket-tests", DISPATCH_QUEUE_SERIAL)
+    let queue = dispatch_queue_create("com.envoy.embassy-tests.tcp-sockets", DISPATCH_QUEUE_SERIAL)
     
     func testAccept() {
         let port = try! getUnusedTCPPort()

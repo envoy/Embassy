@@ -109,8 +109,8 @@
 			children = (
 				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
-				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
+				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
 				D85613FA1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = EmbassyTests;
