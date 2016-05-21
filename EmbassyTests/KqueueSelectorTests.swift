@@ -52,8 +52,44 @@ class KqueueSelectorTests: XCTestCase {
         
         try! selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
         
-        try! selector.unregister(socket.fileDescriptor)
+        let key = try! selector.unregister(socket.fileDescriptor)
         XCTAssertNil(selector[socket.fileDescriptor])
+        XCTAssertNil(key.data as? String)
+        XCTAssertEqual(key.fileDescriptor, socket.fileDescriptor)
+        XCTAssertEqual(key.events, Set<IOEvent>([.Read]))
+    }
+    
+    func testRegisterKeyError() {
+        let selector = try! KqueueSelector()
+        let socket = try! TCPSocket()
+        try! selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        
+        XCTAssertThrowsError(try selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)) { error in
+            guard let error = error as? KqueueSelector.Error else {
+                XCTFail()
+                return
+            }
+            guard case .KeyError = error else {
+                XCTFail()
+                return
+            }
+        }
+    }
+    
+    func testUnregisterKeyError() {
+        let selector = try! KqueueSelector()
+        let socket = try! TCPSocket()
+        
+        XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
+            guard let error = error as? KqueueSelector.Error else {
+                XCTFail()
+                return
+            }
+            guard case .KeyError = error else {
+                XCTFail()
+                return
+            }
+        }
     }
     
     func testSelectOneSocket() {
