@@ -50,10 +50,9 @@ class KqueueSelectorTests: XCTestCase {
         try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
         
         // ensure we have a correct timeout here
-        let begin0 = NSDate()
-        XCTAssertEqual(try! selector.select(2.0).count, 0)
-        let elapsed0 = NSDate().timeIntervalSinceDate(begin0)
-        XCTAssertEqualWithAccuracy(elapsed0, 2, accuracy: 1)
+        assertExecutingTime(2, accuracy: 1) {
+            XCTAssertEqual(try! selector.select(2.0).count, 0)
+        }
         
         let clientSocket = try! TCPSocket()
         
@@ -62,13 +61,12 @@ class KqueueSelectorTests: XCTestCase {
             try! clientSocket.connect("::1", port: port)
         }
         
-        let begin1 = NSDate()
-        let ioEvents = try! selector.select(10.0)
-        let elapsed1 = NSDate().timeIntervalSinceDate(begin1)
+        let ioEvents = assertExecutingTime(1, accuracy: 1) {
+            return try! selector.select(10.0)
+        }
         XCTAssertEqual(ioEvents.first?.0.fileDescriptor, listenSocket.fileDescriptor)
         XCTAssertNil(ioEvents.first?.0.data)
         XCTAssertEqual(ioEvents.first?.0.events, Set<IOEvent>([.Read]))
-        XCTAssertEqualWithAccuracy(elapsed1, 1, accuracy: 1)
     }
     
     func testSelectEventFilter() {
@@ -90,7 +88,34 @@ class KqueueSelectorTests: XCTestCase {
             try! clientSocket.connect("::1", port: port)
         }
         
-        // ensure we don't get any event triggered
+        // ensure we don't get any event triggered in two seconds
         XCTAssertEqual(try! selector.select(2.0).count, 0)
+    }
+    
+    func testSelectMultipleSocket() {
+        let selector = try! KqueueSelector()
+        
+        let port = try! getUnusedTCPPort()
+
+        let clientSocket = try! TCPSocket()
+        clientSocket.blocking = false
+        
+        let listenSocket = try! TCPSocket()
+        listenSocket.blocking = false
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+        
+        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
+        try! selector.register(clientSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
+        
+        XCTAssertEqual(try! selector.select(1.0).count, 0)
+    }
+    
+    private func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {
+        let begin = NSDate()
+        let result = closure()
+        let elapsed = NSDate().timeIntervalSinceDate(begin)
+        XCTAssertEqualWithAccuracy(elapsed, time, accuracy: accuracy, "Wrong executing time", file: file, line: line)
+        return result
     }
 }
