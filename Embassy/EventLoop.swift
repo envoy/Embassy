@@ -21,7 +21,6 @@ private class CallbackHandle {
 /// EventLoop uses given selector to monitor IO events, trigger callbacks when needed to
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
 public final class EventLoop {
-    private var thread: NSThread!
     private let selector: SelectorType
     // these are for self-pipe-trick ref: https://cr.yp.to/docs/selfpipe.html
     // to be able to interrupt the blocking selector, we create a pipe and add it to the
@@ -41,12 +40,13 @@ public final class EventLoop {
         pipeSender = pipeFds[0]
         pipeReceiver = pipeFds[1]
         
-        thread = NSThread(target: self, selector: #selector(runLoop), object: nil)
+        // subscribe to pipe receiver read-ready event, do nothing, just allow selector
+        // to be interrupted
+        setReader(pipeReceiver) {}
     }
     
     deinit {
         stop()
-        // TODO: join thread?
         close(pipeSender)
         close(pipeReceiver)
     }
@@ -117,32 +117,43 @@ public final class EventLoop {
     
     func stop() {
         running = false
-        try! interruptSelector()
+        interruptSelector()
+    }
+    
+    /// the event loop forever
+    func runForever() {
+        while running {
+            runOnce()
+        }
     }
     
     // interrupt the selector
-    private func interruptSelector() throws {
+    private func interruptSelector() {
         let byte = [UInt8](count: 1, repeatedValue: 0)
-        guard send(pipeSender, byte, byte.count, 0) >= 0 else {
-            throw OSError.lastIOError()
-        }
+        assert(send(pipeSender, byte, byte.count, 0) >= 0, "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())")
     }
     
     // Run once iteration for the event loop
     private func runOnce() {
-    }
-    
-    @objc private func runLoop() {
-        while running {
-            let events = try! selector.select(nil)
-            for (key, ioEvents) in events {
-                // skip pipe receiver interrupting event
-                guard key.fileDescriptor != pipeReceiver else {
-                    continue
+        let events = try! selector.select(nil)
+        for (key, ioEvents) in events {
+            guard let handle = key.data as? CallbackHandle else {
+                continue
+            }
+            for ioEvent in ioEvents {
+                switch ioEvent {
+                case .Read:
+                    if let callback = handle.reader {
+                        callback()
+                    }
+                case .Write:
+                    if let callback = handle.writer {
+                        callback()
+                    }
                 }
-                // TODO: handle the event here
             }
         }
     }
+
     
 }
