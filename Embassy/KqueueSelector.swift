@@ -128,7 +128,6 @@ class KqueueSelector: SelectorType {
                 ioEvents.insert(.Read)
             } else if event.filter == Int16(EVFILT_WRITE) {
                 ioEvents.insert(.Write)
-            // TODO: other filter?
             }
             fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }

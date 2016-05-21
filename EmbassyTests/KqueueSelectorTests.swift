@@ -131,14 +131,61 @@ class KqueueSelectorTests: XCTestCase {
         
         sleep(1)
         
-        let ioEvents = assertExecutingTime(0, accuracy: 1) {
+        let ioEvents0 = assertExecutingTime(0, accuracy: 1) {
             return try! selector.select(10.0)
         }
-        let result = toEventSet(ioEvents)
-        XCTAssertEqual(result, Set([
+        let result0 = toEventSet(ioEvents0)
+        XCTAssertEqual(result0, Set([
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .Write),
             FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .Read),
         ]))
+        
+        let acceptedSocket = try! listenSocket.accept()
+        acceptedSocket.blocking = false
+        try! selector.register(acceptedSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
+        
+        let ioEvents1 = assertExecutingTime(0, accuracy: 1) {
+            return try! selector.select(10.0)
+        }
+        let result1 = toEventSet(ioEvents1)
+        XCTAssertEqual(result1, Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .Write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .Write),
+        ]))
+        
+        // we should have no events now
+        assertExecutingTime(1, accuracy: 1) {
+            return try! selector.select(1)
+        }
+        
+        try! clientSocket.send(Array("hello".utf8))
+        
+        let ioEvents2 = assertExecutingTime(0, accuracy: 1) {
+            return try! selector.select(10.0)
+        }
+        let result2 = toEventSet(ioEvents2)
+        XCTAssertEqual(result2, Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .Write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .Read),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .Write)
+        ]))
+        
+        let receivedString = String(bytes: try! acceptedSocket.recv(1024), encoding: NSUTF8StringEncoding)
+        XCTAssertEqual(receivedString, "hello")
+        
+        let ioEvents3 = assertExecutingTime(0, accuracy: 1) {
+            return try! selector.select(10.0)
+        }
+        let result3 = toEventSet(ioEvents3)
+        XCTAssertEqual(result3, Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .Write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .Write)
+        ]))
+        
+        // we should have no events now
+        assertExecutingTime(1, accuracy: 1) {
+            return try! selector.select(1)
+        }
     }
     
     private func toEventSet(events: [(SelectorKey, Set<IOEvent>)]) -> Set<FileDescriptorEvent> {
