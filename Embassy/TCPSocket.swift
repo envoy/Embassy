@@ -24,15 +24,17 @@ public final class TCPSocket {
         }
     }
     
-    init() throws {
+    init(blocking: Bool = false) throws {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
         }
+        self.blocking = blocking
     }
     
-    init(fileDescriptor: Int32) {
+    init(fileDescriptor: Int32, blocking: Bool = false) {
         self.fileDescriptor = fileDescriptor
+        self.blocking = blocking
     }
     
     /// Bind the socket at given port and interface

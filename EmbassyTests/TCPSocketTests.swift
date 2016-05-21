@@ -15,7 +15,7 @@ class TCPSocketTests: XCTestCase {
     
     func testAccept() {
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(blocking: true)
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -37,7 +37,7 @@ class TCPSocketTests: XCTestCase {
     
     func testReadAndWrite() {
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(blocking: true)
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -48,7 +48,7 @@ class TCPSocketTests: XCTestCase {
             exp0.fulfill()
         }
         
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(blocking: true)
         try! clientSocket.connect("::1", port: port)
         
         waitForExpectationsWithTimeout(4) { error in

@@ -97,7 +97,6 @@ class KqueueSelectorTests: XCTestCase {
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        listenSocket.blocking = false
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -129,7 +128,6 @@ class KqueueSelectorTests: XCTestCase {
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        listenSocket.blocking = false
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -152,7 +150,6 @@ class KqueueSelectorTests: XCTestCase {
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        listenSocket.blocking = false
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -191,10 +188,8 @@ class KqueueSelectorTests: XCTestCase {
         let port = try! getUnusedTCPPort()
 
         let clientSocket = try! TCPSocket()
-        clientSocket.blocking = false
         
         let listenSocket = try! TCPSocket()
-        listenSocket.blocking = false
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
@@ -215,7 +210,6 @@ class KqueueSelectorTests: XCTestCase {
         ]))
         
         let acceptedSocket = try! listenSocket.accept()
-        acceptedSocket.blocking = false
         try! selector.register(acceptedSocket.fileDescriptor, events: [.Read, .Write], data: nil)
         
         let ioEvents1 = assertExecutingTime(0, accuracy: 1) {
