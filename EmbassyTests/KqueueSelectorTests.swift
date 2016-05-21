@@ -70,4 +70,27 @@ class KqueueSelectorTests: XCTestCase {
         XCTAssertEqual(ioEvents.first?.0.events, Set<IOEvent>([.Read]))
         XCTAssertEqualWithAccuracy(elapsed1, 1, accuracy: 1)
     }
+    
+    func testSelectEventFilter() {
+        let selector = try! KqueueSelector()
+        
+        let port = try! getUnusedTCPPort()
+        let listenSocket = try! TCPSocket()
+        listenSocket.blocking = false
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+        
+        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Write]), data: nil)
+        
+        XCTAssertEqual(try! selector.select(1.0).count, 0)
+        
+        let clientSocket = try! TCPSocket()
+        // make a connect 1 seconds later
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            try! clientSocket.connect("::1", port: port)
+        }
+        
+        // ensure we don't get any event triggered
+        XCTAssertEqual(try! selector.select(2.0).count, 0)
+    }
 }
