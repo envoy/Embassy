@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class HTTPServer: HTTPServerType {
+public final class HTTPServer: HTTPServerType {
     public var app: SWSGI
     
     /// Interface of TCP/IP to bind
@@ -27,6 +27,7 @@ public class HTTPServer: HTTPServerType {
     
     public func start(ready: Void -> Void) throws {
         acceptSocket = try! TCPSocket()
+        acceptSocket.blocking = false
         try acceptSocket.bind(port, interface: interface)
     }
     

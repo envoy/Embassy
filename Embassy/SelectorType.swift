@@ -9,13 +9,13 @@
 import Foundation
 
 /// Event of IO
-enum IOEvent {
+public enum IOEvent {
     case Read
     case Write
 }
 
 /// Represent a subscription for a file descriptor in Selector
-struct SelectorKey {
+public struct SelectorKey {
     /// File descriptor
     let fileDescriptor: Int32
     /// Events to monitor
@@ -26,11 +26,12 @@ struct SelectorKey {
 
 /// Selector provides a way to poll lots of file descriptors for IO events in an efficient way.
 /// The basic interface design follows https://docs.python.org/3/library/selectors.html
-protocol SelectorType {
+public protocol SelectorType {
     /// Register a file descriptor for given IO events to watch
     ///  - Parameter fileDescriptor: the file descriptor to watch
     ///  - Parameter events: IO events to watch
     ///  - Parameter data: user custom data to be returned when we see an IO event
+    ///  - Returns: added SelectorKey
     func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey
     
     /// Unregister a file descriptor from selector

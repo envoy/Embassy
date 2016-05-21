@@ -38,11 +38,11 @@ class KqueueSelectorTests: XCTestCase {
         XCTAssertNil(selector[socket.fileDescriptor])
         
         let data = "my data"
-        try! selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: data)
+        try! selector.register(socket.fileDescriptor, events: [.Read], data: data)
         
         let key = selector[socket.fileDescriptor]
         XCTAssertEqual(key?.fileDescriptor, socket.fileDescriptor)
-        XCTAssertEqual(key?.events, Set<IOEvent>([.Read]))
+        XCTAssertEqual(key?.events, [.Read])
         XCTAssertEqual(key?.data as? String, data)
     }
 
@@ -50,21 +50,21 @@ class KqueueSelectorTests: XCTestCase {
         let selector = try! KqueueSelector()
         let socket = try! TCPSocket()
         
-        try! selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        try! selector.register(socket.fileDescriptor, events: [.Read], data: nil)
         
         let key = try! selector.unregister(socket.fileDescriptor)
         XCTAssertNil(selector[socket.fileDescriptor])
         XCTAssertNil(key.data as? String)
         XCTAssertEqual(key.fileDescriptor, socket.fileDescriptor)
-        XCTAssertEqual(key.events, Set<IOEvent>([.Read]))
+        XCTAssertEqual(key.events, [.Read])
     }
     
     func testRegisterKeyError() {
         let selector = try! KqueueSelector()
         let socket = try! TCPSocket()
-        try! selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        try! selector.register(socket.fileDescriptor, events: [.Read], data: nil)
         
-        XCTAssertThrowsError(try selector.register(socket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)) { error in
+        XCTAssertThrowsError(try selector.register(socket.fileDescriptor, events: [.Read], data: nil)) { error in
             guard let error = error as? KqueueSelector.Error else {
                 XCTFail()
                 return
@@ -101,7 +101,7 @@ class KqueueSelectorTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
-        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        try! selector.register(listenSocket.fileDescriptor, events: [.Read], data: nil)
         
         // ensure we have a correct timeout here
         assertExecutingTime(2, accuracy: 1) {
@@ -120,7 +120,7 @@ class KqueueSelectorTests: XCTestCase {
         }
         XCTAssertEqual(ioEvents.count, 1)
         XCTAssertEqual(ioEvents.first?.0.fileDescriptor, listenSocket.fileDescriptor)
-        XCTAssertEqual(ioEvents.first?.0.events, Set<IOEvent>([.Read]))
+        XCTAssertEqual(ioEvents.first?.0.events, [.Read])
         XCTAssertNil(ioEvents.first?.0.data)
     }
     
@@ -133,7 +133,7 @@ class KqueueSelectorTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
-        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Write]), data: nil)
+        try! selector.register(listenSocket.fileDescriptor, events: [.Write], data: nil)
         
         XCTAssertEqual(try! selector.select(1.0).count, 0)
         
@@ -156,7 +156,7 @@ class KqueueSelectorTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
-        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        try! selector.register(listenSocket.fileDescriptor, events: [.Read], data: nil)
         
         let clientSocket = try! TCPSocket()
         // make a connect 1 seconds later
@@ -198,8 +198,8 @@ class KqueueSelectorTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
         
-        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
-        try! selector.register(clientSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
+        try! selector.register(listenSocket.fileDescriptor, events: [.Read, .Write], data: nil)
+        try! selector.register(clientSocket.fileDescriptor, events: [.Read, .Write], data: nil)
         
         try! clientSocket.connect("::1", port: port)
         
@@ -216,7 +216,7 @@ class KqueueSelectorTests: XCTestCase {
         
         let acceptedSocket = try! listenSocket.accept()
         acceptedSocket.blocking = false
-        try! selector.register(acceptedSocket.fileDescriptor, events: Set<IOEvent>([.Read, .Write]), data: nil)
+        try! selector.register(acceptedSocket.fileDescriptor, events: [.Read, .Write], data: nil)
         
         let ioEvents1 = assertExecutingTime(0, accuracy: 1) {
             return try! selector.select(10.0)

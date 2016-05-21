@@ -10,18 +10,6 @@ import Foundation
 
 /// Class wrapping around TCP/IPv6 socket
 public final class TCPSocket {
-    public enum Error: ErrorType {
-        case SocketError(number: Int, message: String)
-        /// Return a socket error with the last error number and description
-        static func lastSocketError() -> Error {
-            return .SocketError(number: Int(errno), message: lastErrorDescription())
-        }
-        /// Return description for last error
-        static func lastErrorDescription() -> String {
-            return String.fromCString(UnsafePointer(strerror(errno))) ?? "Unknown Error: \(errno)"
-        }
-    }
-    
     /// The file descriptor number for socket
     let fileDescriptor: Int32
     
@@ -47,7 +35,7 @@ public final class TCPSocket {
     init() throws {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
         guard fileDescriptor >= 0 else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
     }
     
@@ -73,14 +61,14 @@ public final class TCPSocket {
         guard withUnsafePointer(&address, { pointer in
             return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) >= 0
         }) else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
         
         // make address reusable
         if addressReusable {
             var reuse = Int32(1)
             guard setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) >= 0 else {
-                throw Error.lastSocketError()
+                throw OSError.lastIOError()
             }
         }
     }
@@ -89,7 +77,7 @@ public final class TCPSocket {
     ///  - Parameter backlog: maximum backlog of incoming connections
     func listen(backlog: Int = Int(SOMAXCONN)) throws {
         guard Darwin.listen(fileDescriptor, Int32(backlog)) != -1 else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
     }
     
@@ -101,7 +89,7 @@ public final class TCPSocket {
             return Darwin.accept(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size)
         }
         guard clientFileDescriptor >= 0 else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
         return TCPSocket(fileDescriptor: clientFileDescriptor)
     }
@@ -124,7 +112,7 @@ public final class TCPSocket {
             return Darwin.connect(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6)))
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
     }
     
@@ -134,7 +122,7 @@ public final class TCPSocket {
     func send(bytes: [UInt8]) throws -> Int {
         let bytesSent = Darwin.send(fileDescriptor, bytes, bytes.count, Int32(0))
         guard bytesSent >= 0 else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
         return bytesSent
     }
@@ -148,7 +136,7 @@ public final class TCPSocket {
             return Darwin.recv(fileDescriptor, pointer.baseAddress, size, Int32(0))
         }
         guard bytesRead >= 0 else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
         return Array(bytes[0..<bytesRead])
     }
@@ -158,7 +146,7 @@ public final class TCPSocket {
         // convert interface string into IPv6 address struct
         var binary: in6_addr = in6_addr()
         guard address.withCString({ inet_pton(AF_INET6, $0, &binary) >= 0 }) else {
-            throw Error.lastSocketError()
+            throw OSError.lastIOError()
         }
         return binary
     }

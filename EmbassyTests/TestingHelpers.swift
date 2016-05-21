@@ -19,12 +19,12 @@ let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
 func getUnusedTCPPort() throws -> Int {
     var interfaceAddress: in_addr = in_addr()
     guard "127.0.0.1".withCString({ inet_pton(AF_INET, $0, &interfaceAddress) >= 0 }) else {
-        throw TCPSocket.Error.lastSocketError()
+        throw OSError.lastIOError()
     }
     
     let fileDescriptor = socket(AF_INET, SOCK_STREAM, 0)
     guard fileDescriptor >= 0 else {
-        throw TCPSocket.Error.lastSocketError()
+        throw OSError.lastIOError()
     }
     defer {
         close(fileDescriptor)
@@ -41,7 +41,7 @@ func getUnusedTCPPort() throws -> Int {
     guard withUnsafePointer(&address, { pointer in
         return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in))) >= 0
     }) else {
-        throw TCPSocket.Error.lastSocketError()
+        throw OSError.lastIOError()
     }
     
     var socketAddress = sockaddr_in()
@@ -49,7 +49,7 @@ func getUnusedTCPPort() throws -> Int {
     guard withUnsafeMutablePointer(&socketAddress, { pointer in
         return getsockname(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size) >= 0
     }) else {
-        throw TCPSocket.Error.lastSocketError()
+        throw OSError.lastIOError()
     }
     return Int(ntohs(socketAddress.sin_port))
 }

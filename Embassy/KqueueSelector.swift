@@ -8,18 +8,9 @@
 
 import Foundation
 
-class KqueueSelector: SelectorType {
+public final class KqueueSelector: SelectorType {
     enum Error: ErrorType {
         case KeyError(fileDescriptor: Int32)
-        case KqueueError(number: Int, message: String)
-        /// Return a kqueue error with the last error number and description
-        static func lastKqueueError() -> Error {
-            return .KqueueError(number: Int(errno), message: lastErrorDescription())
-        }
-        /// Return description for last error
-        static func lastErrorDescription() -> String {
-            return String.fromCString(UnsafePointer(strerror(errno))) ?? "Unknown Error: \(errno)"
-        }
     }
     
     // the maximum event number to select from kqueue at once (one kevent call)
@@ -30,7 +21,7 @@ class KqueueSelector: SelectorType {
     init(selectMaximumEvent: Int = 1024) throws {
         kqueue = Darwin.kqueue()
         guard kqueue >= 0 else {
-            throw Error.lastKqueueError()
+            throw OSError.lastIOError()
         }
         self.selectMaximumEvent = selectMaximumEvent
     }
@@ -39,7 +30,7 @@ class KqueueSelector: SelectorType {
         close()
     }
     
-    func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey {
+    public func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
         guard fileDescriptorMap[fileDescriptor] == nil else {
             throw Error.KeyError(fileDescriptor: fileDescriptor)
@@ -76,12 +67,12 @@ class KqueueSelector: SelectorType {
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
             Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
         }) else {
-            throw Error.lastKqueueError()
+            throw OSError.lastIOError()
         }
         return key
     }
     
-    func unregister(fileDescriptor: Int32) throws -> SelectorKey {
+    public func unregister(fileDescriptor: Int32) throws -> SelectorKey {
         // ensure the file descriptor exists
         guard let key = fileDescriptorMap[fileDescriptor] else {
             throw Error.KeyError(fileDescriptor: fileDescriptor)
@@ -116,16 +107,16 @@ class KqueueSelector: SelectorType {
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
             Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
         }) else {
-            throw Error.lastKqueueError()
+            throw OSError.lastIOError()
         }
         return key
     }
     
-    func close() {
-        // TODO:
+    public func close() {
+        Darwin.close(kqueue)
     }
     
-    func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
+    public func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
         var timeSpec: timespec?
         let timeSpecPointer: UnsafePointer<timespec>
         if let timeout = timeout {
@@ -146,7 +137,7 @@ class KqueueSelector: SelectorType {
              return Darwin.kevent(kqueue, nil, 0, pointer.baseAddress, Int32(selectMaximumEvent), timeSpecPointer)
         }
         guard eventCount >= 0 else {
-            throw Error.lastKqueueError()
+            throw OSError.lastIOError()
         }
         
         var fileDescriptorIOEvents = [Int32: Set<IOEvent>]()
@@ -164,7 +155,7 @@ class KqueueSelector: SelectorType {
         return Array(fileDescriptorIOEvents.map { (fileDescriptorMap[$0.0]!, $0.1) })
     }
     
-    subscript(fileDescriptor: Int32) -> SelectorKey? {
+    public subscript(fileDescriptor: Int32) -> SelectorKey? {
         get {
             return fileDescriptorMap[fileDescriptor]
         }
