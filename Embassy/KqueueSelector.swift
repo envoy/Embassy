@@ -87,7 +87,37 @@ class KqueueSelector: SelectorType {
             throw Error.KeyError(fileDescriptor: fileDescriptor)
         }
         fileDescriptorMap.removeValueForKey(fileDescriptor)
-        // TODO: remove the event filters from the kqueue
+        var kevents: [Darwin.kevent] = []
+        for event in key.events {
+            let filter: Int16
+            switch event {
+            case .Read:
+                filter = Int16(EVFILT_READ)
+            case .Write:
+                filter = Int16(EVFILT_WRITE)
+            }
+            let kevent = Darwin.kevent(
+                ident: UInt(fileDescriptor),
+                filter: filter,
+                flags: UInt16(EV_DELETE),
+                fflags: UInt32(0),
+                data: Int(0),
+                udata: nil
+            )
+            kevents.append(kevent)
+        }
+        
+        // unregister events from kqueue
+        
+        // Notice: we need to get the event count before we go into
+        // `withUnsafeMutableBufferPointer`, as we cannot rely on it inside the closure
+        // (you can read the offical document)
+        let keventCount = kevents.count
+        guard kevents.withUnsafeMutableBufferPointer({ pointer in
+            Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+        }) else {
+            throw Error.lastKqueueError()
+        }
         return key
     }
     

@@ -111,6 +111,44 @@ class KqueueSelectorTests: XCTestCase {
         XCTAssertEqual(try! selector.select(2.0).count, 0)
     }
     
+    func testSelectAfterUnregister() {
+        let selector = try! KqueueSelector()
+        
+        let port = try! getUnusedTCPPort()
+        let listenSocket = try! TCPSocket()
+        listenSocket.blocking = false
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+        
+        try! selector.register(listenSocket.fileDescriptor, events: Set<IOEvent>([.Read]), data: nil)
+        
+        let clientSocket = try! TCPSocket()
+        // make a connect 1 seconds later
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            try! clientSocket.connect("::1", port: port)
+        }
+        
+        assertExecutingTime(1, accuracy: 1) {
+            let events = try! selector.select(2.0)
+            let result = toEventSet(events)
+            XCTAssertEqual(result, Set([
+                FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .Read),
+            ]))
+        }
+        
+        try! selector.unregister(listenSocket.fileDescriptor)
+        
+        let clientSocket2 = try! TCPSocket()
+        // make a connect 1 seconds later
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            try! clientSocket2.connect("::1", port: port)
+        }
+        
+        assertExecutingTime(2, accuracy: 1) {
+            XCTAssertEqual(try! selector.select(2.0).count, 0)
+        }
+    }
+    
     func testSelectMultipleSocket() {
         let selector = try! KqueueSelector()
         
