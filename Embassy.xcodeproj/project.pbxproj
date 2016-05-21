@@ -19,6 +19,7 @@
 		D8F3D38F1CEFA09B00342389 /* TCPSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */; };
 		D8F3D3911CEFB1AA00342389 /* TestingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */; };
 		D8F3D3931CEFD79100342389 /* KqueueSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3921CEFD79100342389 /* KqueueSelector.swift */; };
+		D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TCPSocketTests.swift; sourceTree = "<group>"; };
 		D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestingHelpers.swift; sourceTree = "<group>"; };
 		D8F3D3921CEFD79100342389 /* KqueueSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KqueueSelector.swift; sourceTree = "<group>"; };
+		D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KqueueSelectorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
+				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
 				D85613FA1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = EmbassyTests;
@@ -235,6 +238,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */,
 				D8F3D38F1CEFA09B00342389 /* TCPSocketTests.swift in Sources */,
 				D8F3D3911CEFB1AA00342389 /* TestingHelpers.swift in Sources */,
 				D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */,

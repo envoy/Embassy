@@ -41,7 +41,7 @@ class KqueueSelector: SelectorType {
     
     func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
-        guard fileDescriptorMap[fileDescriptor] != nil else {
+        guard fileDescriptorMap[fileDescriptor] == nil else {
             throw Error.KeyError(fileDescriptor: fileDescriptor)
         }
         let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
@@ -95,20 +95,17 @@ class KqueueSelector: SelectorType {
         // TODO:
     }
     
-    func select(timeout: NSTimeInterval?) throws -> [(key: SelectorKey, events: Set<IOEvent>)] {
+    func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
         var timeSpec: timespec?
+        let timeSpecPointer: UnsafePointer<timespec>
         if let timeout = timeout {
             if timeout > 0 {
                 var integer = 0.0
                 let nsec = Int(modf(timeout, &integer) * Double(NSEC_PER_SEC))
                 timeSpec = timespec(tv_sec: Int(timeout), tv_nsec: nsec)
             } else {
-                // TODO:
+                timeSpec = timespec()
             }
-        }
-        
-        let timeSpecPointer: UnsafePointer<timespec>
-        if timeSpec != nil {
             timeSpecPointer = withUnsafePointer(&timeSpec!) { $0 }
         } else {
             timeSpecPointer = nil
@@ -122,13 +119,20 @@ class KqueueSelector: SelectorType {
             throw Error.lastKqueueError()
         }
         
+        var fileDescriptorIOEvents = [Int32: Set<IOEvent>]()
         for index in 0..<Int(eventCount) {
             let event = kevents[index]
-            // TODO: handle the event here
+            let fileDescriptor = Int32(event.ident)
+            var ioEvents = fileDescriptorIOEvents[fileDescriptor] ?? Set<IOEvent>()
+            if event.filter == Int16(EVFILT_READ) {
+                ioEvents.insert(.Read)
+            } else if event.filter == Int16(EVFILT_WRITE) {
+                ioEvents.insert(.Write)
+            // TODO: other filter?
+            }
+            fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }
-        
-        // TODO:
-        return []
+        return Array(fileDescriptorIOEvents.map { (fileDescriptorMap[$0.0]!, $0.1) })
     }
     
     subscript(fileDescriptor: Int32) -> SelectorKey? {

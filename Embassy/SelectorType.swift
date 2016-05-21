@@ -45,8 +45,8 @@ protocol SelectorType {
     ///                       if timeout <= 0, it won't block but returns current file descriptor status immediately,
     ///                       if timeout == nil, it will block until there is a file descriptor ready
     ///  - Returns: an array of (key, events) for ready file descriptors
-    func select(timeout: NSTimeInterval?) -> [(key: SelectorKey, events: Set<IOEvent>)]
+    func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)]
     
     /// Return the SelectorKey for given file descriptor
-    subscript(fileDescriptor: Int32) throws -> SelectorKey? { get }
+    subscript(fileDescriptor: Int32) -> SelectorKey? { get }
 }
