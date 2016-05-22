@@ -38,7 +38,7 @@ public final class TCPSocket {
     }
     
     deinit {
-        Darwin.close(fileDescriptor)
+        close()
     }
     
     /// Bind the socket at given port and interface
@@ -137,6 +137,11 @@ public final class TCPSocket {
             throw OSError.lastIOError()
         }
         return Array(bytes[0..<bytesRead])
+    }
+    
+    /// Close the socket
+    func close() {
+        Darwin.close(fileDescriptor)
     }
     
     // Convert IP address to binary struct

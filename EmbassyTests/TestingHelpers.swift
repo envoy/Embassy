@@ -55,6 +55,17 @@ func getUnusedTCPPort() throws -> Int {
     return Int(ntohs(socketAddress.sin_port))
 }
 
+func makeRandomString(length: Int) -> String {
+    let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    var result: [String] = []
+    for _ in 0..<length {
+        let randomIndex = Int(arc4random_uniform(UInt32(letters.characters.count)))
+        let char = letters.substringWithRange(letters.startIndex.advancedBy(randomIndex) ... letters.startIndex.advancedBy(randomIndex))
+        result.append(char)
+    }
+    return result.joinWithSeparator("")
+}
+
 extension XCTestCase {
     func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {
         let begin = NSDate()
