@@ -198,7 +198,7 @@ class TransportTests: XCTestCase {
         }
         
         try! clientSocket.connect("::1", port: port)
-        let bigDataChunk = makeRandomString(374300)
+        let bigDataChunk = makeRandomString(574300)
         
         loop.callLater(1) {
             clientTransport.writeUTF8("hello")

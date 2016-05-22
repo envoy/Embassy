@@ -175,9 +175,15 @@ public final class EventLoop {
             timeout = max(0, NSDate().timeIntervalSinceDate(minTime))
         }
         
-        // TODO: handle system interrupt
+        var events: [(SelectorKey, Set<IOEvent>)] = []
         // Poll IO events
-        let events = try! selector.select(timeout)
+        do {
+            events = try selector.select(timeout)
+        } catch OSError.IOError(let number, let message) {
+            assert(Int32(number) == EINTR, "Failed to call selector, errno=\(number), message=\(message)")
+        } catch {
+            fatalError("Failed to call selector, errno=\(errno), message=\(lastErrorDescription())")
+        }
         for (key, ioEvents) in events {
             guard let handle = key.data as? CallbackHandle else {
                 continue
