@@ -141,6 +141,7 @@ public final class TCPSocket {
     
     /// Close the socket
     func close() {
+        Darwin.shutdown(fileDescriptor, SHUT_WR)
         Darwin.close(fileDescriptor)
     }
     

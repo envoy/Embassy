@@ -82,7 +82,7 @@ class TransportTests: XCTestCase {
             serverTransport.writeUTF8(dataChunk6)
         }
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+        loop.callLater(10) {
             loop.stop()
         }
         
@@ -152,7 +152,7 @@ class TransportTests: XCTestCase {
             serverTransport.writeUTF8("3")
         }
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+        loop.callLater(10) {
             loop.stop()
         }
         
@@ -162,4 +162,67 @@ class TransportTests: XCTestCase {
         XCTAssertEqual(clientReceivedData, ["1", "2", "3"])
     }
 
+    func testCloseByPeer() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        let port = try! getUnusedTCPPort()
+        let listenSocket = try! TCPSocket()
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+        
+        
+        let clientSocket = try! TCPSocket()
+        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { _ in
+            
+        }
+        var acceptedSocket: TCPSocket!
+        var serverTransport: Transport!
+        var serverReceivedData: [String] = []
+        var serverTransportClosed: Bool = false
+        
+        loop.setReader(listenSocket.fileDescriptor) {
+            acceptedSocket = try! listenSocket.accept()
+            serverTransport = Transport(
+                socket: acceptedSocket,
+                eventLoop: loop,
+                closedCallback: { reason in
+                    XCTAssert(serverTransport.closed)
+                    XCTAssert(reason.isByPeer)
+                    serverTransportClosed = true
+                    loop.stop()
+                },
+                readDataCallback: { data in
+                    serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                }
+            )
+        }
+        
+        try! clientSocket.connect("::1", port: port)
+        let bigDataChunk = makeRandomString(374300)
+        
+        loop.callLater(1) {
+            clientTransport.writeUTF8("hello")
+        }
+        
+        loop.callLater(2) {
+            XCTAssertFalse(clientTransport.closed)
+            XCTAssertFalse(clientTransport.closing)
+            clientTransport.writeUTF8(bigDataChunk)
+            clientTransport.close()
+            // we still have big chunk in buffer, shouldn't close until we send them all out
+            XCTAssertFalse(clientTransport.closed)
+            XCTAssertTrue(clientTransport.closing)
+        }
+        
+        loop.callLater(10) {
+            loop.stop()
+        }
+        
+        loop.runForever()
+        
+        XCTAssert(serverTransportClosed)
+        XCTAssert(clientTransport.closed)
+        XCTAssert(serverTransport.closed)
+        XCTAssertEqual(serverReceivedData.joinWithSeparator("").characters.count, "hello".characters.count + bigDataChunk.characters.count)
+    }
 }
