@@ -12,34 +12,53 @@ import XCTest
 
 class EventLoopTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
+    
+    var loop: EventLoop!
+    
+    override func setUp() {
+        super.setUp()
+        loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        // set a 30 seconds timeout
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+            if self.loop.running {
+                self.loop.stop()
+                XCTFail("Time out")
+            }
+        }
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+    }
+    
     func testStop() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            XCTAssert(loop.running)
-            loop.stop()
-            XCTAssertFalse(loop.running)
+            XCTAssert(self.loop.running)
+            self.loop.stop()
+            XCTAssertFalse(self.loop.running)
         }
         
         XCTAssertFalse(loop.running)
         assertExecutingTime(1.0, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
         XCTAssertFalse(loop.running)
     }
     
     func testCallSoon() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
+        var called = false
         loop.callSoon {
-            loop.stop()
+            called = true
+            self.loop.stop()
         }
         assertExecutingTime(0, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
+        XCTAssert(called)
     }
     
     func testCallLater() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         var events: [Int] = []
         loop.callLater(0) {
             events.append(0)
@@ -48,67 +67,68 @@ class EventLoopTests: XCTestCase {
             events.append(1)
         }
         loop.callLater(2) {
-            loop.stop()
+            self.loop.stop()
         }
         loop.callLater(3) {
             events.append(3)
         }
         assertExecutingTime(2, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
         XCTAssertEqual(events, [0, 1])
     }
     
     func testSetReader() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
+        var readerCalled = false
         
         loop.setReader(listenSocket.fileDescriptor) {
-            loop.stop()
+            readerCalled = true
+            self.loop.stop()
         }
         
+        let clientSocket = try! TCPSocket()
+        
         // make a connect 1 seconds later
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let clientSocket = try! TCPSocket()
+        loop.callLater(1) {
             try! clientSocket.connect("::1", port: port)
         }
         
         assertExecutingTime(1.0, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
+        XCTAssert(readerCalled)
     }
     
     func testSetWriter() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
+        var writerCalled = false
         
         let clientSocket = try! TCPSocket()
         
         loop.setWriter(clientSocket.fileDescriptor) {
-            loop.stop()
+            writerCalled = true
+            self.loop.stop()
         }
         
         // make a connect 1 seconds later
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+        loop.callLater(1) {
             try! clientSocket.connect("::1", port: port)
         }
         
         assertExecutingTime(1.0, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
+        XCTAssert(writerCalled)
     }
     
     func testRemoveReader() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
@@ -122,32 +142,32 @@ class EventLoopTests: XCTestCase {
             let data = try! acceptedSocket.recv(1024)
             readData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
             if readData.count >= 2 {
-                loop.removeReader(acceptedSocket.fileDescriptor)
+                self.loop.removeReader(acceptedSocket.fileDescriptor)
             }
         }
         
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
-            loop.setReader(acceptedSocket.fileDescriptor, callback: readAcceptedSocket)
+            self.loop.setReader(acceptedSocket.fileDescriptor, callback: readAcceptedSocket)
         }
         
         try! clientSocket.connect("::1", port: port)
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+        loop.callLater(1) {
             try! clientSocket.send(Array("hello".utf8))
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(2 * NSEC_PER_SEC)), queue) {
+        loop.callLater(2) {
             try! clientSocket.send(Array("baby".utf8))
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(3 * NSEC_PER_SEC)), queue) {
+        loop.callLater(3) {
             try! clientSocket.send(Array("fin".utf8))
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(4 * NSEC_PER_SEC)), queue) {
-            loop.stop()
+        loop.callLater(4) {
+            self.loop.stop()
         }
         
         assertExecutingTime(4.0, accuracy: 0.5) {
-            loop.runForever()
+            self.loop.runForever()
         }
         XCTAssertEqual(readData, ["hello", "baby"])
     }
