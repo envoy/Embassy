@@ -22,4 +22,4 @@ import Foundation
                            with zero length
  
 */
-public typealias SWSGI = (environ: [String: AnyObject], startResponse: (String, [(String, String)]) -> Void, sendBody: [UInt8] -> Void)
+public typealias SWSGI = (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) -> Void

@@ -13,9 +13,7 @@ public protocol HTTPServerType {
     /// The SWSGI app to serve
     var app: SWSGI { get set }
     /// Start the HTTP server
-    ///  - Parameter ready: the callback to be called when the server is ready to serve
-    func start(ready: Void -> Void) throws
+    func start() throws
     /// Stop the HTTP server
-    ///  - Parameter stopped: the callback to be called when the server is stopped
-    func stop(stopped: Void -> Void)
+    func stop()
 }

@@ -37,15 +37,15 @@ class Transport {
     private(set) var closed: Bool = false
     /// Is this transport closing
     private(set) var closing: Bool = false
+    var closedCallback: (CloseReason -> Void)?
+    var readDataCallback: ([UInt8] -> Void)?
     
     private let socket: TCPSocket
     private let eventLoop: EventLoop
     // buffer for sending data out
     private var outgoingBuffer = [UInt8]()
-    private let closedCallback: (CloseReason -> Void)?
-    private let readDataCallback: ([UInt8] -> Void)
     
-    init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)) {
+    init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
         self.socket = socket
         self.eventLoop = eventLoop
         self.closedCallback = closedCallback
@@ -90,7 +90,7 @@ class Transport {
             return
         }
         let data = try! socket.recv(Transport.recvChunkSize)
-        if data.count == 0 {
+        guard data.count > 0 else {
             closed = true
             eventLoop.removeReader(socket.fileDescriptor)
             eventLoop.removeWriter(socket.fileDescriptor)
@@ -98,12 +98,15 @@ class Transport {
                 callback(.ByPeer)
             }
             socket.close()
+            return
         }
         // ensure we are not closing
         guard !closing else {
             return
         }
-        readDataCallback(data)
+        if let callback = readDataCallback {
+            callback(data)
+        }
     }
     
     private func handleWrite() {

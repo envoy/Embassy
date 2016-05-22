@@ -8,6 +8,10 @@
 
 import Foundation
 
+let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
+let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
+let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
+
 /// Class wrapping around TCP/IPv6 socket
 public final class TCPSocket {
     /// The file descriptor number for socket
@@ -52,7 +56,7 @@ public final class TCPSocket {
             sin6_family: UInt8(AF_INET6),
             sin6_port: UInt16(port).bigEndian,
             sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToBinary(interface),
+            sin6_addr: try ipAddressToStruct(interface),
             sin6_scope_id: 0
         )
         // bind the address and port on socket
@@ -102,7 +106,7 @@ public final class TCPSocket {
             sin6_family: UInt8(AF_INET6),
             sin6_port: UInt16(port).bigEndian,
             sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToBinary(host),
+            sin6_addr: try ipAddressToStruct(host),
             sin6_scope_id: 0
         )
         // connect to the host and port
@@ -145,13 +149,36 @@ public final class TCPSocket {
         Darwin.close(fileDescriptor)
     }
     
+    func getPeerName() throws -> (String, Int) {
+        var address = sockaddr_in6()
+        var size = socklen_t(sizeof(sockaddr_in6))
+        let result = withUnsafeMutablePointer(&address) { pointer in
+            return Darwin.getpeername(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size)
+        }
+        guard result >= 0 else {
+            throw OSError.lastIOError()
+        }
+        return (try structToIPAddress(address.sin6_addr), Int(ntohs(address.sin6_port)))
+    }
+    
     // Convert IP address to binary struct
-    private func ipAddressToBinary(address: String) throws -> in6_addr {
+    private func ipAddressToStruct(address: String) throws -> in6_addr {
         // convert interface string into IPv6 address struct
         var binary: in6_addr = in6_addr()
         guard address.withCString({ inet_pton(AF_INET6, $0, &binary) >= 0 }) else {
             throw OSError.lastIOError()
         }
         return binary
+    }
+
+    // Convert struct to IPAddress
+    private func structToIPAddress(addrStruct: in6_addr) throws -> String {
+        var addrStruct = addrStruct
+        // convert address struct into address string
+        var address = [UInt8](count: Int(INET6_ADDRSTRLEN), repeatedValue: 0)
+        guard address.withUnsafeMutableBufferPointer({ inet_ntop(AF_INET6, &addrStruct, UnsafeMutablePointer<Int8>($0.baseAddress), socklen_t(sizeof(sockaddr_in6))) != nil }) else {
+            throw OSError.lastIOError()
+        }
+        return String(bytes: address as [UInt8], encoding: NSUTF8StringEncoding)!
     }
 }
