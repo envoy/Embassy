@@ -28,6 +28,10 @@ public final class EventLoop {
     // selector, whenever we want to interrupt the selector, we send a byte
     private let pipeSender: Int32
     private let pipeReceiver: Int32
+    // callbacks ready to be called at the next iteration
+    private var readyCallbacks: [(Void -> Void)] = []
+    // callbacks scheduled to be called later
+    private var scheduledCallbacks: [(NSDate, (Void -> Void))] = []
     
     init(selector: SelectorType) throws {
         self.selector = selector
@@ -115,12 +119,36 @@ public final class EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
     
+    /// Call given callback as soon as possible (the next event loop iteration)
+    ///  - Parameter callback: the callback function to be called
+    func callSoon(callback: Void -> Void) {
+        // TODO: thread safety?
+        readyCallbacks.append(callback)
+        interruptSelector()
+    }
+    
+    /// Call given callback `delay` seconds later
+    ///  - Parameter delay: delaying in seconds
+    ///  - Parameter callback: the callback function to be called
+    func callLater(delay: NSTimeInterval, callback: Void -> Void) {
+        scheduledCallbacks.append((NSDate().dateByAddingTimeInterval(delay), callback))
+    }
+    
+    /// Call given callback at specific time
+    ///  - Parameter time: time the callback to be called
+    ///  - Parameter callback: the callback function to be called
+    func callAt(time: NSDate, callback: Void -> Void) {
+        scheduledCallbacks.append((time, callback))
+        interruptSelector()
+    }
+    
+    /// Stop the event loop
     func stop() {
         running = false
         interruptSelector()
     }
     
-    /// the event loop forever
+    /// Run the event loop forever
     func runForever() {
         running = true
         while running {
@@ -136,7 +164,20 @@ public final class EventLoop {
     
     // Run once iteration for the event loop
     private func runOnce() {
-        let events = try! selector.select(nil)
+        let timeout: NSTimeInterval?
+        if scheduledCallbacks.isEmpty {
+            timeout = nil
+        } else {
+            // schedule timeout for the very next scheduled callback
+            let minTime = scheduledCallbacks.minElement({ (lhs, rhs) -> Bool in
+                return lhs.0.timeIntervalSince1970 < rhs.0.timeIntervalSince1970
+            })!.0
+            timeout = max(0, NSDate().timeIntervalSinceDate(minTime))
+        }
+        
+        // TODO: handle system interrupt
+        // Poll IO events
+        let events = try! selector.select(timeout)
         for (key, ioEvents) in events {
             guard let handle = key.data as? CallbackHandle else {
                 continue
@@ -154,7 +195,29 @@ public final class EventLoop {
                 }
             }
         }
-    }
+        
+        
+        // Call scheduled callbacks
+        // TODO: we should do a heap sort here to improve the performance for finding
+        // expired scheduled callbacks
+        var notExpiredCallbacks: [(NSDate, (Void -> Void))] = []
+        let now = NSDate()
+        for (time, callback) in scheduledCallbacks {
+            if now.timeIntervalSince1970 > time.timeIntervalSince1970 {
+                self.readyCallbacks.append(callback)
+            } else {
+                notExpiredCallbacks.append((time, callback))
+            }
+        }
+        scheduledCallbacks = notExpiredCallbacks
+        
+        // Call ready callbacks
+        let readyCallbacks = self.readyCallbacks
+        self.readyCallbacks = []
+        for callback in readyCallbacks {
+            callback()
+        }
 
+    }
     
 }

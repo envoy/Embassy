@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D83A71961CF119D200C0C21C /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
 		D83A719A1CF11AF600C0C21C /* EventLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71991CF11AF600C0C21C /* EventLoopTests.swift */; };
+		D83A719C1CF1230E00C0C21C /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
+		D83A719E1CF1275A00C0C21C /* TransportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719D1CF1275A00C0C21C /* TransportTests.swift */; };
 		D85613ED1CEE6B160060CCB7 /* Embassy.h in Headers */ = {isa = PBXBuildFile; fileRef = D85613EC1CEE6B160060CCB7 /* Embassy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85613F41CEE6B160060CCB7 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
 		D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
@@ -39,6 +41,8 @@
 /* Begin PBXFileReference section */
 		D83A71951CF119D200C0C21C /* IOUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOUtils.swift; sourceTree = "<group>"; };
 		D83A71991CF11AF600C0C21C /* EventLoopTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopTests.swift; sourceTree = "<group>"; };
+		D83A719B1CF1230E00C0C21C /* Transport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transport.swift; sourceTree = "<group>"; };
+		D83A719D1CF1275A00C0C21C /* TransportTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransportTests.swift; sourceTree = "<group>"; };
 		D85613E91CEE6B160060CCB7 /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85613EC1CEE6B160060CCB7 /* Embassy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Embassy.h; sourceTree = "<group>"; };
 		D85613EE1CEE6B160060CCB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
 				D8F3D3921CEFD79100342389 /* KqueueSelector.swift */,
 				D8F3D3961CF03DF500342389 /* EventLoop.swift */,
+				D83A719B1CF1230E00C0C21C /* Transport.swift */,
 				D8F3D3981CF0F24500342389 /* Errors.swift */,
 				D83A71951CF119D200C0C21C /* IOUtils.swift */,
 				D85613EE1CEE6B160060CCB7 /* Info.plist */,
@@ -122,6 +127,7 @@
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* EventLoopTests.swift */,
+				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
 				D85613FA1CEE6B160060CCB7 /* Info.plist */,
 			);
@@ -240,6 +246,7 @@
 				D85614081CEE6DB20060CCB7 /* HTTPServerType.swift in Sources */,
 				D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */,
 				D8F3D38D1CEF9B9700342389 /* SelectorType.swift in Sources */,
+				D83A719C1CF1230E00C0C21C /* Transport.swift in Sources */,
 				D8F3D38B1CEF8AC800342389 /* TCPSocket.swift in Sources */,
 				D83A71961CF119D200C0C21C /* IOUtils.swift in Sources */,
 				D856140C1CEE6FE60060CCB7 /* HTTPServer.swift in Sources */,
@@ -256,6 +263,7 @@
 				D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */,
 				D83A719A1CF11AF600C0C21C /* EventLoopTests.swift in Sources */,
 				D8F3D38F1CEFA09B00342389 /* TCPSocketTests.swift in Sources */,
+				D83A719E1CF1275A00C0C21C /* TransportTests.swift in Sources */,
 				D8F3D3911CEFB1AA00342389 /* TestingHelpers.swift in Sources */,
 				D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */,
 			);

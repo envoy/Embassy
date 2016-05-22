@@ -27,6 +27,38 @@ class EventLoopTests: XCTestCase {
         XCTAssertFalse(loop.running)
     }
     
+    func testCallSoon() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        loop.callSoon {
+            loop.stop()
+        }
+        assertExecutingTime(0, accuracy: 0.5) {
+            loop.runForever()
+        }
+    }
+    
+    func testCallLater() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        var events: [Int] = []
+        loop.callLater(0) {
+            events.append(0)
+        }
+        loop.callLater(1) {
+            events.append(1)
+        }
+        loop.callLater(2) {
+            loop.stop()
+        }
+        loop.callLater(3) {
+            events.append(3)
+        }
+        assertExecutingTime(2, accuracy: 0.5) {
+            loop.runForever()
+        }
+        XCTAssertEqual(events, [0, 1])
+    }
+    
     func testSetReader() {
         let loop = try! EventLoop(selector: try! KqueueSelector())
         

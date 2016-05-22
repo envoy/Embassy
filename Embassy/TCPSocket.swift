@@ -37,6 +37,10 @@ public final class TCPSocket {
         self.blocking = blocking
     }
     
+    deinit {
+        Darwin.close(fileDescriptor)
+    }
+    
     /// Bind the socket at given port and interface
     ///  - Parameter port: port number to bind to
     ///  - Parameter interface: networking interface to bind to, in IPv6 format
