@@ -77,6 +77,32 @@ It's a dictionary contains all necessary information about the request. It basic
 
 **Notice**: For now `swsgi.input` and `swsgi.error` are not defined yet.
 
+### `startResponse`
+
+Function for starting to send HTTP response header to client, the first argument is status code with message, e.g. "200 OK". The second argument is headers, as a list of key value tuple.
+
+To response HTTP header, you can do
+
+```Swift
+startResponse("200 OK", [("Set-Cookie", "foo=bar")])
+```
+
+`startResponse` can only be called once per request, extra call will be simply ignored.
+
+### `sendBody`
+
+Function for sending body data to client. You need to call `startResponse` first in order to call `sendBody`. If you don't call `startResponse` first, all calls to `sendBody` will be ignored. To send data, here you can do
+
+```Swift
+sendBody(Array("hello".utf8))
+```
+
+To end the response data stream simply call `sendBody` with an empty bytes array.
+
+```Swift
+sendBody([])
+```
+
 ## TODOs
 
  - [ ] Figure out how should we pass request body data stream into SWSGI environ dictionary
