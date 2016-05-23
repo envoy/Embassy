@@ -46,5 +46,44 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
     }
+    
+    func testStartResponse() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        let port = try! getUnusedTCPPort()
+        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("451 Big brother doesn't like this", [
+                ("Content-Type", "video/porn"),
+                ("Server", "Embassy-by-envoy"),
+                ("X-Foo", "Bar"),
+            ])
+            sendBody([])
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        
+        try! server.start()
+        
+        var receivedData: NSData?
+        var receivedResponse: NSHTTPURLResponse?
+        var receivedError: NSError?
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+                receivedData = data
+                receivedResponse = response as? NSHTTPURLResponse
+                receivedError = error
+                loop.stop()
+            }
+            task.resume()
+        }
+        
+        loop.runForever()
+        
+        XCTAssertEqual(receivedData?.length, 0)
+        XCTAssertNil(receivedError)
+        XCTAssertEqual(receivedResponse?.statusCode, 451)
+        XCTAssertEqual(receivedResponse?.allHeaderFields["Content-Type"] as? String, "video/porn")
+        XCTAssertEqual(receivedResponse?.allHeaderFields["Server"] as? String, "Embassy-by-envoy")
+        XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"] as? String, "Bar")
+    }
 
 }

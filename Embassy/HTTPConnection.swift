@@ -133,6 +133,9 @@ public final class HTTPConnection {
         if headerList["Connection"] == nil {
             headers.append(("Connection", "close"))
         }
+        if headerList["Server"] == nil {
+            headers.append(("Server", "Embassy"))
+        }
         logger.debug("Start response, status=\(status.debugDescription), headers=\(headers.debugDescription)")
         let headersPart = headers.map { (key, value) in
             return "\(key): \(value)"
