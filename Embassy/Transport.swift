@@ -46,6 +46,7 @@ class Transport {
     private var outgoingBuffer = [UInt8]()
     
     init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
+        socket.ignoreSigPipe = true
         self.socket = socket
         self.eventLoop = eventLoop
         self.closedCallback = closedCallback
@@ -80,6 +81,11 @@ class Transport {
     
     /// Flush outgoing data and close the transport
     func close() {
+        // ensure we are not closed nor closing
+        guard !closed && !closing else {
+            // TODO: or raise error?
+            return
+        }
         closing = true
         handleWrite()
     }

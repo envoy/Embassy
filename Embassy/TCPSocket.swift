@@ -28,6 +28,27 @@ public final class TCPSocket {
         }
     }
     
+    /// Whether to ignore SIGPIPE signal or not
+    var ignoreSigPipe: Bool {
+        get {
+            var value: Int32 = 0
+            var size = socklen_t(sizeof(Int32))
+            assert(
+                getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
+                "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+            )
+            return value == 1
+        }
+        
+        set {
+            var value: Int32 = newValue ? 1 : 0
+            assert(
+                setsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, socklen_t(sizeof(Int32))) >= 0,
+                "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+            )
+        }
+    }
+    
     init(blocking: Bool = false) throws {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
         guard fileDescriptor >= 0 else {

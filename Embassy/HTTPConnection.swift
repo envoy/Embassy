@@ -23,10 +23,14 @@ public final class HTTPConnection {
     }
     
     let logger = Logger()
+    let uuid: String = NSUUID().UUIDString
     let transport: Transport
     let app: SWSGI
     let serverName: String
     let serverPort: Int
+    /// Callback to be called when this connection closed
+    var closedCallback: (Void -> Void)?
+    
     private(set) var requestState: RequestState = .ParsingHeader
     private(set) var responseState: ResponseState = .SendingHeader
     private(set) weak var eventLoop: EventLoop!
@@ -34,15 +38,20 @@ public final class HTTPConnection {
     private var headerElements: [HTTPHeaderParser.Element] = []
     private var request: HTTPRequest!
     
-    init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoop) {
+    init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoop, closedCallback: (Void -> Void)? = nil) {
         self.app = app
         self.serverName = serverName
         self.serverPort = serverPort
         self.transport = transport
         self.eventLoop = eventLoop
+        self.closedCallback = closedCallback
         
         transport.readDataCallback = handleDataReceived
         transport.closedCallback = handleConnectionClosed
+    }
+    
+    func close() {
+        transport.close()
     }
     
     // called to handle data received
@@ -169,6 +178,23 @@ public final class HTTPConnection {
     
     // called to handle connection closed
     private func handleConnectionClosed(reason: Transport.CloseReason) {
-        
+        logger.info("Connection closed")
+        close()
+        if let callback = closedCallback {
+            callback()
+        }
+    }
+}
+
+extension HTTPConnection: Equatable {
+}
+
+public func ==(lhs: HTTPConnection, rhs: HTTPConnection) -> Bool {
+    return lhs.uuid == rhs.uuid
+}
+
+extension HTTPConnection: Hashable {
+    public var hashValue: Int {
+        return uuid.hashValue
     }
 }

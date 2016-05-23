@@ -21,7 +21,7 @@ public final class HTTPServer: HTTPServerType {
     private var acceptSocket: TCPSocket!
     private var acceptTransport: Transport!
     private let eventLoop: EventLoop
-    private var connections = [HTTPConnection]()
+    private var connections = Set<HTTPConnection>()
     
     init(eventLoop: EventLoop, app: SWSGI, interface: String = "::1", port: Int = 8080) {
         self.eventLoop = eventLoop
@@ -47,6 +47,10 @@ public final class HTTPServer: HTTPServerType {
     
     public func stop() {
         acceptTransport.close()
+        for connection in connections {
+            connection.close()
+        }
+        connections = []
         logger.info("HTTP server stopped")
     }
     
@@ -63,8 +67,10 @@ public final class HTTPServer: HTTPServerType {
             transport: transport,
             eventLoop: eventLoop
         )
-        connections.append(connection)
-        // TODO: handle disconnected session event
+        connections.insert(connection)
+        connection.closedCallback = { [unowned self] in
+            self.connections.remove(connection)
+        }
     }
     
     private func appForConnection(environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
