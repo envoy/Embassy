@@ -18,7 +18,7 @@ public final class KqueueSelector: SelectorType {
     private let kqueue: Int32
     private var fileDescriptorMap: [Int32: SelectorKey] = [:]
     
-    init(selectMaximumEvent: Int = 1024) throws {
+    public init(selectMaximumEvent: Int = 1024) throws {
         kqueue = Darwin.kqueue()
         guard kqueue >= 0 else {
             throw OSError.lastIOError()

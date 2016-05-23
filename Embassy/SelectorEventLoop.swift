@@ -1,5 +1,5 @@
 //
-//  EventLoop.swift
+//  SelectorEventLoop.swift
 //  Embassy
 //
 //  Created by Fang-Pen Lin on 5/20/16.
@@ -20,8 +20,8 @@ private class CallbackHandle {
 
 /// EventLoop uses given selector to monitor IO events, trigger callbacks when needed to
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
-public final class EventLoop {
-    private(set) var running: Bool = false
+public final class SelectorEventLoop: EventLoopType {
+    private(set) public var running: Bool = false
     private let selector: SelectorType
     // these are for self-pipe-trick ref: https://cr.yp.to/docs/selfpipe.html
     // to be able to interrupt the blocking selector, we create a pipe and add it to the
@@ -33,7 +33,7 @@ public final class EventLoop {
     // callbacks scheduled to be called later
     private var scheduledCallbacks: [(NSDate, (Void -> Void))] = []
     
-    init(selector: SelectorType) throws {
+    public init(selector: SelectorType) throws {
         self.selector = selector
         var pipeFds = [Int32](count: 2, repeatedValue: 0)
         let pipeResult = pipeFds.withUnsafeMutableBufferPointer { pipe($0.baseAddress) }
@@ -55,10 +55,7 @@ public final class EventLoop {
         close(pipeReceiver)
     }
 
-    /// Set a read-ready callback for given fileDescriptor
-    ///  - Parameter fileDescriptor: target file descriptor
-    ///  - Parameter callback: callback function to be triggered when file is ready to be read
-    func setReader(fileDescriptor: Int32, callback: Void -> Void) {
+    public func setReader(fileDescriptor: Int32, callback: Void -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -71,9 +68,7 @@ public final class EventLoop {
         }
     }
     
-    /// Remove reader callback for given fileDescriptor
-    ///  - Parameter fileDescriptor: target file descriptor
-    func removeReader(fileDescriptor: Int32) {
+    public func removeReader(fileDescriptor: Int32) {
         guard let key = selector[fileDescriptor] else {
             return
         }
@@ -87,10 +82,7 @@ public final class EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
     
-    /// Set a write-ready callback for given fileDescriptor
-    ///  - Parameter fileDescriptor: target file descriptor
-    ///  - Parameter callback: callback function to be triggered when file is ready to be written
-    func setWriter(fileDescriptor: Int32, callback: Void -> Void) {
+    public func setWriter(fileDescriptor: Int32, callback: Void -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -103,9 +95,7 @@ public final class EventLoop {
         }
     }
     
-    /// Remove writer callback for given fileDescriptor
-    ///  - Parameter fileDescriptor: target file descriptor
-    func removeWriter(fileDescriptor: Int32) {
+    public func removeWriter(fileDescriptor: Int32) {
         guard let key = selector[fileDescriptor] else {
             return
         }
@@ -119,37 +109,27 @@ public final class EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
     
-    /// Call given callback as soon as possible (the next event loop iteration)
-    ///  - Parameter callback: the callback function to be called
-    func callSoon(callback: Void -> Void) {
+    public func callSoon(callback: Void -> Void) {
         // TODO: thread safety?
         readyCallbacks.append(callback)
         interruptSelector()
     }
     
-    /// Call given callback `delay` seconds later
-    ///  - Parameter delay: delaying in seconds
-    ///  - Parameter callback: the callback function to be called
-    func callLater(delay: NSTimeInterval, callback: Void -> Void) {
+    public func callLater(delay: NSTimeInterval, callback: Void -> Void) {
         scheduledCallbacks.append((NSDate().dateByAddingTimeInterval(delay), callback))
     }
     
-    /// Call given callback at specific time
-    ///  - Parameter time: time the callback to be called
-    ///  - Parameter callback: the callback function to be called
-    func callAt(time: NSDate, callback: Void -> Void) {
+    public func callAt(time: NSDate, callback: Void -> Void) {
         scheduledCallbacks.append((time, callback))
         interruptSelector()
     }
     
-    /// Stop the event loop
-    func stop() {
+    public func stop() {
         running = false
         interruptSelector()
     }
     
-    /// Run the event loop forever
-    func runForever() {
+    public func runForever() {
         running = true
         while running {
             runOnce()

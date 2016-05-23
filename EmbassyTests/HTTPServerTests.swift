@@ -12,15 +12,31 @@ import XCTest
 
 class HTTPServerTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.http-server", DISPATCH_QUEUE_SERIAL)
+    var loop: SelectorEventLoop!
+    
+    override func setUp() {
+        super.setUp()
+        loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        
+        // set a 30 seconds timeout
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+            if self.loop.running {
+                self.loop.stop()
+                XCTFail("Time out")
+            }
+        }
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+    }
 
     func testEnviron() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         var receivedEnviron: [String: AnyObject]!
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             receivedEnviron = environ
-            loop.stop()
+            self.loop.stop()
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
         
@@ -46,12 +62,9 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
         XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
-        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoop)
     }
     
     func testStartResponse() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("451 Big brother doesn't like this", [
@@ -73,7 +86,7 @@ class HTTPServerTests: XCTestCase {
                 receivedData = data
                 receivedResponse = response as? NSHTTPURLResponse
                 receivedError = error
-                loop.stop()
+                self.loop.stop()
             }
             task.resume()
         }
@@ -89,8 +102,6 @@ class HTTPServerTests: XCTestCase {
     }
     
     func testSendBody() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let bigDataChunk = Array(makeRandomString(574300).utf8)
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
@@ -110,7 +121,7 @@ class HTTPServerTests: XCTestCase {
                 receivedData = data
                 receivedResponse = response as? NSHTTPURLResponse
                 receivedError = error
-                loop.stop()
+                self.loop.stop()
             }
             task.resume()
         }
@@ -125,13 +136,12 @@ class HTTPServerTests: XCTestCase {
     }
     
     func testAsyncSendBody() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
-        
         let port = try! getUnusedTCPPort()
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             
-            let loop = environ["embassy.event_loop"] as! EventLoop
+            let connection = environ["embassy.connection"] as! HTTPConnection
+            let loop = connection.eventLoop
             
             loop.callLater(1) {
                 sendBody(Array("hello ".utf8))
@@ -156,7 +166,7 @@ class HTTPServerTests: XCTestCase {
                 receivedData = data
                 receivedResponse = response as? NSHTTPURLResponse
                 receivedError = error
-                loop.stop()
+                self.loop.stop()
             }
             task.resume()
         }
@@ -167,5 +177,4 @@ class HTTPServerTests: XCTestCase {
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
     }
-
 }

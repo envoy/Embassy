@@ -1,5 +1,5 @@
 //
-//  EventLoopTests.swift
+//  SelectorEventLoopTests.swift
 //  Embassy
 //
 //  Created by Fang-Pen Lin on 5/21/16.
@@ -10,14 +10,13 @@ import XCTest
 
 @testable import Embassy
 
-class EventLoopTests: XCTestCase {
+class SelectorEventLoopTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
-    
-    var loop: EventLoop!
+    var loop: SelectorEventLoop!
     
     override func setUp() {
         super.setUp()
-        loop = try! EventLoop(selector: try! KqueueSelector())
+        loop = try! SelectorEventLoop(selector: try! KqueueSelector())
         
         // set a 30 seconds timeout
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {

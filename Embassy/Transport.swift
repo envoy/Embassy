@@ -41,11 +41,11 @@ class Transport {
     var readDataCallback: ([UInt8] -> Void)?
     
     private let socket: TCPSocket
-    private let eventLoop: EventLoop
+    private let eventLoop: EventLoopType
     // buffer for sending data out
     private var outgoingBuffer = [UInt8]()
     
-    init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
+    init(socket: TCPSocket, eventLoop: EventLoopType, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
         socket.ignoreSigPipe = true
         self.socket = socket
         self.eventLoop = eventLoop

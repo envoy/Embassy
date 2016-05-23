@@ -13,7 +13,7 @@ import XCTest
 class TransportTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
     func testBigChunkReadAndWrite() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -101,7 +101,7 @@ class TransportTests: XCTestCase {
     }
     
     func testReadAndWrite() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -163,7 +163,7 @@ class TransportTests: XCTestCase {
     }
 
     func testCloseByPeer() {
-        let loop = try! EventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
         
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()

@@ -33,12 +33,12 @@ public final class HTTPConnection {
     
     private(set) var requestState: RequestState = .ParsingHeader
     private(set) var responseState: ResponseState = .SendingHeader
-    private(set) weak var eventLoop: EventLoop!
+    private(set) var eventLoop: EventLoopType!
     private var headerParser: HTTPHeaderParser!
     private var headerElements: [HTTPHeaderParser.Element] = []
     private var request: HTTPRequest!
     
-    init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoop, closedCallback: (Void -> Void)? = nil) {
+    init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoopType, closedCallback: (Void -> Void)? = nil) {
         self.app = app
         self.serverName = serverName
         self.serverPort = serverPort
@@ -121,7 +121,6 @@ public final class HTTPConnection {
         
         // set embassy specific keys
         environ["embassy.connection"] = self
-        environ["embassy.event_loop"] = eventLoop
         
         // change state for incoming request to
         requestState = .ReadingBody
