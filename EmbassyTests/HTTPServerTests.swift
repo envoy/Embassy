@@ -45,6 +45,8 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.multiprocess"] as? Bool, false)
         XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
+        XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
+        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoop)
     }
     
     func testStartResponse() {
@@ -118,6 +120,48 @@ class HTTPServerTests: XCTestCase {
         let data = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(receivedData!.bytes), count: receivedData!.length))
         XCTAssertEqual(receivedData?.length, bigDataChunk.count)
         XCTAssertEqual(data, bigDataChunk)
+        XCTAssertNil(receivedError)
+        XCTAssertEqual(receivedResponse?.statusCode, 200)
+    }
+    
+    func testAsyncSendBody() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        let port = try! getUnusedTCPPort()
+        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("200 OK", [])
+            
+            loop.callLater(1) {
+                sendBody(Array("hello ".utf8))
+            }
+            loop.callLater(2) {
+                sendBody(Array("baby ".utf8))
+            }
+            loop.callLater(3) {
+                sendBody(Array("fin".utf8))
+                sendBody([])
+            }
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        
+        try! server.start()
+        
+        var receivedData: NSData?
+        var receivedResponse: NSHTTPURLResponse?
+        var receivedError: NSError?
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+                receivedData = data
+                receivedResponse = response as? NSHTTPURLResponse
+                receivedError = error
+                loop.stop()
+            }
+            task.resume()
+        }
+        
+        loop.runForever()
+        
+        XCTAssertEqual(NSString(data: receivedData!, encoding: NSUTF8StringEncoding)!, "hello baby fin")
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
     }

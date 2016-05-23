@@ -110,6 +110,10 @@ public final class HTTPConnection {
         environ["swsgi.multiprocess"] = false
         environ["swsgi.run_once"] = false
         
+        // set embassy specific keys
+        environ["embassy.connection"] = self
+        environ["embassy.event_loop"] = eventLoop
+        
         // change state for incoming request to
         requestState = .ReadingBody
         // pass the initial body data
