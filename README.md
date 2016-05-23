@@ -42,7 +42,11 @@ SWSGI is a hat tip to Python's [WSGI (Web Server Gateway Interface)](https://www
 It's defined as
 
 ```Swift
-public typealias SWSGI = (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) -> Void
+public typealias SWSGI = (
+    environ: [String: AnyObject],
+    startResponse: ((String, [(String, String)]) -> Void),
+    sendBody: ([UInt8] -> Void)
+) -> Void
 ```
 
 For the arguments
