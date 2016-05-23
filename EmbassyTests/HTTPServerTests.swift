@@ -85,5 +85,41 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedResponse?.allHeaderFields["Server"] as? String, "Embassy-by-envoy")
         XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"] as? String, "Bar")
     }
+    
+    func testSendBody() {
+        let loop = try! EventLoop(selector: try! KqueueSelector())
+        
+        let port = try! getUnusedTCPPort()
+        let bigDataChunk = Array(makeRandomString(574300).utf8)
+        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("200 OK", [])
+            sendBody(bigDataChunk)
+            sendBody([])
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        
+        try! server.start()
+        
+        var receivedData: NSData?
+        var receivedResponse: NSHTTPURLResponse?
+        var receivedError: NSError?
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+                receivedData = data
+                receivedResponse = response as? NSHTTPURLResponse
+                receivedError = error
+                loop.stop()
+            }
+            task.resume()
+        }
+        
+        loop.runForever()
+        
+        let data = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(receivedData!.bytes), count: receivedData!.length))
+        XCTAssertEqual(receivedData?.length, bigDataChunk.count)
+        XCTAssertEqual(data, bigDataChunk)
+        XCTAssertNil(receivedError)
+        XCTAssertEqual(receivedResponse?.statusCode, 200)
+    }
 
 }
