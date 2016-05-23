@@ -90,6 +90,16 @@ class Transport {
         handleWrite()
     }
     
+    private func closedByPeer() {
+        closed = true
+        eventLoop.removeReader(socket.fileDescriptor)
+        eventLoop.removeWriter(socket.fileDescriptor)
+        if let callback = closedCallback {
+            callback(.ByPeer)
+        }
+        socket.close()
+    }
+    
     private func handleRead() {
         // ensure we are not closed
         guard !closed else {
@@ -97,13 +107,7 @@ class Transport {
         }
         let data = try! socket.recv(Transport.recvChunkSize)
         guard data.count > 0 else {
-            closed = true
-            eventLoop.removeReader(socket.fileDescriptor)
-            eventLoop.removeWriter(socket.fileDescriptor)
-            if let callback = closedCallback {
-                callback(.ByPeer)
-            }
-            socket.close()
+            closedByPeer()
             return
         }
         // ensure we are not closing
@@ -133,7 +137,17 @@ class Transport {
             }
             return
         }
-        let sentBytes = try! socket.send(outgoingBuffer)
-        outgoingBuffer = Array(outgoingBuffer[sentBytes..<outgoingBuffer.count])
+        do {
+            let sentBytes = try socket.send(outgoingBuffer)
+            outgoingBuffer = Array(outgoingBuffer[sentBytes..<outgoingBuffer.count])
+        } catch OSError.IOError(let number, _) {
+            if Int32(number) == EPIPE {
+                closedByPeer()
+            } else {
+                fatalError("Failed to send, errno=\(errno), message=\(lastErrorDescription())")
+            }
+        } catch {
+            fatalError("Failed to send")
+        }
     }
 }
