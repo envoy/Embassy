@@ -131,6 +131,8 @@ class HTTPServerTests: XCTestCase {
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             
+            let loop = environ["embassy.event_loop"] as! EventLoop
+            
             loop.callLater(1) {
                 sendBody(Array("hello ".utf8))
             }
