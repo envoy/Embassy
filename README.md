@@ -26,13 +26,19 @@ let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, St
     // send EOF
     sendBody([])
 }
-let server = HTTPServer(eventLoop: loop, app: app, port: 8081)
+let server = HTTPServer(eventLoop: loop, app: app, port: 8080)
 
 // Start HTTP server to listen on the port
 try! server.start()
 
 // Run event loop
 loop.runForever()
+```
+
+Then you can visit `http://[::1]:8080/foo-bar` in the browser and see
+
+```
+the path you're visiting is /foo-bar
 ```
 
 ## What's SWSGI (Swift Web Server Gateway Interface)?
@@ -48,8 +54,6 @@ public typealias SWSGI = (
     sendBody: ([UInt8] -> Void)
 ) -> Void
 ```
-
-For the arguments
 
 ### `environ`
 
