@@ -21,13 +21,15 @@ struct SWSGIUtils {
     static func environForRequest(request: HTTPRequest) -> [String: AnyObject] {
         var environ: [String: AnyObject] = [
             "REQUEST_METHOD": String(request.method),
-            "SCRIPT_NAME": request.path,
-            "PATH_INFO": request.path
+            "SCRIPT_NAME": ""
         ]
         
         let queryParts = request.path.componentsSeparatedByString("?")
         if queryParts.count > 1 {
+            environ["PATH_INFO"] = queryParts[0]
             environ["QUERY_STRING"] = queryParts[1..<queryParts.count].joinWithSeparator("?")
+        } else {
+            environ["PATH_INFO"] = request.path
         }
         if let contentType = request.headers["Content-Type"] {
             environ["CONTENT_TYPE"] = contentType

@@ -59,7 +59,7 @@ public final class HTTPServer: HTTPServerType {
         let connection = HTTPConnection(
             app: appForConnection,
             serverName: "[\(interface)]",
-            serverPort: port,
+            serverPort: self.port,
             transport: transport,
             eventLoop: eventLoop
         )
