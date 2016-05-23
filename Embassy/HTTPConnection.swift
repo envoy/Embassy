@@ -23,22 +23,22 @@ public final class HTTPConnection {
     }
     
     let logger = Logger()
-    let uuid: String = NSUUID().UUIDString
-    let transport: Transport
-    let app: SWSGI
-    let serverName: String
-    let serverPort: Int
+    public let uuid: String = NSUUID().UUIDString
+    public let transport: Transport
+    public let app: SWSGI
+    public let serverName: String
+    public let serverPort: Int
     /// Callback to be called when this connection closed
     var closedCallback: (Void -> Void)?
     
     private(set) var requestState: RequestState = .ParsingHeader
     private(set) var responseState: ResponseState = .SendingHeader
-    private(set) var eventLoop: EventLoopType!
+    private(set) public var eventLoop: EventLoopType!
     private var headerParser: HTTPHeaderParser!
     private var headerElements: [HTTPHeaderParser.Element] = []
     private var request: HTTPRequest!
     
-    init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoopType, closedCallback: (Void -> Void)? = nil) {
+    public init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoopType, closedCallback: (Void -> Void)? = nil) {
         self.app = app
         self.serverName = serverName
         self.serverPort = serverPort
@@ -50,7 +50,7 @@ public final class HTTPConnection {
         transport.closedCallback = handleConnectionClosed
     }
     
-    func close() {
+    public func close() {
         transport.close()
     }
     

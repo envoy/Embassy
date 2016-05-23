@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Logger {
+public struct Logger {
     enum Level: Int {
         case NOTSET = 0
         case DEBUG = 10

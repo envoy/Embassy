@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Transport {
+public final class Transport {
     enum CloseReason {
         /// Connection closed by peer
         case ByPeer
