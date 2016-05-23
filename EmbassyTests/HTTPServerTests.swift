@@ -14,7 +14,9 @@ class HTTPServerTests: XCTestCase {
 
     func testHTTPServer() {
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
-            
+            startResponse("200 OK", [])
+            sendBody(Array(String(environ).utf8))
+            sendBody([])
         }
         let loop = try! EventLoop(selector: try! KqueueSelector())
         let server = HTTPServer(eventLoop: loop, app: app, port: 8889)

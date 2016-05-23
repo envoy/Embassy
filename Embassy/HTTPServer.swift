@@ -21,7 +21,7 @@ public final class HTTPServer: HTTPServerType {
     private var acceptSocket: TCPSocket!
     private var acceptTransport: Transport!
     private let eventLoop: EventLoop
-    private var aliveSessions = [HTTPSession]()
+    private var connections = [HTTPConnection]()
     
     init(eventLoop: EventLoop, app: SWSGI, interface: String = "::1", port: Int = 8080) {
         self.eventLoop = eventLoop
@@ -56,8 +56,19 @@ public final class HTTPServer: HTTPServerType {
         let (address, port) = try! clientSocket.getPeerName()
         logger.info("New connection from [\(address)]:\(port)")
         let transport = Transport(socket: clientSocket, eventLoop: eventLoop)
-        let session = HTTPSession(transport: transport, eventLoop: eventLoop)
-        aliveSessions.append(session)
+        let connection = HTTPConnection(
+            app: appForConnection,
+            serverName: "[\(interface)]",
+            serverPort: port,
+            transport: transport,
+            eventLoop: eventLoop
+        )
+        connections.append(connection)
         // TODO: handle disconnected session event
     }
+    
+    private func appForConnection(environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
+        app(environ: environ, startResponse: startResponse, sendBody: sendBody)
+    }
+    
 }
