@@ -64,7 +64,7 @@ let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, St
 }
 ```
 
-Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, you should not use GDC for delaying any call. Instead, there are some methods from `EventLoopType` you can use, and they are all threadsafe
+Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, **you should not use [GCD](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/) for delaying any call**. Instead, there are some methods from `EventLoopType` you can use, and they are all threadsafe
 
 ### callSoon(callback: (Void -> Void))
 
