@@ -9,7 +9,7 @@ Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mo
  
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
- - Async event loop HTTP server, long-polling, delay, all possible
+ - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
  - HTTP Application based on [SWSGI](#whats-swsgi-swift-web-server-gateway-interface), super flexible
 
 ## Example
@@ -40,6 +40,42 @@ Then you can visit `http://[::1]:8080/foo-bar` in the browser and see
 ```
 the path you're visiting is /foo-bar
 ```
+
+## Async Event Loop
+
+To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
+
+```
+let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+    startResponse("200 OK", [])
+    
+    let loop = environ["embassy.event_loop"] as! EventLoopType
+    
+    loop.callLater(1) {
+        sendBody(Array("hello ".utf8))
+    }
+    loop.callLater(2) {
+        sendBody(Array("baby ".utf8))
+    }
+    loop.callLater(3) {
+        sendBody(Array("fin".utf8))
+        sendBody([])
+    }
+}
+
+Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, you should not use GDC for delaying any call. Instead, there are some methods from `EventLoopType` you can use, and they are all threadsafe
+
+### callSoon(callback: (Void -> Void))
+
+Call given callback as soon as possible in the event loop
+
+### callLater(delay: NSTimeInterval, callback: (Void -> Void))
+
+Schedule given callback to `delay` seconds then call it in the event loop.
+
+### callAt(time: NSDate, callback: (Void -> Void))
+
+Schedule given callback to be called at `time` in the event loop. If the given time is in the past, this methods works exactly like `callSoon`.
 
 ## What's SWSGI (Swift Web Server Gateway Interface)?
 
