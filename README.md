@@ -122,6 +122,11 @@ It's a dictionary contains all necessary information about the request. It basic
 
 **Notice**: For now `swsgi.input` and `swsgi.error` are not defined yet.
 
+Some extra Embassy server specific keys are
+
+ - `embassy.connection` - `HTTPConnection` object for the request
+ - `embassy.event_loop` - `EventLoopType` object
+
 ### `startResponse`
 
 Function for starting to send HTTP response header to client, the first argument is status code with message, e.g. "200 OK". The second argument is headers, as a list of key value tuple.
