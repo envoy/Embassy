@@ -10,12 +10,12 @@ import Foundation
 
 public struct HTTPHeaderList {
     /// Request headers
-    let headers: [(String, String)]
+    public let headers: [(String, String)]
     
     // Map header key in lower case to the list of value
     private let headerMap: [String: [String]]
     
-    init(headers: [(String, String)]) {
+    public init(headers: [(String, String)]) {
         self.headers = headers
         
         var headerMap: [String: [String]] = [:]
@@ -32,11 +32,11 @@ public struct HTTPHeaderList {
     /// Get all header value for given key
     ///  - Parameter key: the header key
     ///  - Returns: array of values for given key
-    func getValuesFor(key: String) -> [String]? {
+    public func getValuesFor(key: String) -> [String]? {
         return headerMap[key.lowercaseString]
     }
     
-    subscript(key: String) -> String? {
+    public subscript(key: String) -> String? {
         return getValuesFor(key)?.first
     }
 }
