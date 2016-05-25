@@ -29,9 +29,9 @@ public final class SelectorEventLoop: EventLoopType {
     private let pipeSender: Int32
     private let pipeReceiver: Int32
     // callbacks ready to be called at the next iteration
-    private var readyCallbacks: [(Void -> Void)] = []
+    private var readyCallbacks = Atomic<[(Void -> Void)]>([])
     // callbacks scheduled to be called later
-    private var scheduledCallbacks: [(NSDate, (Void -> Void))] = []
+    private var scheduledCallbacks = Atomic<[(NSDate, (Void -> Void))]>([])
     
     public init(selector: SelectorType) throws {
         self.selector = selector
@@ -110,17 +110,29 @@ public final class SelectorEventLoop: EventLoopType {
     }
     
     public func callSoon(callback: Void -> Void) {
-        // TODO: thread safety?
-        readyCallbacks.append(callback)
+        readyCallbacks.modify { callbacks in
+            var callbacks = callbacks
+            callbacks.append(callback)
+            return callbacks
+        }
         interruptSelector()
     }
     
     public func callLater(delay: NSTimeInterval, callback: Void -> Void) {
-        scheduledCallbacks.append((NSDate().dateByAddingTimeInterval(delay), callback))
+        scheduledCallbacks.modify { callbacks in
+            var callbacks = callbacks
+            callbacks.append((NSDate().dateByAddingTimeInterval(delay), callback))
+            return callbacks
+        }
+        interruptSelector()
     }
     
     public func callAt(time: NSDate, callback: Void -> Void) {
-        scheduledCallbacks.append((time, callback))
+        scheduledCallbacks.modify { callbacks in
+            var callbacks = callbacks
+            callbacks.append((time, callback))
+            return callbacks
+        }
         interruptSelector()
     }
     
@@ -144,15 +156,18 @@ public final class SelectorEventLoop: EventLoopType {
     
     // Run once iteration for the event loop
     private func runOnce() {
-        let timeout: NSTimeInterval?
-        if scheduledCallbacks.isEmpty {
-            timeout = nil
-        } else {
-            // schedule timeout for the very next scheduled callback
-            let minTime = scheduledCallbacks.minElement({ (lhs, rhs) -> Bool in
-                return lhs.0.timeIntervalSince1970 < rhs.0.timeIntervalSince1970
-            })!.0
-            timeout = max(0, NSDate().timeIntervalSinceDate(minTime))
+        var timeout: NSTimeInterval?
+        scheduledCallbacks.withValue { callbacks in
+            if callbacks.isEmpty {
+                timeout = nil
+            } else {
+                // TODO: do heapsort here instead
+                // schedule timeout for the very next scheduled callback
+                let minTime = callbacks.minElement({ (lhs, rhs) -> Bool in
+                    return lhs.0.timeIntervalSince1970 < rhs.0.timeIntervalSince1970
+                })!.0
+                timeout = max(0, NSDate().timeIntervalSinceDate(minTime))
+            }
         }
         
         var events: [(SelectorKey, Set<IOEvent>)] = []
@@ -182,25 +197,26 @@ public final class SelectorEventLoop: EventLoopType {
             }
         }
         
-        
         // Call scheduled callbacks
         // TODO: we should do a heap sort here to improve the performance for finding
         // expired scheduled callbacks
-        var notExpiredCallbacks: [(NSDate, (Void -> Void))] = []
         let now = NSDate()
-        for (time, callback) in scheduledCallbacks {
-            if now.timeIntervalSince1970 > time.timeIntervalSince1970 {
-                self.readyCallbacks.append(callback)
-            } else {
-                notExpiredCallbacks.append((time, callback))
+        var readyScheduledCallbacks: [(Void -> Void)] = []
+        scheduledCallbacks.modify { callbacks in
+            var notExpiredCallbacks: [(NSDate, (Void -> Void))] = []
+            for (time, callback) in callbacks {
+                if now.timeIntervalSince1970 > time.timeIntervalSince1970 {
+                    readyScheduledCallbacks.append(callback)
+                } else {
+                    notExpiredCallbacks.append((time, callback))
+                }
             }
+            return notExpiredCallbacks
         }
-        scheduledCallbacks = notExpiredCallbacks
         
         // Call ready callbacks
-        let readyCallbacks = self.readyCallbacks
-        self.readyCallbacks = []
-        for callback in readyCallbacks {
+        let callbacks = readyCallbacks.swap([]) + readyScheduledCallbacks
+        for callback in callbacks {
             callback()
         }
 
