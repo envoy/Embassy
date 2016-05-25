@@ -111,6 +111,20 @@ To end the response data stream simply call `sendBody` with an empty bytes array
 sendBody([])
 ```
 
+## Install
+
+### CocoaPods
+
+To install with CocoaPod, add Embassy to your Podfile:
+
+```
+pod 'Embassy', '~> 0.0.1-alpha-2'
+```
+
+### Carthage
+
+To be done
+
 ## TODOs
 
  - [ ] Figure out how should we pass request body data stream into SWSGI environ dictionary
