@@ -11,6 +11,7 @@ Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mo
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
  - HTTP Application based on [SWSGI](#whats-swsgi-swift-web-server-gateway-interface), super flexible
+ - IPV6 ready, also supports IPV4 (dual stack)
 
 ## Example
 
