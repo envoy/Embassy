@@ -45,7 +45,7 @@ the path you're visiting is /foo-bar
 
 To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
 
-```
+```Swift
 let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
     startResponse("200 OK", [])
     
@@ -62,6 +62,7 @@ let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, St
         sendBody([])
     }
 }
+```
 
 Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, you should not use GDC for delaying any call. Instead, there are some methods from `EventLoopType` you can use, and they are all threadsafe
 
