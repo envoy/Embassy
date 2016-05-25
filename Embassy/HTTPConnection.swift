@@ -121,6 +121,7 @@ public final class HTTPConnection {
         
         // set embassy specific keys
         environ["embassy.connection"] = self
+        environ["embassy.event_loop"] = eventLoop as? AnyObject
         
         // change state for incoming request to
         requestState = .ReadingBody

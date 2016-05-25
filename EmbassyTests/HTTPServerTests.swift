@@ -62,6 +62,7 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
         XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
+        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoopType)
     }
     
     func testStartResponse() {
@@ -140,8 +141,7 @@ class HTTPServerTests: XCTestCase {
         let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             
-            let connection = environ["embassy.connection"] as! HTTPConnection
-            let loop = connection.eventLoop
+            let loop = environ["embassy.event_loop"] as! EventLoopType
             
             loop.callLater(1) {
                 sendBody(Array("hello ".utf8))
