@@ -77,6 +77,31 @@ class SelectorEventLoopTests: XCTestCase {
         XCTAssertEqual(events, [0, 1])
     }
     
+    func testCallAtOrder() {
+        var events: [Int] = []
+        let now = NSDate()
+        loop.callAt(now.dateByAddingTimeInterval(0)) {
+            events.append(0)
+        }
+        loop.callAt(now.dateByAddingTimeInterval(0.000002)) {
+            events.append(2)
+        }
+        loop.callAt(now.dateByAddingTimeInterval(0.000001)) {
+            events.append(1)
+        }
+        loop.callAt(now.dateByAddingTimeInterval(0.000004)) {
+            events.append(4)
+            self.loop.stop()
+        }
+        loop.callAt(now.dateByAddingTimeInterval(0.000003)) {
+            events.append(3)
+        }
+        assertExecutingTime(0, accuracy: 0.5) {
+            self.loop.runForever()
+        }
+        XCTAssertEqual(events, [0, 1, 2, 3, 4])
+    }
+    
     func testSetReader() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
