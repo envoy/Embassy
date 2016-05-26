@@ -28,7 +28,6 @@ public struct HTTPHeaderList {
         self.headerMap = headerMap
     }
     
-    
     /// Get all header value for given key
     ///  - Parameter key: the header key
     ///  - Returns: array of values for given key

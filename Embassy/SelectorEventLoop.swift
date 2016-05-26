@@ -119,18 +119,13 @@ public final class SelectorEventLoop: EventLoopType {
     }
     
     public func callLater(delay: NSTimeInterval, callback: Void -> Void) {
-        scheduledCallbacks.modify { callbacks in
-            var callbacks = callbacks
-            callbacks.append((NSDate().dateByAddingTimeInterval(delay), callback))
-            return callbacks
-        }
-        interruptSelector()
+        callAt(NSDate().dateByAddingTimeInterval(delay), callback: callback)
     }
     
     public func callAt(time: NSDate, callback: Void -> Void) {
         scheduledCallbacks.modify { callbacks in
             var callbacks = callbacks
-            callbacks.append((time, callback))
+            HeapSort.heapPush(&callbacks, item: (time, callback)) { $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970 }
             return callbacks
         }
         interruptSelector()
@@ -158,15 +153,13 @@ public final class SelectorEventLoop: EventLoopType {
     private func runOnce() {
         var timeout: NSTimeInterval?
         scheduledCallbacks.withValue { callbacks in
-            if callbacks.isEmpty {
-                timeout = nil
-            } else {
-                // TODO: do heapsort here instead
+            // as the scheduledCallbacks is a heap queue, the first one will be the smallest one (the latest one)
+            if let firstTuple = callbacks.first {
                 // schedule timeout for the very next scheduled callback
-                let minTime = callbacks.minElement({ (lhs, rhs) -> Bool in
-                    return lhs.0.timeIntervalSince1970 < rhs.0.timeIntervalSince1970
-                })!.0
+                let (minTime, _) = firstTuple
                 timeout = max(0, NSDate().timeIntervalSinceDate(minTime))
+            } else {
+                timeout = nil
             }
         }
         
@@ -198,18 +191,16 @@ public final class SelectorEventLoop: EventLoopType {
         }
         
         // Call scheduled callbacks
-        // TODO: we should do a heap sort here to improve the performance for finding
-        // expired scheduled callbacks
         let now = NSDate()
         var readyScheduledCallbacks: [(Void -> Void)] = []
         scheduledCallbacks.modify { callbacks in
-            var notExpiredCallbacks: [(NSDate, (Void -> Void))] = []
-            for (time, callback) in callbacks {
-                if now.timeIntervalSince1970 > time.timeIntervalSince1970 {
-                    readyScheduledCallbacks.append(callback)
-                } else {
-                    notExpiredCallbacks.append((time, callback))
-                }
+            var notExpiredCallbacks = callbacks
+            // keep poping expired callbacks
+            let timestamp = now.timeIntervalSince1970
+            while !notExpiredCallbacks.isEmpty && timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970  {
+                // pop the expired callbacks from heap queue and add them to ready callback list
+                let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) { $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970 }
+                readyScheduledCallbacks.append(callback)
             }
             return notExpiredCallbacks
         }
@@ -219,7 +210,6 @@ public final class SelectorEventLoop: EventLoopType {
         for callback in callbacks {
             callback()
         }
-
     }
     
 }
