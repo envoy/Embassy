@@ -172,3 +172,4 @@ To be done
 
  - [ ] Figure out how should we pass request body data stream into SWSGI environ dictionary
  - [ ] Configurable logging handler
+ - [ ] Add embassy version key in environ
