@@ -19,7 +19,6 @@ public final class HTTPServer: HTTPServerType {
     
     // the socket for accepting incoming connections
     private var acceptSocket: TCPSocket!
-    private var acceptTransport: Transport!
     private let eventLoop: EventLoopType
     private var connections = Set<HTTPConnection>()
     
@@ -46,7 +45,6 @@ public final class HTTPServer: HTTPServerType {
     }
     
     public func stop() {
-        acceptTransport.close()
         for connection in connections {
             connection.close()
         }
