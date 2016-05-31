@@ -145,11 +145,10 @@ public final class HTTPConnection {
     private func swsgiInput(handler: ([UInt8] -> Void)?) {
         inputHandler = handler
         // reading handler provided
-        if let handler = handler {
+        if handler != nil {
             if let initialBody = initialBody {
                 if !initialBody.isEmpty {
-                    handler(initialBody)
-                    readDataLength += initialBody.count
+                    handleBodyData(initialBody)
                 }
                 self.initialBody = nil
             }
