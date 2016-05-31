@@ -213,4 +213,41 @@ class HTTPServerTests: XCTestCase {
         let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
         XCTAssertEqual(receivedString, postBodyString)
     }
+    
+    func testPostWithInitialBody() {
+        let port = try! getUnusedTCPPort()
+        
+        // this chunk is small enough, ideally should be sent along with header (initial body)
+        let postBodyString = "hello"
+        var receivedInputData: [[UInt8]] = []
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("200 OK", [])
+            let input = environ["swsgi.input"] as! SWSGIInput
+            input { data in
+                receivedInputData.append(data)
+                sendBody(data)
+            }
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        
+        try! server.start()
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
+            request.HTTPMethod = "POST"
+            request.HTTPBody = postBodyString.dataUsingEncoding(NSUTF8StringEncoding)
+            let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
+                self.loop.stop()
+            }
+            task.resume()
+        }
+        
+        loop.runForever()
+        
+        // ensure EOF is passed
+        XCTAssertEqual(receivedInputData.last?.count, 0)
+        
+        let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
+        XCTAssertEqual(receivedString, postBodyString)
+    }
 }
