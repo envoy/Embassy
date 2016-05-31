@@ -6,7 +6,7 @@
 Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking
 
 ## Features
- 
+
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
@@ -19,7 +19,7 @@ Here's a simple example shows how Embassy works.
 
 ```Swift
 let loop = try! EventLoop(selector: try! KqueueSelector())
-let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
     // Start HTTP response
     startResponse("200 OK", [])
     let pathInfo = environ["PATH_INFO"]!
@@ -47,11 +47,11 @@ the path you're visiting is /foo-bar
 To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
 
 ```Swift
-let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
     startResponse("200 OK", [])
-    
+
     let loop = environ["embassy.event_loop"] as! EventLoopType
-    
+
     loop.callLater(1) {
         sendBody(Array("hello ".utf8))
     }
@@ -87,7 +87,7 @@ It's defined as
 
 ```Swift
 public typealias SWSGI = (
-    environ: [String: AnyObject],
+    environ: [String: Any],
     startResponse: ((String, [(String, String)]) -> Void),
     sendBody: ([UInt8] -> Void)
 ) -> Void
@@ -112,7 +112,7 @@ It's a dictionary contains all necessary information about the request. It basic
   "HTTP_ACCEPT" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
   "HTTP_ACCEPT_ENCODING" : "gzip, deflate, sdch",
   "swsgi.version" : "0.1",
-  "swsgi.input" : "",
+  "swsgi.input" : (Function),
   "swsgi.error" : "",
   "swsgi.multiprocess" : false,
   "swsgi.multithread" : false,
@@ -121,7 +121,19 @@ It's a dictionary contains all necessary information about the request. It basic
 ]
 ```
 
-**Notice**: For now `swsgi.input` and `swsgi.error` are not defined yet.
+To read request from body, you can use `swsgi.input`, for example
+
+```Swift
+let input = environ["swsgi.input"] as! SWSGIInput
+input { data in
+    // handle the body data here
+}
+```
+
+An empty bytes array will be passed into the input data handler when EOF
+reached. Also please notice that, request body won't be read if `swsgi.input`
+is not set or set to nil. You can use `swsgi.input` as bandwidth control, set
+it to nil when you don't want to receive any data from client.
 
 Some extra Embassy server specific keys are
 
@@ -170,6 +182,5 @@ To be done
 
 ## TODOs
 
- - [ ] Figure out how should we pass request body data stream into SWSGI environ dictionary
  - [ ] Configurable logging handler
  - [ ] Add embassy version key in environ

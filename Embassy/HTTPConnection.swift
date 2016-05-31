@@ -21,7 +21,7 @@ public final class HTTPConnection {
         case SendingHeader
         case SendingBody
     }
-    
+
     let logger = Logger()
     public let uuid: String = NSUUID().UUIDString
     public let transport: Transport
@@ -37,6 +37,12 @@ public final class HTTPConnection {
     private var headerParser: HTTPHeaderParser!
     private var headerElements: [HTTPHeaderParser.Element] = []
     private var request: HTTPRequest!
+    private var initialBody: [UInt8]?
+    private var inputHandler: ([UInt8] -> Void)?
+    // total content length to read
+    private var contentLength: Int?
+    // total data bytes we've already read
+    private var readDataLength: Int = 0
     
     public init(app: SWSGI, serverName: String, serverPort: Int, transport: Transport, eventLoop: EventLoopType, closedCallback: (Void -> Void)? = nil) {
         self.app = app
@@ -83,7 +89,6 @@ public final class HTTPConnection {
         var path: String!
         var version: String!
         var headers: [(String, String)] = []
-        var body: [UInt8]!
         for element in headerElements {
             switch element {
             case .Head(let headMethod, let headPath, let headVersion):
@@ -93,7 +98,7 @@ public final class HTTPConnection {
             case .Header(let key, let value):
                 headers.append((key, value))
             case .End(let bodyPart):
-                body = bodyPart
+                initialBody = bodyPart
             }
         }
         logger.debug("Header parsed, method=\(method), path=\(path.debugDescription), version=\(version.debugDescription), headers=\(headers)")
@@ -111,8 +116,7 @@ public final class HTTPConnection {
         // set SWSGI keys
         environ["swsgi.version"] = "0.1"
         environ["swsgi.url_scheme"] = "http"
-        // TODO: add file for incoming body
-        environ["swsgi.input"] = ""
+        environ["swsgi.input"] = swsgiInput
         // TODO: add output file for error
         environ["swsgi.error"] = ""
         environ["swsgi.multithread"] = false
@@ -123,16 +127,50 @@ public final class HTTPConnection {
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop as? AnyObject
         
+        if
+            let contentLength = request.headers["Content-Length"],
+            let length = Int(contentLength)
+        {
+            self.contentLength = length
+        }
+        
         // change state for incoming request to
         requestState = .ReadingBody
-        // pass the initial body data
-        handleBodyData(body)
+        // pause the reading for now, let `swsgi.input` called and resume it later
+        transport.resumeReading(false)
         
         app(environ: environ, startResponse: startResponse, sendBody: sendBody)
     }
     
+    private func swsgiInput(handler: ([UInt8] -> Void)?) {
+        inputHandler = handler
+        // reading handler provided
+        if let handler = handler {
+            if let initialBody = initialBody {
+                if !initialBody.isEmpty {
+                    handler(initialBody)
+                    readDataLength += initialBody.count
+                }
+                self.initialBody = nil
+            }
+            transport.resumeReading(true)
+        // if the input handler is set to nil, it means pause reading
+        } else {
+            transport.resumeReading(false)
+        }
+    }
+    
     private func handleBodyData(data: [UInt8]) {
-        // TODO:
+        guard let handler = inputHandler else {
+            fatalError("Not suppose to read body data when input handler is not provided")
+        }
+        handler(data)
+        readDataLength += data.count
+        // we finish reading all the content, send EOF to input handler
+        if let length = contentLength where readDataLength >= length {
+            handler([])
+            inputHandler = nil
+        }
     }
     
     private func startResponse(status: String, headers: [(String, String)]) {
@@ -180,6 +218,10 @@ public final class HTTPConnection {
     private func handleConnectionClosed(reason: Transport.CloseReason) {
         logger.info("Connection closed")
         close()
+        if let handler = inputHandler {
+            handler([])
+            inputHandler = nil
+        }
         if let callback = closedCallback {
             callback()
         }

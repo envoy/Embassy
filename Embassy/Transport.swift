@@ -37,8 +37,6 @@ public final class Transport {
     private(set) var closed: Bool = false
     /// Is this transport closing
     private(set) var closing: Bool = false
-    /// Is reading data paused
-    var readingPaused: Bool = false
     var closedCallback: (CloseReason -> Void)?
     var readDataCallback: ([UInt8] -> Void)?
     
@@ -46,6 +44,8 @@ public final class Transport {
     private let eventLoop: EventLoopType
     // buffer for sending data out
     private var outgoingBuffer = [UInt8]()
+    // is reading enabled or not
+    private var reading: Bool = true
     
     init(socket: TCPSocket, eventLoop: EventLoopType, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
         socket.ignoreSigPipe = true
@@ -92,6 +92,17 @@ public final class Transport {
         handleWrite()
     }
     
+    func resumeReading(reading: Bool) {
+        // switch from not-reading to reading
+        if reading && !self.reading {
+            // call handle read later to check is there data available for reading
+            eventLoop.callSoon {
+                self.handleRead()
+            }
+        }
+        self.reading = reading
+    }
+    
     private func closedByPeer() {
         closed = true
         eventLoop.removeReader(socket.fileDescriptor)
@@ -107,10 +118,22 @@ public final class Transport {
         guard !closed else {
             return
         }
-        guard !readingPaused else {
+        guard reading else {
             return
         }
-        let data = try! socket.recv(Transport.recvChunkSize)
+        var data: [UInt8]!
+        do {
+            data = try socket.recv(Transport.recvChunkSize)
+        } catch OSError.IOError(let number, _) {
+            guard Int32(number) != EAGAIN else {
+                // if it's EAGAIN, it means no data to be read for now, just return
+                // (usually means that this function was called by resumeReading)
+                return
+            }
+            fatalError("Failed to read, errno=\(errno), message=\(lastErrorDescription())")
+        } catch {
+            fatalError("Failed to read")
+        }
         guard data.count > 0 else {
             closedByPeer()
             return
