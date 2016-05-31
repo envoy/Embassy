@@ -147,8 +147,10 @@ public final class HTTPConnection {
         // reading handler provided
         if let handler = handler {
             if let initialBody = initialBody {
-                handler(initialBody)
-                readDataLength += initialBody.count
+                if !initialBody.isEmpty {
+                    handler(initialBody)
+                    readDataLength += initialBody.count
+                }
                 self.initialBody = nil
             }
             transport.resumeReading(true)
