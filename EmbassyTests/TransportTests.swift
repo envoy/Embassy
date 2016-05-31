@@ -225,4 +225,75 @@ class TransportTests: XCTestCase {
         XCTAssert(serverTransport.closed)
         XCTAssertEqual(serverReceivedData.joinWithSeparator("").characters.count, "hello".characters.count + bigDataChunk.characters.count)
     }
+    
+    func testReadingPause() {
+        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        
+        let port = try! getUnusedTCPPort()
+        let listenSocket = try! TCPSocket()
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+        
+        var clientReceivedData: [String] = []
+        var serverReceivedData: [String] = []
+        
+        let clientSocket = try! TCPSocket()
+        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
+            clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+                loop.stop()
+            }
+        }
+        var acceptedSocket: TCPSocket!
+        var serverTransport: Transport!
+        
+        loop.setReader(listenSocket.fileDescriptor) {
+            acceptedSocket = try! listenSocket.accept()
+            serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
+                serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+                    loop.stop()
+                }
+            }
+        }
+        
+        try! clientSocket.connect("::1", port: port)
+        
+        loop.callLater(1) {
+            clientTransport.writeUTF8("a")
+        }
+        loop.callLater(2) {
+            serverTransport.writeUTF8("1")
+        }
+        loop.callLater(3) {
+            clientTransport.readingPaused = true
+            serverTransport.readingPaused = true
+            clientTransport.writeUTF8("b")
+        }
+        loop.callLater(4) {
+            XCTAssertEqual(clientReceivedData.count, 1)
+            XCTAssertEqual(serverReceivedData.count, 1)
+            serverTransport.writeUTF8("2")
+        }
+        loop.callLater(5) {
+            XCTAssertEqual(clientReceivedData.count, 1)
+            XCTAssertEqual(serverReceivedData.count, 1)
+            clientTransport.writeUTF8("c")
+        }
+        loop.callLater(6) {
+            XCTAssertEqual(clientReceivedData.count, 1)
+            XCTAssertEqual(serverReceivedData.count, 1)
+            serverTransport.writeUTF8("3")
+            clientTransport.readingPaused = false
+            serverTransport.readingPaused = false
+        }
+        loop.callLater(10) {
+            loop.stop()
+        }
+        
+        loop.runForever()
+        
+        XCTAssertEqual(serverReceivedData, ["a", "bc"])
+        XCTAssertEqual(clientReceivedData, ["1", "23"])
+    }
 }

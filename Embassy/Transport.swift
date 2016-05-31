@@ -37,6 +37,8 @@ public final class Transport {
     private(set) var closed: Bool = false
     /// Is this transport closing
     private(set) var closing: Bool = false
+    /// Is reading data paused
+    var readingPaused: Bool = false
     var closedCallback: (CloseReason -> Void)?
     var readDataCallback: ([UInt8] -> Void)?
     
@@ -103,6 +105,9 @@ public final class Transport {
     private func handleRead() {
         // ensure we are not closed
         guard !closed else {
+            return
+        }
+        guard !readingPaused else {
             return
         }
         let data = try! socket.recv(Transport.recvChunkSize)

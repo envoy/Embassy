@@ -11,4 +11,4 @@ env:
     - DESTINATION="OS=9.3,name=iPhone 6S"     SCHEME="$IOS_FRAMEWORK_SCHEME"     SDK="$IOS_SDK"
 
 script:
-  - xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO test | xcpretty -c;
+  - set -o pipefail && xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO test | xcpretty -c;
