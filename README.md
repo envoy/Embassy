@@ -173,7 +173,7 @@ sendBody([])
 To install with CocoaPod, add Embassy to your Podfile:
 
 ```
-pod 'Embassy', '~> 0.0.1-alpha-5'
+pod 'Embassy', '~> 0.0.1-alpha-6'
 ```
 
 ### Carthage
