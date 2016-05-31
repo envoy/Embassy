@@ -33,8 +33,8 @@ class HTTPServerTests: XCTestCase {
 
     func testEnviron() {
         let port = try! getUnusedTCPPort()
-        var receivedEnviron: [String: AnyObject]!
-        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        var receivedEnviron: [String: Any]!
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             receivedEnviron = environ
             self.loop.stop()
         }
@@ -67,7 +67,7 @@ class HTTPServerTests: XCTestCase {
     
     func testStartResponse() {
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
@@ -105,7 +105,7 @@ class HTTPServerTests: XCTestCase {
     func testSendBody() {
         let port = try! getUnusedTCPPort()
         let bigDataChunk = Array(makeRandomString(574300).utf8)
-        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             sendBody(bigDataChunk)
             sendBody([])
@@ -138,7 +138,7 @@ class HTTPServerTests: XCTestCase {
     
     func testAsyncSendBody() {
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             
             let loop = environ["embassy.event_loop"] as! EventLoopType
@@ -176,5 +176,41 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(NSString(data: receivedData!, encoding: NSUTF8StringEncoding)!, "hello baby fin")
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
+    }
+    
+    func testPostBody() {
+        let port = try! getUnusedTCPPort()
+        
+        let postBodyString = makeRandomString(40960)
+        var receivedInputData: [[UInt8]] = []
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("200 OK", [])
+            let input = environ["swsgi.input"] as! SWSGIInput
+            input { data in
+                receivedInputData.append(data)
+                sendBody(data)
+            }
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        
+        try! server.start()
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
+            request.HTTPMethod = "POST"
+            request.HTTPBody = postBodyString.dataUsingEncoding(NSUTF8StringEncoding)
+            let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
+                self.loop.stop()
+            }
+            task.resume()
+        }
+        
+        loop.runForever()
+        
+        // ensure EOF is passed
+        XCTAssertEqual(receivedInputData.last?.count, 0)
+        
+        let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
+        XCTAssertEqual(receivedString, postBodyString)
     }
 }

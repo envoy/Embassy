@@ -22,4 +22,10 @@ import Foundation
                            with zero length
  
 */
-public typealias SWSGI = (environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) -> Void
+public typealias SWSGI = (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) -> Void
+
+/**
+    SWSGI Input interface for receiving incoming data from request.
+    To receive data, pass handler function, to pause reading data, just pass nil as the handler
+*/
+public typealias SWSGIInput = (handler: ([UInt8] -> Void)?) -> Void

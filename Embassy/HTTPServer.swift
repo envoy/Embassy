@@ -73,7 +73,7 @@ public final class HTTPServer: HTTPServerType {
         }
     }
     
-    private func appForConnection(environ: [String: AnyObject], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
+    private func appForConnection(environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
         app(environ: environ, startResponse: startResponse, sendBody: sendBody)
     }
     

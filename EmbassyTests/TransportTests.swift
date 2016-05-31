@@ -266,8 +266,8 @@ class TransportTests: XCTestCase {
             serverTransport.writeUTF8("1")
         }
         loop.callLater(3) {
-            clientTransport.readingPaused = true
-            serverTransport.readingPaused = true
+            clientTransport.resumeReading(false)
+            serverTransport.resumeReading(false)
             clientTransport.writeUTF8("b")
         }
         loop.callLater(4) {
@@ -284,8 +284,10 @@ class TransportTests: XCTestCase {
             XCTAssertEqual(clientReceivedData.count, 1)
             XCTAssertEqual(serverReceivedData.count, 1)
             serverTransport.writeUTF8("3")
-            clientTransport.readingPaused = false
-            serverTransport.readingPaused = false
+        }
+        loop.callLater(7) {
+            clientTransport.resumeReading(true)
+            serverTransport.resumeReading(true)
         }
         loop.callLater(10) {
             loop.stop()
