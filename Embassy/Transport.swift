@@ -107,6 +107,9 @@ public final class Transport {
         guard !closed else {
             return
         }
+        guard !readingPaused else {
+            return
+        }
         let data = try! socket.recv(Transport.recvChunkSize)
         guard data.count > 0 else {
             closedByPeer()
