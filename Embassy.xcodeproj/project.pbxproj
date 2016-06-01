@@ -36,6 +36,7 @@
 		D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
 		D8F3D3971CF03DF500342389 /* SelectorEventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */; };
 		D8F3D3991CF0F24500342389 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3981CF0F24500342389 /* Errors.swift */; };
+		D8FBA9541CFF69C300743A54 /* MultiDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +82,7 @@
 		D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KqueueSelectorTests.swift; sourceTree = "<group>"; };
 		D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorEventLoop.swift; sourceTree = "<group>"; };
 		D8F3D3981CF0F24500342389 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiDictionary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +139,7 @@
 				D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */,
 				D83A719B1CF1230E00C0C21C /* Transport.swift */,
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
+				D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */,
 				D898DC8D1CF665010027E17E /* HeapSort.swift */,
 				D8F3D3981CF0F24500342389 /* Errors.swift */,
 				D83A71951CF119D200C0C21C /* IOUtils.swift */,
@@ -273,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8F3D3971CF03DF500342389 /* SelectorEventLoop.swift in Sources */,
+				D8FBA9541CFF69C300743A54 /* MultiDictionary.swift in Sources */,
 				D83A71A21CF1542300C0C21C /* HTTPConnection.swift in Sources */,
 				D85614081CEE6DB20060CCB7 /* HTTPServerType.swift in Sources */,
 				D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */,
