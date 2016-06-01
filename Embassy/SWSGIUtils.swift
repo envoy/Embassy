@@ -16,7 +16,7 @@ private func +=<K, V> (inout left: [K: V], right: [K: V]) {
     }
 }
 
-struct SWSGIUtils {
+public struct SWSGIUtils {
     /// Transform given request into environ dictionary
     static func environForRequest(request: HTTPRequest) -> [String: Any] {
         var environ: [String: Any] = [
@@ -37,16 +37,21 @@ struct SWSGIUtils {
         if let contentLength = request.headers["Content-Length"] {
             environ["CONTENT_LENGTH"] = contentLength
         }
-        environ += environForHeaders(request.rawHeaders)
+        environ += environForHeaders(request.headers)
         return environ
     }
     
     /// Transform given header key value pair array into environ style header map,
     /// like from Content-Length to HTTP_CONTENT_LENGTH
-    static func environForHeaders(headers: [(String, String)]) -> [String: Any] {
+    static func environForHeaders(
+        headers: MultiDictionary<String, String, LowercaseKeyTransform>
+    ) -> [String: Any] {
         var environ: [String: Any] = [:]
         for (key, value) in headers {
-            let key = "HTTP_" + key.uppercaseString.stringByReplacingOccurrencesOfString("-", withString: "_")
+            let key = "HTTP_" + key.uppercaseString.stringByReplacingOccurrencesOfString(
+                "-",
+                withString: "_"
+            )
             environ[key] = value
         }
         return environ

@@ -71,23 +71,20 @@ public struct HTTPRequest {
             }
         }
     }
-    
+
     /// Request method
     let method: Method
     /// Request path
     let path: String
     /// Request HTTP version (e.g. HTTP/1.0)
     let version: String
-    /// Raw request headers
-    let rawHeaders: [(String, String)]
-    /// Easy accessible header list
+    /// Request headers
     let headers: MultiDictionary<String, String, LowercaseKeyTransform>
-    
-    init(method: Method, path: String, version: String, rawHeaders: [(String, String)]) {
+
+    init(method: Method, path: String, version: String, headers: [(String, String)]) {
         self.method = method
         self.path = path
         self.version = version
-        self.rawHeaders = rawHeaders
-        self.headers = MultiDictionary<String, String, LowercaseKeyTransform>(items: rawHeaders)
+        self.headers = MultiDictionary<String, String, LowercaseKeyTransform>(items: headers)
     }
 }

@@ -106,7 +106,7 @@ public final class HTTPConnection {
             method: HTTPRequest.Method.fromString(method),
             path: path,
             version: version,
-            rawHeaders: headers
+            headers: headers
         )
         var environ = SWSGIUtils.environForRequest(request)
         environ["SERVER_NAME"] = serverName
@@ -122,11 +122,11 @@ public final class HTTPConnection {
         environ["swsgi.multithread"] = false
         environ["swsgi.multiprocess"] = false
         environ["swsgi.run_once"] = false
-        
+
         // set embassy specific keys
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop as? AnyObject
-        
+
         if
             let contentLength = request.headers["Content-Length"],
             let length = Int(contentLength)
