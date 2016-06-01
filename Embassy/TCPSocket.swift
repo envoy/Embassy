@@ -71,6 +71,13 @@ public final class TCPSocket {
     ///  - Parameter interface: networking interface to bind to, in IPv6 format
     ///  - Parameter addressReusable: should we make address reusable
     func bind(port: Int, interface: String = "::", addressReusable: Bool = true) throws {
+        // make address reusable
+        if addressReusable {
+            var reuse = Int32(1)
+            guard setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) >= 0 else {
+                throw OSError.lastIOError()
+            }
+        }
         // create IPv6 socket address
         var address = sockaddr_in6(
             sin6_len: UInt8(strideof(sockaddr_in6)),
@@ -85,14 +92,6 @@ public final class TCPSocket {
             return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) >= 0
         }) else {
             throw OSError.lastIOError()
-        }
-        
-        // make address reusable
-        if addressReusable {
-            var reuse = Int32(1)
-            guard setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) >= 0 else {
-                throw OSError.lastIOError()
-            }
         }
     }
     

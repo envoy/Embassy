@@ -1,0 +1,11 @@
+-   repo: git@github.com:pre-commit/pre-commit-hooks
+    sha: 17478a0a50faf20fd8e5b3fefe7435cea410df0b
+    hooks:
+    -   id: trailing-whitespace
+        files: \.(c|cpp|html|erb|slim|haml|ejs|jade|js|coffee|json|rb|md|py|css|scss|less|sh|tmpl|txt|yaml|yml|pp|swift)$
+    -   id: end-of-file-fixer
+        files: \.(c|cpp|html|erb|slim|haml|ejs|jade|js|coffee|json|rb|md|py|css|scss|less|sh|tmpl|txt|yaml|yml|pp|swift)$
+    -   id: check-json
+    -   id: check-yaml
+    -   id: check-merge-conflict
+    -   id: detect-private-key
