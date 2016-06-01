@@ -11,17 +11,17 @@ import Foundation
 public final class HTTPServer: HTTPServerType {
     let logger = Logger()
     public var app: SWSGI
-    
+
     /// Interface of TCP/IP to bind
     let interface: String
     /// Port of TCP/IP to bind
     let port: Int
-    
+
     // the socket for accepting incoming connections
     private var acceptSocket: TCPSocket!
     private let eventLoop: EventLoopType
     private var connections = Set<HTTPConnection>()
-    
+
     public init(eventLoop: EventLoopType, app: SWSGI, interface: String = "::1", port: Int = 8080) {
         self.eventLoop = eventLoop
         self.app = app
@@ -32,7 +32,7 @@ public final class HTTPServer: HTTPServerType {
     deinit {
         stop()
     }
-    
+
     public func start() throws {
         guard acceptSocket == nil else {
             logger.error("Server already started")
@@ -47,7 +47,7 @@ public final class HTTPServer: HTTPServerType {
         }
         logger.info("HTTP server running")
     }
-    
+
     public func stop() {
         guard acceptSocket != nil else {
             logger.error("Server not started")
@@ -61,7 +61,7 @@ public final class HTTPServer: HTTPServerType {
         connections = []
         logger.info("HTTP server stopped")
     }
-    
+
     // called to handle new connections
     private func handleNewConnection() {
         let clientSocket = try! acceptSocket.accept()
@@ -80,9 +80,9 @@ public final class HTTPServer: HTTPServerType {
             self.connections.remove(connection)
         }
     }
-    
+
     private func appForConnection(environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
         app(environ: environ, startResponse: startResponse, sendBody: sendBody)
     }
-    
+
 }
