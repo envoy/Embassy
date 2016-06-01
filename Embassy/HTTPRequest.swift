@@ -85,6 +85,6 @@ public struct HTTPRequest {
         self.method = method
         self.path = path
         self.version = version
-        self.headers = MultiDictionary<String, String, LowercaseKeyTransform>(items: headers)
+        self.headers = MultiDictionary(items: headers)
     }
 }
