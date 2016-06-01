@@ -252,10 +252,13 @@ class HTTPServerTests: XCTestCase {
     }
 
     func testAddressReuse() {
+        var called: Bool = false
         let port = try! getUnusedTCPPort()
         let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
             sendBody([])
+            self.loop.stop()
+            called = true
         }
         let server1 = HTTPServer(eventLoop: loop, app: app, port: port)
         try! server1.start()
@@ -263,7 +266,14 @@ class HTTPServerTests: XCTestCase {
 
         let server2 = HTTPServer(eventLoop: loop, app: app, port: port)
         try! server2.start()
-        server2.stop()
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+            let task = NSURLSession.sharedSession().dataTaskWithURL( NSURL(string: "http://[::1]:\(port)")!)
+            task.resume()
+        }
+
+        loop.runForever()
+        XCTAssert(called)
     }
 
 }
