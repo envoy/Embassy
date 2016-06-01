@@ -28,6 +28,10 @@ public final class HTTPServer: HTTPServerType {
         self.interface = interface
         self.port = port
     }
+
+    deinit {
+        stop()
+    }
     
     public func start() throws {
         guard acceptSocket == nil else {
@@ -45,6 +49,12 @@ public final class HTTPServer: HTTPServerType {
     }
     
     public func stop() {
+        guard acceptSocket != nil else {
+            logger.error("Server not started")
+            return
+        }
+        eventLoop.removeReader(acceptSocket.fileDescriptor)
+        acceptSocket.close()
         for connection in connections {
             connection.close()
         }
