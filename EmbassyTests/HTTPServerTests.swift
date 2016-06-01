@@ -250,4 +250,20 @@ class HTTPServerTests: XCTestCase {
         let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
         XCTAssertEqual(receivedString, postBodyString)
     }
+
+    func testAddressReuse() {
+        let port = try! getUnusedTCPPort()
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+            startResponse("200 OK", [])
+            sendBody([])
+        }
+        let server1 = HTTPServer(eventLoop: loop, app: app, port: port)
+        try! server1.start()
+        server1.stop()
+
+        let server2 = HTTPServer(eventLoop: loop, app: app, port: port)
+        try! server2.start()
+        server2.stop()
+    }
+
 }
