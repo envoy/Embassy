@@ -178,7 +178,7 @@ public final class HTTPConnection {
             return
         }
         var headers = headers
-        let headerList = HTTPHeaderList(headers: headers)
+        let headerList = MultiDictionary<String, String, LowercaseKeyTransform>(items: headers)
         // we don't support keep-alive connection for now, just force it to be closed
         if headerList["Connection"] == nil {
             headers.append(("Connection", "close"))

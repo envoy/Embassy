@@ -8,38 +8,6 @@
 
 import Foundation
 
-public struct HTTPHeaderList {
-    /// Request headers
-    public let headers: [(String, String)]
-    
-    // Map header key in lower case to the list of value
-    private let headerMap: [String: [String]]
-    
-    public init(headers: [(String, String)]) {
-        self.headers = headers
-        
-        var headerMap: [String: [String]] = [:]
-        for (key, value) in headers {
-            let key = key.lowercaseString
-            var list = headerMap[key] ?? []
-            list.append(value)
-            headerMap[key] = list
-        }
-        self.headerMap = headerMap
-    }
-    
-    /// Get all header value for given key
-    ///  - Parameter key: the header key
-    ///  - Returns: array of values for given key
-    public func getValuesFor(key: String) -> [String]? {
-        return headerMap[key.lowercaseString]
-    }
-    
-    public subscript(key: String) -> String? {
-        return getValuesFor(key)?.first
-    }
-}
-
 public struct HTTPRequest {
     enum Method: CustomStringConvertible {
         case GET
@@ -113,13 +81,13 @@ public struct HTTPRequest {
     /// Raw request headers
     let rawHeaders: [(String, String)]
     /// Easy accessible header list
-    let headers: HTTPHeaderList
+    let headers: MultiDictionary<String, String, LowercaseKeyTransform>
     
     init(method: Method, path: String, version: String, rawHeaders: [(String, String)]) {
         self.method = method
         self.path = path
         self.version = version
         self.rawHeaders = rawHeaders
-        self.headers = HTTPHeaderList(headers: rawHeaders)
+        self.headers = MultiDictionary<String, String, LowercaseKeyTransform>(items: rawHeaders)
     }
 }

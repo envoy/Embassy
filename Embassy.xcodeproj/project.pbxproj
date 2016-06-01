@@ -25,7 +25,7 @@
 		D898DC851CF62E1B0027E17E /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
 		D898DC8E1CF665010027E17E /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
 		D898DC901CF66CBD0027E17E /* HeapSortTetsts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */; };
-		D8B5F2361CF387E40093EF94 /* HTTPHeaderListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2351CF387E40093EF94 /* HTTPHeaderListTests.swift */; };
+		D8B5F2361CF387E40093EF94 /* MultiDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */; };
 		D8B5F2381CF38C170093EF94 /* SWSGIUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */; };
 		D8B5F23A1CF3C91E0093EF94 /* EventLoopType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2391CF3C91E0093EF94 /* EventLoopType.swift */; };
 		D8F3D38B1CEF8AC800342389 /* TCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */; };
@@ -71,7 +71,7 @@
 		D898DC841CF62E1B0027E17E /* Atomic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		D898DC8D1CF665010027E17E /* HeapSort.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSort.swift; sourceTree = "<group>"; };
 		D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSortTetsts.swift; sourceTree = "<group>"; };
-		D8B5F2351CF387E40093EF94 /* HTTPHeaderListTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeaderListTests.swift; sourceTree = "<group>"; };
+		D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiDictionaryTests.swift; sourceTree = "<group>"; };
 		D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGIUtils.swift; sourceTree = "<group>"; };
 		D8B5F2391CF3C91E0093EF94 /* EventLoopType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopType.swift; sourceTree = "<group>"; };
 		D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TCPSocket.swift; sourceTree = "<group>"; };
@@ -158,7 +158,7 @@
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */,
 				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
-				D8B5F2351CF387E40093EF94 /* HTTPHeaderListTests.swift */,
+				D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */,
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
@@ -305,7 +305,7 @@
 				D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */,
 				D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */,
 				D8F3D38F1CEFA09B00342389 /* TCPSocketTests.swift in Sources */,
-				D8B5F2361CF387E40093EF94 /* HTTPHeaderListTests.swift in Sources */,
+				D8B5F2361CF387E40093EF94 /* MultiDictionaryTests.swift in Sources */,
 				D83A719E1CF1275A00C0C21C /* TransportTests.swift in Sources */,
 				D8F3D3911CEFB1AA00342389 /* TestingHelpers.swift in Sources */,
 				D85614101CEE72A10060CCB7 /* HTTPHeaderParserTests.swift in Sources */,
