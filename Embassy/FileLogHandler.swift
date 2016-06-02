@@ -13,16 +13,23 @@ public struct FileLogHandler: LogHandlerType {
     let fileHandle: NSFileHandle
     public var formatter: LogFormatterType?
 
+    private let queue = dispatch_queue_create(
+        "com.envoy.Embassy.logging.FileLogHandler.queue",
+        DISPATCH_QUEUE_SERIAL
+    )
+
     public init(fileHandle: NSFileHandle, formatter: LogFormatterType? = DefaultLogFormatter()) {
         self.fileHandle = fileHandle
         self.formatter = formatter
     }
 
     public func emit(record: LogRecord) {
-        if let formatter = formatter {
-            let msg = formatter.format(record) + "\n"
-            fileHandle.writeData(msg.dataUsingEncoding(NSUTF8StringEncoding)!)
-            fileHandle.synchronizeFile()
+        dispatch_async(queue) {
+            if let formatter = self.formatter {
+                let msg = formatter.format(record) + "\n"
+                self.fileHandle.writeData(msg.dataUsingEncoding(NSUTF8StringEncoding)!)
+                self.fileHandle.synchronizeFile()
+            }
         }
     }
 
