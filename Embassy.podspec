@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = 'Embassy'
-  spec.version      = '0.0.1-alpha-11'
+  spec.version      = '0.0.1-alpha-12'
   spec.summary      = 'Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking'
   spec.homepage     = 'https://github.com/envoy/Embassy'
   spec.license      = 'MIT'
