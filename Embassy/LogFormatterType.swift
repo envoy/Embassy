@@ -9,6 +9,6 @@
 import Foundation
 
 /// Log formatter convert given log record into printable text
-protocol LogFormatterType {
+public protocol LogFormatterType {
     func format(record: LogRecord) -> String
 }

@@ -20,7 +20,7 @@ public final class HTTPConnection {
         case SendingBody
     }
 
-    let logger = Logger()
+    public let logger = Logger()
     public let uuid: String = NSUUID().UUIDString
     public let transport: Transport
     public let app: SWSGI

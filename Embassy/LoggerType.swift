@@ -48,7 +48,7 @@ extension LogRecord {
     /// Overwrite message and return a new record
     ///  - Parameter overwrite: closure to accept self record and return overwritten string
     ///  - Returns: the overwritten log record
-    func overwriteMessage(@noescape overwrite: (LogRecord -> String)) -> LogRecord {
+    public func overwriteMessage(@noescape overwrite: (LogRecord -> String)) -> LogRecord {
         return LogRecord(
             loggerName: loggerName,
             level: level,
@@ -61,6 +61,10 @@ extension LogRecord {
     }
 }
 
-protocol LoggerType {
+public protocol LoggerType {
+    /// Add a handler to the logger
+    func addHandler(handler: LogHandlerType)
+
+    /// Write log record to logger
     func log(record: LogRecord)
 }

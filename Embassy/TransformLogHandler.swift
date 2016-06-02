@@ -10,16 +10,16 @@ import Foundation
 
 /// A log handler transforms record and relays it to another handler
 public struct TransformLogHandler: LogHandlerType {
-    let handler: LogHandlerType
-    var formatter: LogFormatterType? = nil
-    let transform: (LogRecord) -> LogRecord
+    public let handler: LogHandlerType
+    public var formatter: LogFormatterType? = nil
+    public let transform: (LogRecord) -> LogRecord
 
-    init(handler: LogHandlerType, transform: (LogRecord) -> LogRecord) {
+    public init(handler: LogHandlerType, transform: (LogRecord) -> LogRecord) {
         self.handler = handler
         self.transform = transform
     }
 
-    func emit(record: LogRecord) {
+    public func emit(record: LogRecord) {
         handler.emit(transform(record))
     }
 }

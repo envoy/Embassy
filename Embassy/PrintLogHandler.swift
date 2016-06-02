@@ -10,13 +10,13 @@ import Foundation
 
 /// A log handler which prints (stdout) log records
 public struct PrintLogHandler: LogHandlerType {
-    var formatter: LogFormatterType?
+    public var formatter: LogFormatterType?
 
-    init(formatter: LogFormatterType? = DefaultLogFormatter()) {
+    public init(formatter: LogFormatterType? = DefaultLogFormatter()) {
         self.formatter = formatter
     }
 
-    func emit(record: LogRecord) {
+    public func emit(record: LogRecord) {
         if let formatter = formatter {
             print(formatter.format(record))
         }

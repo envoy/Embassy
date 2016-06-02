@@ -13,20 +13,20 @@ public struct HTTPHeaderParser {
     private static let CR = UInt8(13)
     private static let LF = UInt8(10)
     private static let NEWLINE = (CR, LF)
-    
-    enum Element {
+
+    public enum Element {
         case Head(method: String, path: String, version: String)
         case Header(key: String, value: String)
         case End(bodyPart: [UInt8])
     }
-    
+
     private enum State {
         case Head
         case Headers
     }
     private var state: State = .Head
     private var buffer: [UInt8] = []
-    
+
     /// Feed data to HTTP parser
     ///  - Parameter data: the data to feed
     ///  - Returns: parsed headers elements
@@ -47,7 +47,7 @@ public struct HTTPHeaderParser {
             let bytes = Array(buffer[0..<index])
             let string = String(bytes: bytes, encoding: NSUTF8StringEncoding)!
             buffer = Array(buffer[(index + 2)..<buffer.count])
-            
+
             // TODO: the initial usage of this HTTP server is for iOS API server mocking only,
             // we don't usually see malform requests, but if it's necessary, like if we want to put
             // this server in real production, we should handle malform header then

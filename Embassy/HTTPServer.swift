@@ -13,9 +13,9 @@ public final class HTTPServer: HTTPServerType {
     public var app: SWSGI
 
     /// Interface of TCP/IP to bind
-    let interface: String
+    public let interface: String
     /// Port of TCP/IP to bind
-    let port: Int
+    public let port: Int
 
     // the socket for accepting incoming connections
     private var acceptSocket: TCPSocket!

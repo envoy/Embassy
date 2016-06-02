@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol LogHandlerType {
+public protocol LogHandlerType {
     var formatter: LogFormatterType? { get set }
 
     /// Handle given record from logger

@@ -12,7 +12,7 @@ import XCTest
 
 extension HTTPHeaderParser.Element: Equatable {
 }
-func ==(lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
+public func ==(lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
     switch lhs {
     case .Head(let lhsMethod, let lhsPath, let lhsVersion):
         if case .Head(let rhsMethod, let rhsPath, let rhsVersion) = rhs {
@@ -46,39 +46,39 @@ class HTTPHeaderParserTests: XCTestCase {
     func testPartialParsing() {
         let line1Part1 = "GET /index.html"
         let line1Part2 = " HTTP/1.1\r\n"
-        
+
         let line2Part1 = "Host: www.exam"
         let line2Part2 = "ple.com\r"
         let line2Part3 = "\n"
-        
+
         let line3Part1 = "\r"
         let line3Part2 = "\nhere comes the body"
-        
+
         var parser = HTTPHeaderParser()
-        
+
         // try to feed empty array
         XCTAssertEqual(parser.feed(Array()), [])
-        
+
         XCTAssertEqual(parser.feed(Array(line1Part1.utf8)), [])
         XCTAssertEqual(parser.feed(Array(line1Part2.utf8)), [
             HTTPHeaderParser.Element.Head(method: "GET", path: "/index.html", version: "HTTP/1.1")
         ])
-        
+
         XCTAssertEqual(parser.feed(Array(line2Part1.utf8)), [])
         XCTAssertEqual(parser.feed(Array(line2Part2.utf8)), [])
         XCTAssertEqual(parser.feed(Array(line2Part3.utf8)), [
             HTTPHeaderParser.Element.Header(key: "Host", value: "www.example.com"),
         ])
-        
+
         // try to feed empty array
         XCTAssertEqual(parser.feed(Array()), [])
-        
+
         XCTAssertEqual(parser.feed(Array(line3Part1.utf8)), [])
         XCTAssertEqual(parser.feed(Array(line3Part2.utf8)), [
             HTTPHeaderParser.Element.End(bodyPart: Array("here comes the body".utf8))
         ])
     }
-    
+
     func testHeaders() {
         let header = [
             "GET /index.html HTTP/1.1",
@@ -110,7 +110,7 @@ class HTTPHeaderParserTests: XCTestCase {
             HTTPHeaderParser.Element.End(bodyPart: [])
         ])
     }
-    
+
     func testColonInHeader() {
         let header = [
             "GET /index.html HTTP/1.1",

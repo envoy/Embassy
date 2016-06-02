@@ -9,7 +9,7 @@
 import Foundation
 
 public struct HTTPRequest {
-    enum Method: CustomStringConvertible {
+    public enum Method: CustomStringConvertible {
         case GET
         case HEAD
         case POST
@@ -20,8 +20,8 @@ public struct HTTPRequest {
         case CONNECT
         case PATCH
         case OTHER(name: String)
-        
-        var description: String {
+
+        public var description: String {
             switch self {
             case .GET:
                 return "GET"
@@ -45,8 +45,8 @@ public struct HTTPRequest {
                 return name
             }
         }
-        
-        static func fromString(name: String) -> Method {
+
+        public static func fromString(name: String) -> Method {
             switch name.uppercaseString {
             case "GET":
                 return .GET
@@ -81,7 +81,7 @@ public struct HTTPRequest {
     /// Request headers
     let headers: MultiDictionary<String, String, LowercaseKeyTransform>
 
-    init(method: Method, path: String, version: String, headers: [(String, String)]) {
+    public init(method: Method, path: String, version: String, headers: [(String, String)]) {
         self.method = method
         self.path = path
         self.version = version

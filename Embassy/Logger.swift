@@ -25,11 +25,11 @@ public final class Logger: LoggerType {
 
     /// Add handler to self logger
     ///  - Parameter handler: the handler to add
-    func addHandler(handler: LogHandlerType) {
+    public func addHandler(handler: LogHandlerType) {
         handlers.append(handler)
     }
 
-    func debug(
+    public func debug(
         @autoclosure message: Void -> String,
         caller: String = #function,
         file: String = #file,
@@ -38,7 +38,7 @@ public final class Logger: LoggerType {
         log(.DEBUG, message: message, caller: caller, file: file, line: line)
     }
 
-    func info(
+    public func info(
         @autoclosure message: Void -> String,
         caller: String = #function,
         file: String = #file,
@@ -47,7 +47,7 @@ public final class Logger: LoggerType {
         log(.INFO, message: message, caller: caller, file: file, line: line)
     }
 
-    func warning(
+    public func warning(
         @autoclosure message: Void -> String,
         caller: String = #function,
         file: String = #file,
@@ -56,7 +56,7 @@ public final class Logger: LoggerType {
         log(.WARNING, message: message, caller: caller, file: file, line: line)
     }
 
-    func error(
+    public func error(
         @autoclosure message: Void -> String,
         caller: String = #function,
         file: String = #file,
@@ -65,7 +65,7 @@ public final class Logger: LoggerType {
         log(.ERROR, message: message, caller: caller, file: file, line: line)
     }
 
-    func critical(
+    public func critical(
         @autoclosure message: Void -> String,
         caller: String = #function,
         file: String = #file,
@@ -93,7 +93,7 @@ public final class Logger: LoggerType {
         log(record)
     }
 
-    func log(record: LogRecord) {
+    public func log(record: LogRecord) {
         guard record.level.rawValue >= level.rawValue else {
             return
         }
