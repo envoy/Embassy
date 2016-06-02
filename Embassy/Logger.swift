@@ -13,12 +13,12 @@ public final class Logger: LoggerType {
     let level: LogLevel
     private(set) var handlers: [LogHandlerType] = []
 
-    init(name: String, level: LogLevel = .INFO) {
+    public init(name: String, level: LogLevel = .INFO) {
         self.name = name
         self.level = level
     }
 
-    init(fileName: String = #file, level: LogLevel = .INFO) {
+    public init(fileName: String = #file, level: LogLevel = .INFO) {
         self.name = Logger.moduleNameForFileName(fileName)
         self.level = level
     }
