@@ -16,18 +16,18 @@ let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
 public final class TCPSocket {
     /// The file descriptor number for socket
     let fileDescriptor: Int32
-    
+
     /// Whether is this socket in block mode or not
     var blocking: Bool {
         get {
             return IOUtils.getBlocking(fileDescriptor)
         }
-        
+
         set {
             IOUtils.setBlocking(fileDescriptor, blocking: newValue)
         }
     }
-    
+
     /// Whether to ignore SIGPIPE signal or not
     var ignoreSigPipe: Bool {
         get {
@@ -39,7 +39,7 @@ public final class TCPSocket {
             )
             return value == 1
         }
-        
+
         set {
             var value: Int32 = newValue ? 1 : 0
             assert(
@@ -48,7 +48,7 @@ public final class TCPSocket {
             )
         }
     }
-    
+
     init(blocking: Bool = false) throws {
         fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
         guard fileDescriptor >= 0 else {
@@ -56,16 +56,16 @@ public final class TCPSocket {
         }
         self.blocking = blocking
     }
-    
+
     init(fileDescriptor: Int32, blocking: Bool = false) {
         self.fileDescriptor = fileDescriptor
         self.blocking = blocking
     }
-    
+
     deinit {
         close()
     }
-    
+
     /// Bind the socket at given port and interface
     ///  - Parameter port: port number to bind to
     ///  - Parameter interface: networking interface to bind to, in IPv6 format
@@ -94,7 +94,7 @@ public final class TCPSocket {
             throw OSError.lastIOError()
         }
     }
-    
+
     /// Listen incomming connections
     ///  - Parameter backlog: maximum backlog of incoming connections
     func listen(backlog: Int = Int(SOMAXCONN)) throws {
@@ -102,7 +102,7 @@ public final class TCPSocket {
             throw OSError.lastIOError()
         }
     }
-    
+
     /// Accept a new connection
     func accept() throws -> TCPSocket {
         var address = sockaddr_in6()
@@ -115,7 +115,7 @@ public final class TCPSocket {
         }
         return TCPSocket(fileDescriptor: clientFileDescriptor)
     }
-    
+
     /// Connect to a peer
     ///  - Parameter host: the target host to connect, in IPv4 or IPv6 format, like 127.0.0.1 or ::1
     ///  - Parameter port: the target host port number to connect
@@ -137,7 +137,7 @@ public final class TCPSocket {
             throw OSError.lastIOError()
         }
     }
-    
+
     /// Send data to peer
     ///  - Parameter bytes: bytes to send
     ///  - Returns: bytes sent to peer
@@ -148,7 +148,7 @@ public final class TCPSocket {
         }
         return bytesSent
     }
-    
+
     /// Read data from peer
     ///  - Parameter size: size of bytes to read
     ///  - Returns: bytes read from peer
@@ -162,13 +162,13 @@ public final class TCPSocket {
         }
         return Array(bytes[0..<bytesRead])
     }
-    
+
     /// Close the socket
     func close() {
         Darwin.shutdown(fileDescriptor, SHUT_WR)
         Darwin.close(fileDescriptor)
     }
-    
+
     func getPeerName() throws -> (String, Int) {
         var address = sockaddr_in6()
         var size = socklen_t(sizeof(sockaddr_in6))
@@ -180,7 +180,7 @@ public final class TCPSocket {
         }
         return (try structToIPAddress(address.sin6_addr), Int(ntohs(address.sin6_port)))
     }
-    
+
     // Convert IP address to binary struct
     private func ipAddressToStruct(address: String) throws -> in6_addr {
         // convert interface string into IPv6 address struct
@@ -196,9 +196,22 @@ public final class TCPSocket {
         var addrStruct = addrStruct
         // convert address struct into address string
         var address = [UInt8](count: Int(INET6_ADDRSTRLEN), repeatedValue: 0)
-        guard address.withUnsafeMutableBufferPointer({ inet_ntop(AF_INET6, &addrStruct, UnsafeMutablePointer<Int8>($0.baseAddress), socklen_t(sizeof(sockaddr_in6))) != nil }) else {
+        guard address.withUnsafeMutableBufferPointer({
+            inet_ntop(
+                AF_INET6,
+                &addrStruct,
+                UnsafeMutablePointer<Int8>($0.baseAddress),
+                socklen_t(sizeof(sockaddr_in6))
+            ) != nil
+        }) else {
             throw OSError.lastIOError()
         }
-        return String(bytes: address as [UInt8], encoding: NSUTF8StringEncoding)!
+        let bytes: [UInt8]
+        if let index = address.indexOf(0) {
+            bytes = Array(address.prefixUpTo(index))
+        } else {
+            bytes = address
+        }
+        return String(bytes: bytes as [UInt8], encoding: NSUTF8StringEncoding)!
     }
 }
