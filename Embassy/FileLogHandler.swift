@@ -22,6 +22,7 @@ public struct FileLogHandler: LogHandlerType {
         if let formatter = formatter {
             let msg = formatter.format(record) + "\n"
             fileHandle.writeData(msg.dataUsingEncoding(NSUTF8StringEncoding)!)
+            fileHandle.synchronizeFile()
         }
     }
 
