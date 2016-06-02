@@ -9,7 +9,7 @@
 import Foundation
 
 public final class HTTPServer: HTTPServerType {
-    let logger = Logger()
+    public let logger = Logger()
     public var app: SWSGI
 
     /// Interface of TCP/IP to bind
@@ -66,22 +66,27 @@ public final class HTTPServer: HTTPServerType {
     private func handleNewConnection() {
         let clientSocket = try! acceptSocket.accept()
         let (address, port) = try! clientSocket.getPeerName()
-        logger.info("New connection from [\(address)]:\(port)")
         let transport = Transport(socket: clientSocket, eventLoop: eventLoop)
         let connection = HTTPConnection(
             app: appForConnection,
             serverName: "[\(interface)]",
             serverPort: self.port,
             transport: transport,
-            eventLoop: eventLoop
+            eventLoop: eventLoop,
+            logger: logger
         )
         connections.insert(connection)
         connection.closedCallback = { [unowned self] in
             self.connections.remove(connection)
         }
+        logger.info("New connection \(connection.uuid) from [\(address)]:\(port)")
     }
 
-    private func appForConnection(environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) {
+    private func appForConnection(
+        environ: [String: Any],
+        startResponse: ((String, [(String, String)]) -> Void),
+        sendBody: ([UInt8] -> Void)
+    ) {
         app(environ: environ, startResponse: startResponse, sendBody: sendBody)
     }
 

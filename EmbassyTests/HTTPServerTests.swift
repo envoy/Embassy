@@ -13,11 +13,11 @@ import XCTest
 class HTTPServerTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.http-server", DISPATCH_QUEUE_SERIAL)
     var loop: SelectorEventLoop!
-    
+
     override func setUp() {
         super.setUp()
         loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-        
+
         // set a 30 seconds timeout
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
             if self.loop.running {
@@ -26,7 +26,7 @@ class HTTPServerTests: XCTestCase {
             }
         }
     }
-    
+
     override func tearDown() {
         super.tearDown()
     }
@@ -39,16 +39,16 @@ class HTTPServerTests: XCTestCase {
             self.loop.stop()
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
             let task = NSURLSession.sharedSession().dataTaskWithURL( NSURL(string: "http://[::1]:\(port)/path?foo=bar")!)
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(receivedEnviron["REQUEST_METHOD"] as? String, "GET")
         XCTAssertEqual(receivedEnviron["HTTP_HOST"] as? String, "[::1]:\(port)")
         XCTAssertEqual(receivedEnviron["SERVER_PROTOCOL"] as? String, "HTTP/1.1")
@@ -64,7 +64,7 @@ class HTTPServerTests: XCTestCase {
         XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
         XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoopType)
     }
-    
+
     func testStartResponse() {
         let port = try! getUnusedTCPPort()
         let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
@@ -76,9 +76,9 @@ class HTTPServerTests: XCTestCase {
             sendBody([])
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         var receivedData: NSData?
         var receivedResponse: NSHTTPURLResponse?
         var receivedError: NSError?
@@ -91,9 +91,9 @@ class HTTPServerTests: XCTestCase {
             }
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(receivedData?.length, 0)
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 451)
@@ -101,7 +101,7 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedResponse?.allHeaderFields["Server"] as? String, "Embassy-by-envoy")
         XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"] as? String, "Bar")
     }
-    
+
     func testSendBody() {
         let port = try! getUnusedTCPPort()
         let bigDataChunk = Array(makeRandomString(574300).utf8)
@@ -111,9 +111,9 @@ class HTTPServerTests: XCTestCase {
             sendBody([])
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         var receivedData: NSData?
         var receivedResponse: NSHTTPURLResponse?
         var receivedError: NSError?
@@ -126,23 +126,23 @@ class HTTPServerTests: XCTestCase {
             }
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         let data = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(receivedData!.bytes), count: receivedData!.length))
         XCTAssertEqual(receivedData?.length, bigDataChunk.count)
         XCTAssertEqual(data, bigDataChunk)
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
     }
-    
+
     func testAsyncSendBody() {
         let port = try! getUnusedTCPPort()
         let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
             startResponse("200 OK", [])
-            
+
             let loop = environ["embassy.event_loop"] as! EventLoopType
-            
+
             loop.callLater(1) {
                 sendBody(Array("hello ".utf8))
             }
@@ -155,9 +155,9 @@ class HTTPServerTests: XCTestCase {
             }
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         var receivedData: NSData?
         var receivedResponse: NSHTTPURLResponse?
         var receivedError: NSError?
@@ -170,17 +170,17 @@ class HTTPServerTests: XCTestCase {
             }
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(NSString(data: receivedData!, encoding: NSUTF8StringEncoding)!, "hello baby fin")
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
     }
-    
+
     func testPostBody() {
         let port = try! getUnusedTCPPort()
-        
+
         let postBodyString = makeRandomString(40960)
         var receivedInputData: [[UInt8]] = []
         let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
@@ -192,9 +192,9 @@ class HTTPServerTests: XCTestCase {
             }
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
             let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
             request.HTTPMethod = "POST"
@@ -204,19 +204,19 @@ class HTTPServerTests: XCTestCase {
             }
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         // ensure EOF is passed
         XCTAssertEqual(receivedInputData.last?.count, 0)
-        
+
         let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
         XCTAssertEqual(receivedString, postBodyString)
     }
-    
+
     func testPostWithInitialBody() {
         let port = try! getUnusedTCPPort()
-        
+
         // this chunk is small enough, ideally should be sent along with header (initial body)
         let postBodyString = "hello"
         var receivedInputData: [[UInt8]] = []
@@ -229,9 +229,9 @@ class HTTPServerTests: XCTestCase {
             }
         }
         let server = HTTPServer(eventLoop: loop, app: app, port: port)
-        
+
         try! server.start()
-        
+
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
             let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
             request.HTTPMethod = "POST"
@@ -241,12 +241,12 @@ class HTTPServerTests: XCTestCase {
             }
             task.resume()
         }
-        
+
         loop.runForever()
-        
+
         // ensure EOF is passed
         XCTAssertEqual(receivedInputData.last?.count, 0)
-        
+
         let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
         XCTAssertEqual(receivedString, postBodyString)
     }
