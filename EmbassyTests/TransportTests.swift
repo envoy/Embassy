@@ -14,12 +14,12 @@ class TransportTests: XCTestCase {
     let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
     func testBigChunkReadAndWrite() {
         let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-        
+
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
-        
+
         var clientReceivedData: [String] = []
         var serverReceivedData: [String] = []
         var totalReceivedSize = 0
@@ -37,7 +37,7 @@ class TransportTests: XCTestCase {
             dataChunk5,
             dataChunk6
         ].reduce(0) { $0.0 + $0.1.characters.count }
-        
+
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
@@ -48,7 +48,7 @@ class TransportTests: XCTestCase {
         }
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
-        
+
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
@@ -59,10 +59,10 @@ class TransportTests: XCTestCase {
                 }
             }
         }
-        
+
         try! clientSocket.connect("::1", port: port)
 
-        
+
         loop.callLater(1) {
             clientTransport.writeUTF8(dataChunk1)
         }
@@ -81,13 +81,13 @@ class TransportTests: XCTestCase {
         loop.callLater(6) {
             serverTransport.writeUTF8(dataChunk6)
         }
-        
+
         loop.callLater(10) {
             loop.stop()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(serverReceivedData.joinWithSeparator(""), [
             dataChunk1,
             dataChunk3,
@@ -99,18 +99,18 @@ class TransportTests: XCTestCase {
             dataChunk6
         ].joinWithSeparator(""))
     }
-    
+
     func testReadAndWrite() {
         let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-        
+
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
-        
+
         var clientReceivedData: [String] = []
         var serverReceivedData: [String] = []
-        
+
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
@@ -120,7 +120,7 @@ class TransportTests: XCTestCase {
         }
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
-        
+
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
@@ -130,9 +130,9 @@ class TransportTests: XCTestCase {
                 }
             }
         }
-        
+
         try! clientSocket.connect("::1", port: port)
-        
+
         loop.callLater(1) {
             clientTransport.writeUTF8("a")
         }
@@ -151,35 +151,35 @@ class TransportTests: XCTestCase {
         loop.callLater(6) {
             serverTransport.writeUTF8("3")
         }
-        
+
         loop.callLater(10) {
             loop.stop()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(serverReceivedData, ["a", "b", "c"])
         XCTAssertEqual(clientReceivedData, ["1", "2", "3"])
     }
 
     func testCloseByPeer() {
         let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-        
+
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
-        
-        
+
+
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { _ in
-            
+
         }
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
         var serverReceivedData: [String] = []
         var serverTransportClosed: Bool = false
-        
+
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(
@@ -196,14 +196,14 @@ class TransportTests: XCTestCase {
                 }
             )
         }
-        
+
         try! clientSocket.connect("::1", port: port)
         let bigDataChunk = makeRandomString(574300)
-        
+
         loop.callLater(1) {
             clientTransport.writeUTF8("hello")
         }
-        
+
         loop.callLater(2) {
             XCTAssertFalse(clientTransport.closed)
             XCTAssertFalse(clientTransport.closing)
@@ -213,30 +213,30 @@ class TransportTests: XCTestCase {
             XCTAssertFalse(clientTransport.closed)
             XCTAssertTrue(clientTransport.closing)
         }
-        
+
         loop.callLater(10) {
             loop.stop()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssert(serverTransportClosed)
         XCTAssert(clientTransport.closed)
         XCTAssert(serverTransport.closed)
         XCTAssertEqual(serverReceivedData.joinWithSeparator("").characters.count, "hello".characters.count + bigDataChunk.characters.count)
     }
-    
+
     func testReadingPause() {
         let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-        
+
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port)
         try! listenSocket.listen()
-        
+
         var clientReceivedData: [String] = []
         var serverReceivedData: [String] = []
-        
+
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
@@ -246,7 +246,7 @@ class TransportTests: XCTestCase {
         }
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
-        
+
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
@@ -256,9 +256,9 @@ class TransportTests: XCTestCase {
                 }
             }
         }
-        
+
         try! clientSocket.connect("::1", port: port)
-        
+
         loop.callLater(1) {
             clientTransport.writeUTF8("a")
         }
@@ -292,9 +292,9 @@ class TransportTests: XCTestCase {
         loop.callLater(10) {
             loop.stop()
         }
-        
+
         loop.runForever()
-        
+
         XCTAssertEqual(serverReceivedData, ["a", "bc"])
         XCTAssertEqual(clientReceivedData, ["1", "23"])
     }

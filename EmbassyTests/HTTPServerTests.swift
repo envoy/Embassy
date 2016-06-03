@@ -43,7 +43,9 @@ class HTTPServerTests: XCTestCase {
         try! server.start()
 
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL( NSURL(string: "http://[::1]:\(port)/path?foo=bar")!)
+            let task = NSURLSession.sharedSession().dataTaskWithURL(
+                NSURL(string: "http://[::1]:\(port)/path?foo=bar")!
+            )
             task.resume()
         }
 

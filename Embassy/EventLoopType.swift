@@ -13,7 +13,7 @@ import Foundation
 public protocol EventLoopType {
     /// Indicate whether is this event loop running
     var running: Bool { get }
-    
+
     /// Set a read-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be read
@@ -22,7 +22,7 @@ public protocol EventLoopType {
     /// Remove reader callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     func removeReader(fileDescriptor: Int32)
-    
+
     /// Set a write-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be written
@@ -31,16 +31,16 @@ public protocol EventLoopType {
     /// Remove writer callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     func removeWriter(fileDescriptor: Int32)
-    
+
     /// Call given callback as soon as possible (the next event loop iteration)
     ///  - Parameter callback: the callback function to be called
     func callSoon(callback: Void -> Void)
-    
+
     /// Call given callback `delay` seconds later
     ///  - Parameter delay: delaying in seconds
     ///  - Parameter callback: the callback function to be called
     func callLater(delay: NSTimeInterval, callback: Void -> Void)
-    
+
     /// Call given callback at specific time
     ///  - Parameter time: time the callback to be called
     ///  - Parameter callback: the callback function to be called

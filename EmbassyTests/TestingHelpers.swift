@@ -22,7 +22,7 @@ func getUnusedTCPPort() throws -> Int {
     guard "127.0.0.1".withCString({ inet_pton(AF_INET, $0, &interfaceAddress) >= 0 }) else {
         throw OSError.lastIOError()
     }
-    
+
     let fileDescriptor = socket(AF_INET, SOCK_STREAM, 0)
     guard fileDescriptor >= 0 else {
         throw OSError.lastIOError()
@@ -30,7 +30,7 @@ func getUnusedTCPPort() throws -> Int {
     defer {
         close(fileDescriptor)
     }
-    
+
     var address = sockaddr_in(
         sin_len: UInt8(strideof(sockaddr_in)),
         sin_family: UInt8(AF_INET),
@@ -44,7 +44,7 @@ func getUnusedTCPPort() throws -> Int {
     }) else {
         throw OSError.lastIOError()
     }
-    
+
     var socketAddress = sockaddr_in()
     var size = socklen_t(sizeof(sockaddr_in))
     guard withUnsafeMutablePointer(&socketAddress, { pointer in

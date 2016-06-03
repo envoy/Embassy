@@ -14,14 +14,14 @@ public final class Transport {
         case ByPeer
         /// Connection closed by ourselve
         case ByLocal
-        
+
         var isByPeer: Bool {
             if case .ByPeer = self {
                 return true
             }
             return false
         }
-        
+
         var isByLocal: Bool {
             if case .ByLocal = self {
                 return true
@@ -29,24 +29,24 @@ public final class Transport {
             return false
         }
     }
-    
+
     /// Size for recv
     static let recvChunkSize = 1024
-    
+
     /// Is this transport closed or not
     private(set) var closed: Bool = false
     /// Is this transport closing
     private(set) var closing: Bool = false
     var closedCallback: (CloseReason -> Void)?
     var readDataCallback: ([UInt8] -> Void)?
-    
+
     private let socket: TCPSocket
     private let eventLoop: EventLoopType
     // buffer for sending data out
     private var outgoingBuffer = [UInt8]()
     // is reading enabled or not
     private var reading: Bool = true
-    
+
     init(socket: TCPSocket, eventLoop: EventLoopType, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
         socket.ignoreSigPipe = true
         self.socket = socket
@@ -56,12 +56,12 @@ public final class Transport {
         eventLoop.setReader(socket.fileDescriptor, callback: handleRead)
         eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
     }
-    
+
     deinit {
         eventLoop.removeReader(socket.fileDescriptor)
         eventLoop.removeWriter(socket.fileDescriptor)
     }
-    
+
     /// Send data to peer (append in buffer and will be sent out later)
     ///  - Parameter data: data to send
     func write(data: [UInt8]) {
@@ -74,13 +74,13 @@ public final class Transport {
         outgoingBuffer += data
         handleWrite()
     }
-    
+
     /// Send string with UTF8 encoding to peer
     ///  - Parameter string: string to send as UTF8
     func writeUTF8(string: String) {
         write(Array(string.utf8))
     }
-    
+
     /// Flush outgoing data and close the transport
     func close() {
         // ensure we are not closed nor closing
@@ -91,7 +91,7 @@ public final class Transport {
         closing = true
         handleWrite()
     }
-    
+
     func resumeReading(reading: Bool) {
         // switch from not-reading to reading
         if reading && !self.reading {
@@ -102,7 +102,7 @@ public final class Transport {
         }
         self.reading = reading
     }
-    
+
     private func closedByPeer() {
         closed = true
         eventLoop.removeReader(socket.fileDescriptor)
@@ -112,7 +112,7 @@ public final class Transport {
         }
         socket.close()
     }
-    
+
     private func handleRead() {
         // ensure we are not closed
         guard !closed else {
@@ -146,7 +146,7 @@ public final class Transport {
             callback(data)
         }
     }
-    
+
     private func handleWrite() {
         // ensure we are not closed
         guard !closed else {

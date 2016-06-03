@@ -2,6 +2,9 @@
 engines:
   tailor:
     enabled: true
+    checks:
+      function-whitespace:
+        enabled: false
 ratings:
   paths:
   - "**.swift"

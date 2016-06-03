@@ -16,7 +16,7 @@ struct IOUtils {
         let flags = fcntl(fileDescriptor, F_GETFL, 0)
         return flags & O_NONBLOCK == 0
     }
-    
+
     /// Set blocking mode for a file descriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter blocking: enable blocking mode or not
@@ -30,5 +30,5 @@ struct IOUtils {
         }
         let _ = fcntl(fileDescriptor, F_SETFL, newFlags)
     }
-    
+
 }

@@ -13,54 +13,54 @@ import XCTest
 class HeapSortTetsts: XCTestCase {
     func testPush() {
         var heap: [Int] = []
-        
+
         HeapSort.heapPush(&heap, item: 100)
         XCTAssertEqual(heap, [100])
-        
+
         HeapSort.heapPush(&heap, item: 50)
         XCTAssertEqual(heap, [50, 100])
-        
+
         HeapSort.heapPush(&heap, item: 25)
         XCTAssertEqual(heap, [25, 100, 50])
-        
+
         HeapSort.heapPush(&heap, item: 49)
         XCTAssertEqual(heap, [25, 49, 50, 100])
-        
+
         HeapSort.heapPush(&heap, item: 51)
         XCTAssertEqual(heap, [25, 49, 50, 100, 51])
-        
+
         HeapSort.heapPush(&heap, item: 52)
         XCTAssertEqual(heap, [25, 49, 50, 100, 51, 52])
-        
+
         HeapSort.heapPush(&heap, item: 48)
         XCTAssertEqual(heap, [25, 49, 48, 100, 51, 52, 50])
     }
-    
+
     func testPop() {
         var heap = [25, 49, 48, 100, 51, 52, 50]
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 25)
         XCTAssertEqual(heap, [48, 49, 50, 100, 51, 52])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 48)
         XCTAssertEqual(heap, [49, 51, 50, 100, 52])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 49)
         XCTAssertEqual(heap, [50, 51, 52, 100])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 50)
         XCTAssertEqual(heap, [51, 100, 52])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 51)
         XCTAssertEqual(heap, [52, 100])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 52)
         XCTAssertEqual(heap, [100])
-        
+
         XCTAssertEqual(HeapSort.heapPop(&heap), 100)
         XCTAssertEqual(heap, [])
     }
-    
+
     func testSortWithRandomNumbers() {
         let array: [UInt32] = Array(0..<100).map { _ in arc4random() }
         var heap: [UInt32] = []
@@ -73,7 +73,7 @@ class HeapSortTetsts: XCTestCase {
         }
         XCTAssertEqual(resultArray, array.sort())
     }
-    
+
     func testSortWithRandomNumbersWithCustomCompareFunction() {
         let array: [UInt32] = Array(0..<100).map { _ in arc4random() }
         var heap: [UInt32] = []
