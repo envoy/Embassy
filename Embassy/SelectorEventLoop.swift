@@ -32,7 +32,7 @@ public final class SelectorEventLoop: EventLoopType {
     private var readyCallbacks = Atomic<[(Void -> Void)]>([])
     // callbacks scheduled to be called later
     private var scheduledCallbacks = Atomic<[(NSDate, (Void -> Void))]>([])
-    
+
     public init(selector: SelectorType) throws {
         self.selector = selector
         var pipeFds = [Int32](count: 2, repeatedValue: 0)
@@ -48,7 +48,7 @@ public final class SelectorEventLoop: EventLoopType {
         // to be interrupted
         setReader(pipeReceiver) {}
     }
-    
+
     deinit {
         stop()
         close(pipeSender)
@@ -67,7 +67,7 @@ public final class SelectorEventLoop: EventLoopType {
             try! selector.register(fileDescriptor, events: [.Read], data: CallbackHandle(reader: callback))
         }
     }
-    
+
     public func removeReader(fileDescriptor: Int32) {
         guard let key = selector[fileDescriptor] else {
             return
@@ -81,7 +81,7 @@ public final class SelectorEventLoop: EventLoopType {
         let handle = CallbackHandle(reader: nil, writer: oldHandle.writer)
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
-    
+
     public func setWriter(fileDescriptor: Int32, callback: Void -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
@@ -94,7 +94,7 @@ public final class SelectorEventLoop: EventLoopType {
             try! selector.register(fileDescriptor, events: [.Write], data: CallbackHandle(writer: callback))
         }
     }
-    
+
     public func removeWriter(fileDescriptor: Int32) {
         guard let key = selector[fileDescriptor] else {
             return
@@ -108,7 +108,7 @@ public final class SelectorEventLoop: EventLoopType {
         let handle = CallbackHandle(reader: oldHandle.reader, writer: nil)
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
-    
+
     public func callSoon(callback: Void -> Void) {
         readyCallbacks.modify { callbacks in
             var callbacks = callbacks
@@ -117,11 +117,11 @@ public final class SelectorEventLoop: EventLoopType {
         }
         interruptSelector()
     }
-    
+
     public func callLater(delay: NSTimeInterval, callback: Void -> Void) {
         callAt(NSDate().dateByAddingTimeInterval(delay), callback: callback)
     }
-    
+
     public func callAt(time: NSDate, callback: Void -> Void) {
         scheduledCallbacks.modify { callbacks in
             var callbacks = callbacks
@@ -130,25 +130,25 @@ public final class SelectorEventLoop: EventLoopType {
         }
         interruptSelector()
     }
-    
+
     public func stop() {
         running = false
         interruptSelector()
     }
-    
+
     public func runForever() {
         running = true
         while running {
             runOnce()
         }
     }
-    
+
     // interrupt the selector
     private func interruptSelector() {
         let byte = [UInt8](count: 1, repeatedValue: 0)
         assert(write(pipeSender, byte, byte.count) >= 0, "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())")
     }
-    
+
     // Run once iteration for the event loop
     private func runOnce() {
         var timeout: NSTimeInterval?
@@ -162,7 +162,7 @@ public final class SelectorEventLoop: EventLoopType {
                 timeout = nil
             }
         }
-        
+
         var events: [(SelectorKey, Set<IOEvent>)] = []
         // Poll IO events
         do {
@@ -189,7 +189,7 @@ public final class SelectorEventLoop: EventLoopType {
                 }
             }
         }
-        
+
         // Call scheduled callbacks
         let now = NSDate()
         var readyScheduledCallbacks: [(Void -> Void)] = []
@@ -204,12 +204,12 @@ public final class SelectorEventLoop: EventLoopType {
             }
             return notExpiredCallbacks
         }
-        
+
         // Call ready callbacks
         let callbacks = readyCallbacks.swap([]) + readyScheduledCallbacks
         for callback in callbacks {
             callback()
         }
     }
-    
+
 }
