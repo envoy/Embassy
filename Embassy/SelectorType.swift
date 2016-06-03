@@ -33,13 +33,13 @@ public protocol SelectorType {
     ///  - Parameter data: user custom data to be returned when we see an IO event
     ///  - Returns: added SelectorKey
     func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey
-    
+
     /// Unregister a file descriptor from selector
     func unregister(fileDescriptor: Int32) throws -> SelectorKey
-    
+
     /// Close the selector to release underlaying resource
     func close()
-    
+
     /// Select to see if the registered file descriptors have IO events, wait until
     /// we see a file descriptor ready or timeout
     ///  - Parameter timeout: how long time to wait until return empty list,
@@ -47,7 +47,7 @@ public protocol SelectorType {
     ///                       if timeout == nil, it will block until there is a file descriptor ready
     ///  - Returns: an array of (key, events) for ready file descriptors
     func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)]
-    
+
     /// Return the SelectorKey for given file descriptor
     subscript(fileDescriptor: Int32) -> SelectorKey? { get }
 }

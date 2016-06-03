@@ -249,7 +249,7 @@ public final class HTTPConnection {
 extension HTTPConnection: Equatable {
 }
 
-public func ==(lhs: HTTPConnection, rhs: HTTPConnection) -> Bool {
+public func == (lhs: HTTPConnection, rhs: HTTPConnection) -> Bool {
     return lhs.uuid == rhs.uuid
 }
 
