@@ -12,7 +12,7 @@ import XCTest
 
 extension HTTPHeaderParser.Element: Equatable {
 }
-public func ==(lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
+public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
     switch lhs {
     case .Head(let lhsMethod, let lhsPath, let lhsVersion):
         if case .Head(let rhsMethod, let rhsPath, let rhsVersion) = rhs {
