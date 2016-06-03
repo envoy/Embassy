@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/envoy/Embassy.svg?branch=master)](https://travis-ci.org/envoy/Embassy)
 [![Code Climate](https://codeclimate.com/github/envoy/Embassy/badges/gpa.svg)](https://codeclimate.com/github/envoy/Embassy)
+[![Issue Count](https://codeclimate.com/github/envoy/Embassy/badges/issue_count.svg)](https://codeclimate.com/github/envoy/Embassy)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
 Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking
