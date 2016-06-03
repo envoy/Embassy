@@ -3,6 +3,8 @@ engines:
   tailor:
     enabled: true
     checks:
+      forced-type-cast:
+        enabled: false
       function-whitespace:
         enabled: false
 ratings:

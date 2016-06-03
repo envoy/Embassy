@@ -92,10 +92,10 @@ extension MultiDictionary: CollectionType {
     public func generate() -> MultiDictionary.Generator {
         return items.generate()
     }
-    public subscript (position: MultiDictionary.Index) -> MultiDictionary.Generator.Element {
+    public subscript(position: MultiDictionary.Index) -> MultiDictionary.Generator.Element {
         return items[position]
     }
-    public subscript (bounds: Range<MultiDictionary.Index>) -> MultiDictionary.SubSequence {
+    public subscript(bounds: Range<MultiDictionary.Index>) -> MultiDictionary.SubSequence {
         return items[bounds]
     }
     public func prefixUpTo(end: MultiDictionary.Index) -> MultiDictionary.SubSequence {

@@ -10,7 +10,7 @@ import Foundation
 
 // from http://stackoverflow.com/a/24052094/25077
 /// Update one dictionay by another
-private func +=<K, V> (inout left: [K: V], right: [K: V]) {
+private func += <K, V>(inout left: [K: V], right: [K: V]) {
     for (k, v) in right {
         left.updateValue(v, forKey: k)
     }
@@ -23,7 +23,7 @@ public struct SWSGIUtils {
             "REQUEST_METHOD": String(request.method),
             "SCRIPT_NAME": ""
         ]
-        
+
         let queryParts = request.path.componentsSeparatedByString("?")
         if queryParts.count > 1 {
             environ["PATH_INFO"] = queryParts[0]
@@ -40,7 +40,7 @@ public struct SWSGIUtils {
         environ += environForHeaders(request.headers)
         return environ
     }
-    
+
     /// Transform given header key value pair array into environ style header map,
     /// like from Content-Length to HTTP_CONTENT_LENGTH
     static func environForHeaders(
