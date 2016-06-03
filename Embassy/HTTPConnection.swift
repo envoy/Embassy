@@ -144,10 +144,7 @@ public final class HTTPConnection {
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop as? AnyObject
 
-        if
-            let contentLength = request.headers["Content-Length"],
-            let length = Int(contentLength)
-        {
+        if let contentLength = request.headers["Content-Length"], length = Int(contentLength) {
             self.contentLength = length
         }
 

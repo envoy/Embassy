@@ -18,7 +18,7 @@ class MultiDictionaryTests: XCTestCase {
             ("Set-cookie", "foo=bar"),
             ("Set-Cookie", "egg=spam")
         ])
-        
+
         XCTAssertNil(dict["Not-Exists"])
         XCTAssertNil(dict.valuesFor("Not-Exists"))
 
