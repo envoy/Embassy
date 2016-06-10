@@ -141,6 +141,7 @@ Some extra Embassy server specific keys are
 
  - `embassy.connection` - `HTTPConnection` object for the request
  - `embassy.event_loop` - `EventLoopType` object
+ - `embassy.version` - Version of embassy as a String, e.g. `1.1.0`
 
 ### `startResponse`
 
@@ -181,7 +182,3 @@ pod 'Embassy', '~> 0.0.1-alpha-13'
 ### Carthage
 
 To be done
-
-## TODOs
-
- - [ ] Add embassy version key in environ
