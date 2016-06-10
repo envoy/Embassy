@@ -186,7 +186,7 @@
 				D866875A1D00C70400FA53F2 /* PrintLogHandler.swift */,
 				D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */,
 			);
-			name = Logging;
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		D866875C1D00D67700FA53F2 /* HTTP */ = {
@@ -198,7 +198,7 @@
 				D83A719F1CF152F300C0C21C /* HTTPRequest.swift */,
 				D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */,
 			);
-			name = HTTP;
+			path = HTTP;
 			sourceTree = "<group>";
 		};
 		D866875D1D00D69900FA53F2 /* IO */ = {
@@ -212,7 +212,7 @@
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
 				D83A71951CF119D200C0C21C /* IOUtils.swift */,
 			);
-			name = IO;
+			path = IO;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
