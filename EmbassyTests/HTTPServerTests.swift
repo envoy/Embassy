@@ -281,4 +281,25 @@ class HTTPServerTests: XCTestCase {
         XCTAssert(called)
     }
 
+    func testStopAndWait() {
+        let port = try! getUnusedTCPPort()
+        let app = { (
+            environ: [String: Any],
+            startResponse: ((String, [(String, String)]) -> Void),
+            sendBody: ([UInt8] -> Void)
+        ) in
+            startResponse("200 OK", [])
+            sendBody([])
+        }
+        let server = HTTPServer(eventLoop: loop, app: app, port: port)
+        try! server.start()
+
+        dispatch_async(queue) {
+            self.loop.runForever()
+        }
+        assertExecutingTime(0, accuracy: 0.5) {
+            server.stopAndWait()
+        }
+        loop.stop()
+    }
 }
