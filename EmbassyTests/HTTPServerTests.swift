@@ -65,7 +65,6 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
         XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
         XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoopType)
-        XCTAssertNotNil(receivedEnviron["embassy.build"] as? String)
         XCTAssertNotNil(receivedEnviron["embassy.version"] as? String)
     }
 
