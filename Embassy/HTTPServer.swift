@@ -62,6 +62,15 @@ public final class HTTPServer: HTTPServerType {
         logger.info("HTTP server stopped")
     }
 
+    public func stopAndWait() {
+        let semaphore = dispatch_semaphore_create(0)
+        eventLoop.callSoon {
+            self.stop()
+            dispatch_semaphore_signal(semaphore)
+        }
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
+    }
+
     // called to handle new connections
     private func handleNewConnection() {
         let clientSocket = try! acceptSocket.accept()
