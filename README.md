@@ -184,5 +184,4 @@ To be done
 
 ## TODOs
 
- - [ ] Configurable logging handler
  - [ ] Add embassy version key in environ
