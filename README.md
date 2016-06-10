@@ -20,7 +20,7 @@ Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mo
 Here's a simple example shows how Embassy works.
 
 ```Swift
-let loop = try! EventLoop(selector: try! KqueueSelector())
+let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
     // Start HTTP response
     startResponse("200 OK", [])
