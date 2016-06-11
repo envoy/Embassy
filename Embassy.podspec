@@ -12,5 +12,5 @@ Pod::Spec.new do |spec|
     git: 'https://github.com/envoy/Embassy.git',
     tag: "v#{spec.version}"
   }
-  spec.source_files = 'Embassy/*.swift'
+  spec.source_files = 'Embassy/**.swift', 'Embassy/**/*.swift'
 end
