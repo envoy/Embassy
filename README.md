@@ -53,7 +53,11 @@ the path you're visiting is /foo-bar
 To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
 
 ```Swift
-let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let app = { (
+      environ: [String: Any],
+      startResponse: ((String, [(String, String)]) -> Void),
+      sendBody: ([UInt8] -> Void)
+    ) in
     startResponse("200 OK", [])
 
     let loop = environ["embassy.event_loop"] as! EventLoopType
