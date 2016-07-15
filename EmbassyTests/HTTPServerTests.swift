@@ -116,7 +116,7 @@ class HTTPServerTests: XCTestCase {
     func testSendBody() {
         let port = try! getUnusedTCPPort()
         let bigDataChunk = Array(makeRandomString(574300).utf8)
-        let server = HTTPServer(eventLoop: loop,port: port) {
+        let server = HTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
