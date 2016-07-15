@@ -21,7 +21,12 @@ Here's a simple example shows how Embassy works.
 
 ```Swift
 let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let server = HTTPServer(eventLoop: loop, port: 8080) {
+    (
+      environ: [String: Any],
+      startResponse: ((String, [(String, String)]) -> Void),
+      sendBody: ([UInt8] -> Void)
+    ) in
     // Start HTTP response
     startResponse("200 OK", [])
     let pathInfo = environ["PATH_INFO"]!
@@ -29,7 +34,6 @@ let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]
     // send EOF
     sendBody([])
 }
-let server = HTTPServer(eventLoop: loop, app: app, port: 8080)
 
 // Start HTTP server to listen on the port
 try! server.start()
