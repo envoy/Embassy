@@ -5,7 +5,7 @@
 [![Issue Count](https://codeclimate.com/github/envoy/Embassy/badges/issue_count.svg)](https://codeclimate.com/github/envoy/Embassy)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
-Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking.
+Super lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking.
 
 **Please read**: [Embedded web server for iOS UI testing](https://envoy.engineering/embedded-web-server-for-ios-ui-testing-8ff3cef513df#.c2i5tx380).
 
