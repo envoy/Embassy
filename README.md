@@ -21,7 +21,12 @@ Here's a simple example shows how Embassy works.
 
 ```Swift
 let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let server = HTTPServer(eventLoop: loop, port: 8080) {
+    (
+      environ: [String: Any],
+      startResponse: ((String, [(String, String)]) -> Void),
+      sendBody: ([UInt8] -> Void)
+    ) in
     // Start HTTP response
     startResponse("200 OK", [])
     let pathInfo = environ["PATH_INFO"]!
@@ -29,7 +34,6 @@ let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]
     // send EOF
     sendBody([])
 }
-let server = HTTPServer(eventLoop: loop, app: app, port: 8080)
 
 // Start HTTP server to listen on the port
 try! server.start()
@@ -49,7 +53,11 @@ the path you're visiting is /foo-bar
 To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
 
 ```Swift
-let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+let app = { (
+      environ: [String: Any],
+      startResponse: ((String, [(String, String)]) -> Void),
+      sendBody: ([UInt8] -> Void)
+    ) in
     startResponse("200 OK", [])
 
     let loop = environ["embassy.event_loop"] as! EventLoopType

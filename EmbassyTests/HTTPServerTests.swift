@@ -34,11 +34,15 @@ class HTTPServerTests: XCTestCase {
     func testEnviron() {
         let port = try! getUnusedTCPPort()
         var receivedEnviron: [String: Any]!
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             receivedEnviron = environ
             self.loop.stop()
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -70,7 +74,12 @@ class HTTPServerTests: XCTestCase {
 
     func testStartResponse() {
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
@@ -78,7 +87,6 @@ class HTTPServerTests: XCTestCase {
             ])
             sendBody([])
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -108,12 +116,16 @@ class HTTPServerTests: XCTestCase {
     func testSendBody() {
         let port = try! getUnusedTCPPort()
         let bigDataChunk = Array(makeRandomString(574300).utf8)
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("200 OK", [])
             sendBody(bigDataChunk)
             sendBody([])
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -141,7 +153,12 @@ class HTTPServerTests: XCTestCase {
 
     func testAsyncSendBody() {
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("200 OK", [])
 
             let loop = environ["embassy.event_loop"] as! EventLoopType
@@ -157,7 +174,6 @@ class HTTPServerTests: XCTestCase {
                 sendBody([])
             }
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -186,7 +202,12 @@ class HTTPServerTests: XCTestCase {
 
         let postBodyString = makeRandomString(40960)
         var receivedInputData: [[UInt8]] = []
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("200 OK", [])
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
@@ -194,7 +215,6 @@ class HTTPServerTests: XCTestCase {
                 sendBody(data)
             }
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -223,7 +243,12 @@ class HTTPServerTests: XCTestCase {
         // this chunk is small enough, ideally should be sent along with header (initial body)
         let postBodyString = "hello"
         var receivedInputData: [[UInt8]] = []
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("200 OK", [])
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
@@ -231,7 +256,6 @@ class HTTPServerTests: XCTestCase {
                 sendBody(data)
             }
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
 
         try! server.start()
 
@@ -263,11 +287,11 @@ class HTTPServerTests: XCTestCase {
             self.loop.stop()
             called = true
         }
-        let server1 = HTTPServer(eventLoop: loop, app: app, port: port)
+        let server1 = HTTPServer(eventLoop: loop, port: port, app: app)
         try! server1.start()
         server1.stop()
 
-        let server2 = HTTPServer(eventLoop: loop, app: app, port: port)
+        let server2 = HTTPServer(eventLoop: loop, port: port, app: app)
         try! server2.start()
 
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
@@ -283,15 +307,15 @@ class HTTPServerTests: XCTestCase {
 
     func testStopAndWait() {
         let port = try! getUnusedTCPPort()
-        let app = { (
-            environ: [String: Any],
-            startResponse: ((String, [(String, String)]) -> Void),
-            sendBody: ([UInt8] -> Void)
-        ) in
+        let server = HTTPServer(eventLoop: loop, port: port) {
+            (
+                environ: [String: Any],
+                startResponse: ((String, [(String, String)]) -> Void),
+                sendBody: ([UInt8] -> Void)
+            ) in
             startResponse("200 OK", [])
             sendBody([])
         }
-        let server = HTTPServer(eventLoop: loop, app: app, port: port)
         try! server.start()
 
         dispatch_async(queue) {

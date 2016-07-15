@@ -22,11 +22,22 @@ public final class HTTPServer: HTTPServerType {
     private let eventLoop: EventLoopType
     private var connections = Set<HTTPConnection>()
 
-    public init(eventLoop: EventLoopType, app: SWSGI, interface: String = "::1", port: Int = 8080) {
+    public init(eventLoop: EventLoopType, interface: String = "::1", port: Int = 8080, app: SWSGI) {
         self.eventLoop = eventLoop
         self.app = app
         self.interface = interface
         self.port = port
+    }
+
+    // deprecated init, just for backward backward compatibility, use designed init instead, as
+    // it has app as the tailing closure, make it easier to write.
+    public convenience init(
+        eventLoop: EventLoopType,
+        app: SWSGI,
+        interface: String = "::1",
+        port: Int = 8080
+    ) {
+        self.init(eventLoop: eventLoop, interface: interface, port: port, app: app)
     }
 
     deinit {
