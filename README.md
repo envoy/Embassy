@@ -7,6 +7,8 @@
 
 Lightweight async HTTP server in pure Swift for iOS UI Automatic testing data mocking. Please reference to [Embedded web server for iOS UI testing](https://envoy.engineering/embedded-web-server-for-ios-ui-testing-8ff3cef513df#.c2i5tx380).
 
+See also: Our lightweight web framework [Ambassador](https://github.com/envoy/Ambassador) based on Embassy
+
 ## Features
 
  - Super lightweight, only 1.5 K of lines
