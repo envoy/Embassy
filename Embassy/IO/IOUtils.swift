@@ -12,7 +12,7 @@ struct IOUtils {
     /// Get blocking mode from a file descriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Returns: is the file in blocking mode or not
-    static func getBlocking(fileDescriptor: Int32) -> Bool {
+    static func getBlocking(_ fileDescriptor: Int32) -> Bool {
         let flags = fcntl(fileDescriptor, F_GETFL, 0)
         return flags & O_NONBLOCK == 0
     }
@@ -20,7 +20,7 @@ struct IOUtils {
     /// Set blocking mode for a file descriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter blocking: enable blocking mode or not
-    static func setBlocking(fileDescriptor: Int32, blocking: Bool) {
+    static func setBlocking(_ fileDescriptor: Int32, blocking: Bool) {
         let flags = fcntl(fileDescriptor, F_GETFL, 0)
         let newFlags: Int32
         if blocking {

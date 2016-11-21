@@ -9,31 +9,31 @@
 import Foundation
 
 /// A log handler which writes log records to given file handle
-public struct FileLogHandler: LogHandlerType {
-    let fileHandle: NSFileHandle
-    public var formatter: LogFormatterType?
+public struct FileLogHandler: LogHandler {
+    let fileHandle: FileHandle
+    public var formatter: LogFormatter?
 
-    private let queue = dispatch_queue_create(
-        "com.envoy.Embassy.logging.FileLogHandler.queue",
-        DISPATCH_QUEUE_SERIAL
+    private let queue = DispatchQueue(
+        label: "com.envoy.Embassy.logging.FileLogHandler.queue",
+        attributes: []
     )
 
-    public init(fileHandle: NSFileHandle, formatter: LogFormatterType? = DefaultLogFormatter()) {
+    public init(fileHandle: FileHandle, formatter: LogFormatter? = DefaultLogFormatter()) {
         self.fileHandle = fileHandle
         self.formatter = formatter
     }
 
-    public func emit(record: LogRecord) {
-        dispatch_async(queue) {
+    public func emit(_ record: LogRecord) {
+        queue.async {
             if let formatter = self.formatter {
                 let msg = formatter.format(record) + "\n"
-                self.fileHandle.writeData(msg.dataUsingEncoding(NSUTF8StringEncoding)!)
+                self.fileHandle.write(msg.data(using: String.Encoding.utf8)!)
                 self.fileHandle.synchronizeFile()
             }
         }
     }
 
     public static func stderrHandler() -> FileLogHandler {
-        return FileLogHandler(fileHandle: NSFileHandle.fileHandleWithStandardError())
+        return FileLogHandler(fileHandle: FileHandle.standardError)
     }
 }

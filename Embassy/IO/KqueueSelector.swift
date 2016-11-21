@@ -8,9 +8,9 @@
 
 import Foundation
 
-public final class KqueueSelector: SelectorType {
-    enum Error: ErrorType {
-        case KeyError(fileDescriptor: Int32)
+public final class KqueueSelector: Selector {
+    enum LocalError: Error {
+        case keyError(fileDescriptor: Int32)
     }
 
     // the maximum event number to select from kqueue at once (one kevent call)
@@ -30,10 +30,11 @@ public final class KqueueSelector: SelectorType {
         close()
     }
 
-    public func register(fileDescriptor: Int32, events: Set<IOEvent>, data: AnyObject?) throws -> SelectorKey {
+    @discardableResult
+    public func register(_ fileDescriptor: Int32, events: Set<IOEvent>, data: Any?) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
         guard fileDescriptorMap[fileDescriptor] == nil else {
-            throw Error.KeyError(fileDescriptor: fileDescriptor)
+            throw LocalError.keyError(fileDescriptor: fileDescriptor)
         }
         let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
         fileDescriptorMap[fileDescriptor] = key
@@ -42,9 +43,9 @@ public final class KqueueSelector: SelectorType {
         for event in events {
             let filter: Int16
             switch event {
-            case .Read:
+            case .read:
                 filter = Int16(EVFILT_READ)
-            case .Write:
+            case .write:
                 filter = Int16(EVFILT_WRITE)
             }
             let kevent = Darwin.kevent(
@@ -72,19 +73,20 @@ public final class KqueueSelector: SelectorType {
         return key
     }
 
-    public func unregister(fileDescriptor: Int32) throws -> SelectorKey {
+    @discardableResult
+    public func unregister(_ fileDescriptor: Int32) throws -> SelectorKey {
         // ensure the file descriptor exists
         guard let key = fileDescriptorMap[fileDescriptor] else {
-            throw Error.KeyError(fileDescriptor: fileDescriptor)
+            throw LocalError.keyError(fileDescriptor: fileDescriptor)
         }
-        fileDescriptorMap.removeValueForKey(fileDescriptor)
+        fileDescriptorMap.removeValue(forKey: fileDescriptor)
         var kevents: [Darwin.kevent] = []
         for event in key.events {
             let filter: Int16
             switch event {
-            case .Read:
+            case .read:
                 filter = Int16(EVFILT_READ)
-            case .Write:
+            case .write:
                 filter = Int16(EVFILT_WRITE)
             }
             let kevent = Darwin.kevent(
@@ -113,12 +115,12 @@ public final class KqueueSelector: SelectorType {
     }
 
     public func close() {
-        Darwin.close(kqueue)
+        _ = Darwin.close(kqueue)
     }
 
-    public func select(timeout: NSTimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
+    public func select(_ timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
         var timeSpec: timespec?
-        let timeSpecPointer: UnsafePointer<timespec>
+        let timeSpecPointer: UnsafePointer<timespec>?
         if let timeout = timeout {
             if timeout > 0 {
                 var integer = 0.0
@@ -127,12 +129,12 @@ public final class KqueueSelector: SelectorType {
             } else {
                 timeSpec = timespec()
             }
-            timeSpecPointer = withUnsafePointer(&timeSpec!) { $0 }
+            timeSpecPointer = withUnsafePointer(to: &timeSpec!) { $0 }
         } else {
             timeSpecPointer = nil
         }
 
-        var kevents = Array<Darwin.kevent>(count: selectMaximumEvent, repeatedValue: Darwin.kevent())
+        var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
         let eventCount = kevents.withUnsafeMutableBufferPointer { pointer in
              return Darwin.kevent(kqueue, nil, 0, pointer.baseAddress, Int32(selectMaximumEvent), timeSpecPointer)
         }
@@ -146,9 +148,9 @@ public final class KqueueSelector: SelectorType {
             let fileDescriptor = Int32(event.ident)
             var ioEvents = fileDescriptorIOEvents[fileDescriptor] ?? Set<IOEvent>()
             if event.filter == Int16(EVFILT_READ) {
-                ioEvents.insert(.Read)
+                ioEvents.insert(.read)
             } else if event.filter == Int16(EVFILT_WRITE) {
-                ioEvents.insert(.Write)
+                ioEvents.insert(.write)
             }
             fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }

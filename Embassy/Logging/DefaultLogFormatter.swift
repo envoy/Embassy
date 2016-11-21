@@ -8,8 +8,8 @@
 
 import Foundation
 
-public struct DefaultLogFormatter: LogFormatterType {
-    public func format(record: LogRecord) -> String {
+public struct DefaultLogFormatter: LogFormatter {
+    public func format(_ record: LogRecord) -> String {
         return "\(record.time) [\(record.level)] - \(record.loggerName): \(record.message)"
     }
 }

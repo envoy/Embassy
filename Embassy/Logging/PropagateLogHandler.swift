@@ -9,15 +9,15 @@
 import Foundation
 
 /// A log handler which propagates record to another logger
-public struct PropagateLogHandler: LogHandlerType {
-    public let logger: LoggerType
-    public var formatter: LogFormatterType?
+public struct PropagateLogHandler: LogHandler {
+    public let logger: Logger
+    public var formatter: LogFormatter?
 
-    public init(logger: LoggerType) {
+    public init(logger: Logger) {
         self.logger = logger
     }
 
-    public func emit(record: LogRecord) {
+    public func emit(_ record: LogRecord) {
         logger.log(record)
     }
 }

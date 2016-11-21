@@ -11,7 +11,7 @@ import XCTest
 @testable import Embassy
 
 class TCPSocketTests: XCTestCase {
-    let queue = dispatch_queue_create("com.envoy.embassy-tests.tcp-sockets", DISPATCH_QUEUE_SERIAL)
+    let queue = DispatchQueue(label: "com.envoy.embassy-tests.tcp-sockets", attributes: [])
 
     func testAccept() {
         let port = try! getUnusedTCPPort()
@@ -19,9 +19,9 @@ class TCPSocketTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
 
-        let exp0 = expectationWithDescription("socket accepcted")
+        let exp0 = expectation(description: "socket accepcted")
         var acceptedSocket: TCPSocket!
-        dispatch_async(queue) {
+        queue.async {
             acceptedSocket = try! listenSocket.accept()
             exp0.fulfill()
         }
@@ -29,7 +29,7 @@ class TCPSocketTests: XCTestCase {
         let clientSocket = try! TCPSocket()
         try! clientSocket.connect("::1", port: port)
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectations(timeout: 3) { error in
             XCTAssertNil(error)
         }
         XCTAssertNotNil(acceptedSocket)
@@ -41,9 +41,9 @@ class TCPSocketTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
 
-        let exp0 = expectationWithDescription("socket accepcted")
+        let exp0 = expectation(description: "socket accepcted")
         var acceptedSocket: TCPSocket!
-        dispatch_async(queue) {
+        queue.async {
             acceptedSocket = try! listenSocket.accept()
             exp0.fulfill()
         }
@@ -51,29 +51,29 @@ class TCPSocketTests: XCTestCase {
         let clientSocket = try! TCPSocket(blocking: true)
         try! clientSocket.connect("::1", port: port)
 
-        waitForExpectationsWithTimeout(4) { error in
+        waitForExpectations(timeout: 4) { error in
             XCTAssertNil(error)
         }
 
         let stringToSend = "hello baby"
-        let bytesToSend = Array(stringToSend.utf8)
+        let bytesToSend = Data(stringToSend.utf8)
 
-        var receivedData: [UInt8]?
-        let exp1 = expectationWithDescription("socket received")
+        var receivedData: Data?
+        let exp1 = expectation(description: "socket received")
 
         let sentBytes = try! clientSocket.send(bytesToSend)
         XCTAssertEqual(sentBytes, bytesToSend.count)
 
-        dispatch_async(queue) {
+        queue.async {
             receivedData = try! acceptedSocket.recv(1024)
             exp1.fulfill()
         }
 
-        waitForExpectationsWithTimeout(3) { error in
+        waitForExpectations(timeout: 3) { error in
             XCTAssertNil(error)
         }
 
-        XCTAssertEqual(String(bytes: receivedData!, encoding: NSUTF8StringEncoding), stringToSend)
+        XCTAssertEqual(String(bytes: receivedData!, encoding: String.Encoding.utf8), stringToSend)
     }
 
     func testGetPeerName() {
@@ -82,9 +82,9 @@ class TCPSocketTests: XCTestCase {
         try! listenSocket.bind(port)
         try! listenSocket.listen()
 
-        let exp0 = expectationWithDescription("socket accepcted")
+        let exp0 = expectation(description: "socket accepcted")
         var acceptedSocket: TCPSocket!
-        dispatch_async(queue) {
+        queue.async {
             acceptedSocket = try! listenSocket.accept()
             exp0.fulfill()
         }
@@ -92,7 +92,7 @@ class TCPSocketTests: XCTestCase {
         let clientSocket = try! TCPSocket(blocking: true)
         try! clientSocket.connect("::1", port: port)
 
-        waitForExpectationsWithTimeout(4, handler: nil)
+        waitForExpectations(timeout: 4, handler: nil)
 
         XCTAssertEqual(try! acceptedSocket.getPeerName().0, "::1")
         XCTAssertEqual(try! clientSocket.getPeerName().0, "::1")

@@ -11,7 +11,7 @@ import XCTest
 @testable import Embassy
 
 class SelectorEventLoopTests: XCTestCase {
-    let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
+    let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
     var loop: SelectorEventLoop!
 
     override func setUp() {
@@ -19,7 +19,7 @@ class SelectorEventLoopTests: XCTestCase {
         loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 
         // set a 30 seconds timeout
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             if self.loop.running {
                 self.loop.stop()
                 XCTFail("Time out")
@@ -32,7 +32,7 @@ class SelectorEventLoopTests: XCTestCase {
     }
 
     func testStop() {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             XCTAssert(self.loop.running)
             self.loop.stop()
             XCTAssertFalse(self.loop.running)
@@ -79,21 +79,21 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testCallAtOrder() {
         var events: [Int] = []
-        let now = NSDate()
-        loop.callAt(now.dateByAddingTimeInterval(0)) {
+        let now = Date()
+        loop.callAt(now.addingTimeInterval(0)) {
             events.append(0)
         }
-        loop.callAt(now.dateByAddingTimeInterval(0.000002)) {
+        loop.callAt(now.addingTimeInterval(0.000002)) {
             events.append(2)
         }
-        loop.callAt(now.dateByAddingTimeInterval(0.000001)) {
+        loop.callAt(now.addingTimeInterval(0.000001)) {
             events.append(1)
         }
-        loop.callAt(now.dateByAddingTimeInterval(0.000004)) {
+        loop.callAt(now.addingTimeInterval(0.000004)) {
             events.append(4)
             self.loop.stop()
         }
-        loop.callAt(now.dateByAddingTimeInterval(0.000003)) {
+        loop.callAt(now.addingTimeInterval(0.000003)) {
             events.append(3)
         }
         assertExecutingTime(0, accuracy: 0.5) {
@@ -164,7 +164,7 @@ class SelectorEventLoopTests: XCTestCase {
         var readData = [String]()
         let readAcceptedSocket = {
             let data = try! acceptedSocket.recv(1024)
-            readData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+            readData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if readData.count >= 2 {
                 self.loop.removeReader(acceptedSocket.fileDescriptor)
             }
@@ -178,13 +178,13 @@ class SelectorEventLoopTests: XCTestCase {
         try! clientSocket.connect("::1", port: port)
 
         loop.callLater(1) {
-            try! clientSocket.send(Array("hello".utf8))
+            try! clientSocket.send(Data("hello".utf8))
         }
         loop.callLater(2) {
-            try! clientSocket.send(Array("baby".utf8))
+            try! clientSocket.send(Data("baby".utf8))
         }
         loop.callLater(3) {
-            try! clientSocket.send(Array("fin".utf8))
+            try! clientSocket.send(Data("fin".utf8))
         }
         loop.callLater(4) {
             self.loop.stop()

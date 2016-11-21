@@ -1,5 +1,5 @@
 //
-//  LogFormatterType.swift
+//  LogFormatter.swift
 //  Embassy
 //
 //  Created by Fang-Pen Lin on 6/2/16.
@@ -9,6 +9,6 @@
 import Foundation
 
 /// Log formatter convert given log record into printable text
-public protocol LogFormatterType {
-    func format(record: LogRecord) -> String
+public protocol LogFormatter {
+    func format(_ record: LogRecord) -> String
 }

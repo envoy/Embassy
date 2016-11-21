@@ -11,7 +11,7 @@ import XCTest
 @testable import Embassy
 
 class HTTPServerTests: XCTestCase {
-    let queue = dispatch_queue_create("com.envoy.embassy-tests.http-server", DISPATCH_QUEUE_SERIAL)
+    let queue = DispatchQueue(label: "com.envoy.embassy-tests.http-server", attributes: [])
     var loop: SelectorEventLoop!
 
     override func setUp() {
@@ -19,7 +19,7 @@ class HTTPServerTests: XCTestCase {
         loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 
         // set a 30 seconds timeout
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(30 * NSEC_PER_SEC)), queue) {
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             if self.loop.running {
                 self.loop.stop()
                 XCTFail("Time out")
@@ -34,11 +34,11 @@ class HTTPServerTests: XCTestCase {
     func testEnviron() {
         let port = try! getUnusedTCPPort()
         var receivedEnviron: [String: Any]!
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: ((Data) -> Void)
             ) in
             receivedEnviron = environ
             self.loop.stop()
@@ -46,9 +46,9 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL(
-                NSURL(string: "http://[::1]:\(port)/path?foo=bar")!
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            let task = URLSession.shared.dataTask(
+                with: URL(string: "http://[::1]:\(port)/path?foo=bar")!
             )
             task.resume()
         }
@@ -68,44 +68,44 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
         XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
         XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
-        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoopType)
+        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoop)
         XCTAssertNotNil(receivedEnviron["embassy.version"] as? String)
     }
 
     func testStartResponse() {
         let port = try! getUnusedTCPPort()
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: ((Data) -> Void)
             ) in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
                 ("X-Foo", "Bar"),
             ])
-            sendBody([])
+            sendBody(Data())
         }
 
         try! server.start()
 
-        var receivedData: NSData?
-        var receivedResponse: NSHTTPURLResponse?
+        var receivedData: Data?
+        var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
-                receivedResponse = response as? NSHTTPURLResponse
-                receivedError = error
+                receivedResponse = response as? HTTPURLResponse
+                receivedError = error as NSError?
                 self.loop.stop()
-            }
+            }) 
             task.resume()
         }
 
         loop.runForever()
 
-        XCTAssertEqual(receivedData?.length, 0)
+        XCTAssertEqual(receivedData?.count, 0)
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 451)
         XCTAssertEqual(receivedResponse?.allHeaderFields["Content-Type"] as? String, "video/porn")
@@ -115,37 +115,37 @@ class HTTPServerTests: XCTestCase {
 
     func testSendBody() {
         let port = try! getUnusedTCPPort()
-        let bigDataChunk = Array(makeRandomString(574300).utf8)
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        let bigDataChunk = Data(makeRandomString(574300).utf8)
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: ((Data) -> Void)
             ) in
             startResponse("200 OK", [])
             sendBody(bigDataChunk)
-            sendBody([])
+            sendBody(Data())
         }
 
         try! server.start()
 
-        var receivedData: NSData?
-        var receivedResponse: NSHTTPURLResponse?
+        var receivedData: Data?
+        var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
-                receivedResponse = response as? NSHTTPURLResponse
-                receivedError = error
+                receivedResponse = response as? HTTPURLResponse
+                receivedError = error as NSError?
                 self.loop.stop()
-            }
+            }) 
             task.resume()
         }
 
         loop.runForever()
 
-        let data = Array(UnsafeBufferPointer(start: UnsafePointer<UInt8>(receivedData!.bytes), count: receivedData!.length))
-        XCTAssertEqual(receivedData?.length, bigDataChunk.count)
+        let data = receivedData ?? Data()
+        XCTAssertEqual(receivedData?.count, bigDataChunk.count)
         XCTAssertEqual(data, bigDataChunk)
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
@@ -153,46 +153,46 @@ class HTTPServerTests: XCTestCase {
 
     func testAsyncSendBody() {
         let port = try! getUnusedTCPPort()
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                startResponse: @escaping ((String, [(String, String)]) -> Void),
+                sendBody: @escaping ((Data) -> Void)
             ) in
             startResponse("200 OK", [])
 
-            let loop = environ["embassy.event_loop"] as! EventLoopType
+            let loop = environ["embassy.event_loop"] as! EventLoop
 
             loop.callLater(1) {
-                sendBody(Array("hello ".utf8))
+                sendBody(Data("hello ".utf8))
             }
             loop.callLater(2) {
-                sendBody(Array("baby ".utf8))
+                sendBody(Data("baby ".utf8))
             }
             loop.callLater(3) {
-                sendBody(Array("fin".utf8))
-                sendBody([])
+                sendBody(Data("fin".utf8))
+                sendBody(Data())
             }
         }
 
         try! server.start()
 
-        var receivedData: NSData?
-        var receivedResponse: NSHTTPURLResponse?
+        var receivedData: Data?
+        var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: "http://[::1]:\(port)")!) { (data, response, error) in
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
-                receivedResponse = response as? NSHTTPURLResponse
-                receivedError = error
+                receivedResponse = response as? HTTPURLResponse
+                receivedError = error as NSError?
                 self.loop.stop()
-            }
+            }) 
             task.resume()
         }
 
         loop.runForever()
 
-        XCTAssertEqual(NSString(data: receivedData!, encoding: NSUTF8StringEncoding)!, "hello baby fin")
+        XCTAssertEqual(NSString(data: receivedData!, encoding: String.Encoding.utf8.rawValue)!, "hello baby fin")
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 200)
     }
@@ -201,12 +201,12 @@ class HTTPServerTests: XCTestCase {
         let port = try! getUnusedTCPPort()
 
         let postBodyString = makeRandomString(40960)
-        var receivedInputData: [[UInt8]] = []
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        var receivedInputData: [Data] = []
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: @escaping ((Data) -> Void)
             ) in
             startResponse("200 OK", [])
             let input = environ["swsgi.input"] as! SWSGIInput
@@ -218,13 +218,13 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
-            request.HTTPMethod = "POST"
-            request.HTTPBody = postBodyString.dataUsingEncoding(NSUTF8StringEncoding)
-            let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
+            request.httpMethod = "POST"
+            request.httpBody = postBodyString.data(using: String.Encoding.utf8)
+            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 self.loop.stop()
-            }
+            }) 
             task.resume()
         }
 
@@ -233,7 +233,7 @@ class HTTPServerTests: XCTestCase {
         // ensure EOF is passed
         XCTAssertEqual(receivedInputData.last?.count, 0)
 
-        let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
+        let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
         XCTAssertEqual(receivedString, postBodyString)
     }
 
@@ -242,12 +242,12 @@ class HTTPServerTests: XCTestCase {
 
         // this chunk is small enough, ideally should be sent along with header (initial body)
         let postBodyString = "hello"
-        var receivedInputData: [[UInt8]] = []
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        var receivedInputData: [Data] = []
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: @escaping ((Data) -> Void)
             ) in
             startResponse("200 OK", [])
             let input = environ["swsgi.input"] as! SWSGIInput
@@ -259,13 +259,13 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let request = NSMutableURLRequest(URL: NSURL(string: "http://[::1]:\(port)")!)
-            request.HTTPMethod = "POST"
-            request.HTTPBody = postBodyString.dataUsingEncoding(NSUTF8StringEncoding)
-            let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
-                self.loop.stop()
-            }
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
+            request.httpMethod = "POST"
+            request.httpBody = postBodyString.data(using: String.Encoding.utf8)
+            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+              self.loop.stop()
+            })
             task.resume()
         }
 
@@ -274,29 +274,29 @@ class HTTPServerTests: XCTestCase {
         // ensure EOF is passed
         XCTAssertEqual(receivedInputData.last?.count, 0)
 
-        let receivedString = String(bytes: receivedInputData.joinWithSeparator([]), encoding: NSUTF8StringEncoding)
+        let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
         XCTAssertEqual(receivedString, postBodyString)
     }
 
     func testAddressReuse() {
         var called: Bool = false
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ([UInt8] -> Void)) in
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ((Data) -> Void)) in
             startResponse("200 OK", [])
-            sendBody([])
+            sendBody(Data())
             self.loop.stop()
             called = true
         }
-        let server1 = HTTPServer(eventLoop: loop, port: port, app: app)
+        let server1 = DefaultHTTPServer(eventLoop: loop, port: port, app: app)
         try! server1.start()
         server1.stop()
 
-        let server2 = HTTPServer(eventLoop: loop, port: port, app: app)
+        let server2 = DefaultHTTPServer(eventLoop: loop, port: port, app: app)
         try! server2.start()
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1 * NSEC_PER_SEC)), queue) {
-            let task = NSURLSession.sharedSession().dataTaskWithURL(
-                NSURL(string: "http://[::1]:\(port)")!
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            let task = URLSession.shared.dataTask(
+                with: URL(string: "http://[::1]:\(port)")!
             )
             task.resume()
         }
@@ -307,18 +307,18 @@ class HTTPServerTests: XCTestCase {
 
     func testStopAndWait() {
         let port = try! getUnusedTCPPort()
-        let server = HTTPServer(eventLoop: loop, port: port) {
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ([UInt8] -> Void)
+                sendBody: ((Data) -> Void)
             ) in
             startResponse("200 OK", [])
-            sendBody([])
+            sendBody(Data())
         }
         try! server.start()
 
-        dispatch_async(queue) {
+        queue.async {
             self.loop.runForever()
         }
         assertExecutingTime(0, accuracy: 0.5) {

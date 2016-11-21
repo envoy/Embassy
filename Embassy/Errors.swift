@@ -9,15 +9,15 @@
 import Foundation
 
 /// Error from operation system
-public enum OSError: ErrorType {
-    case IOError(number: Int, message: String)
+public enum OSError: Error {
+    case ioError(number: Int32, message: String)
     /// Return a socket error with the last error number and description
     static func lastIOError() -> OSError {
-        return .IOError(number: Int(errno), message: lastErrorDescription())
+        return .ioError(number: errno, message: lastErrorDescription())
     }
 }
 
 /// Return description for last error
 func lastErrorDescription() -> String {
-    return String.fromCString(UnsafePointer(strerror(errno))) ?? "Unknown Error: \(errno)"
+    return String(cString: UnsafePointer(strerror(errno)))
 }

@@ -10,64 +10,64 @@ import Foundation
 
 public struct HTTPRequest {
     public enum Method: CustomStringConvertible {
-        case GET
-        case HEAD
-        case POST
-        case PUT
-        case DELETE
-        case TRACE
-        case OPTIONS
-        case CONNECT
-        case PATCH
-        case OTHER(name: String)
+        case get
+        case head
+        case post
+        case put
+        case delete
+        case trace
+        case options
+        case connect
+        case patch
+        case other(name: String)
 
         public var description: String {
             switch self {
-            case .GET:
+            case .get:
                 return "GET"
-            case .HEAD:
+            case .head:
                 return "HEAD"
-            case .POST:
+            case .post:
                 return "POST"
-            case .PUT:
+            case .put:
                 return "PUT"
-            case .DELETE:
+            case .delete:
                 return "DELETE"
-            case .TRACE:
+            case .trace:
                 return "TRACE"
-            case .OPTIONS:
+            case .options:
                 return "OPTIONS"
-            case .CONNECT:
+            case .connect:
                 return "CONNECT"
-            case .PATCH:
+            case .patch:
                 return "PATCH"
-            case .OTHER(name: let name):
+            case .other(name: let name):
                 return name
             }
         }
 
-        public static func fromString(name: String) -> Method {
-            switch name.uppercaseString {
+        public static func fromString(_ name: String) -> Method {
+            switch name.uppercased() {
             case "GET":
-                return .GET
+                return .get
             case "HEAD":
-                return .HEAD
+                return .head
             case "POST":
-                return .POST
+                return .post
             case "PUT":
-                return .PUT
+                return .put
             case "DELETE":
-                return .DELETE
+                return .delete
             case "TRACE":
-                return .TRACE
+                return .trace
             case "OPTIONS":
-                return .OPTIONS
+                return .options
             case "CONNECT":
-                return .CONNECT
+                return .connect
             case "PATCH":
-                return .PATCH
+                return .patch
             default:
-                return .OTHER(name: name)
+                return .other(name: name)
             }
         }
     }

@@ -10,7 +10,7 @@ import Foundation
 
 // from http://stackoverflow.com/a/24052094/25077
 /// Update one dictionay by another
-private func += <K, V>(inout left: [K: V], right: [K: V]) {
+private func += <K, V>(left: inout [K: V], right: [K: V]) {
     for (k, v) in right {
         left.updateValue(v, forKey: k)
     }
@@ -18,16 +18,16 @@ private func += <K, V>(inout left: [K: V], right: [K: V]) {
 
 public struct SWSGIUtils {
     /// Transform given request into environ dictionary
-    static func environForRequest(request: HTTPRequest) -> [String: Any] {
+    static func environForRequest(_ request: HTTPRequest) -> [String: Any] {
         var environ: [String: Any] = [
-            "REQUEST_METHOD": String(request.method),
+            "REQUEST_METHOD": String(describing: request.method),
             "SCRIPT_NAME": ""
         ]
 
-        let queryParts = request.path.componentsSeparatedByString("?")
+        let queryParts = request.path.components(separatedBy: "?")
         if queryParts.count > 1 {
             environ["PATH_INFO"] = queryParts[0]
-            environ["QUERY_STRING"] = queryParts[1..<queryParts.count].joinWithSeparator("?")
+            environ["QUERY_STRING"] = queryParts[1..<queryParts.count].joined(separator: "?")
         } else {
             environ["PATH_INFO"] = request.path
         }
@@ -44,13 +44,13 @@ public struct SWSGIUtils {
     /// Transform given header key value pair array into environ style header map,
     /// like from Content-Length to HTTP_CONTENT_LENGTH
     static func environForHeaders(
-        headers: MultiDictionary<String, String, LowercaseKeyTransform>
+        _ headers: MultiDictionary<String, String, LowercaseKeyTransform>
     ) -> [String: Any] {
         var environ: [String: Any] = [:]
         for (key, value) in headers {
-            let key = "HTTP_" + key.uppercaseString.stringByReplacingOccurrencesOfString(
-                "-",
-                withString: "_"
+            let key = "HTTP_" + key.uppercased().replacingOccurrences(
+                of: "-",
+                with: "_"
             )
             environ[key] = value
         }

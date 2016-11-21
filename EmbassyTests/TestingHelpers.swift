@@ -32,45 +32,51 @@ func getUnusedTCPPort() throws -> Int {
     }
 
     var address = sockaddr_in(
-        sin_len: UInt8(strideof(sockaddr_in)),
+        sin_len: UInt8(MemoryLayout<sockaddr_in>.stride),
         sin_family: UInt8(AF_INET),
         sin_port: htons(UInt16(0)),
         sin_addr: interfaceAddress,
         sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
     )
+    let addressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
     // given port 0, and bind, it will find us an available port
-    guard withUnsafePointer(&address, { pointer in
-        return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in))) >= 0
+    guard withUnsafePointer(to: &address, { pointer in
+        return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(addressSize)) { pointer in
+            return Darwin.bind(fileDescriptor, pointer, addressSize) >= 0
+        }
     }) else {
         throw OSError.lastIOError()
     }
 
     var socketAddress = sockaddr_in()
-    var size = socklen_t(sizeof(sockaddr_in))
-    guard withUnsafeMutablePointer(&socketAddress, { pointer in
-        return getsockname(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size) >= 0
+    var socketAddressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
+    guard withUnsafeMutablePointer(to: &socketAddress, { pointer in
+        return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(socketAddressSize)) { pointer in
+            return getsockname(fileDescriptor, pointer, &socketAddressSize) >= 0
+        }
     }) else {
         throw OSError.lastIOError()
     }
     return Int(ntohs(socketAddress.sin_port))
 }
 
-func makeRandomString(length: Int) -> String {
+func makeRandomString(_ length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     var result: [String] = []
     for _ in 0..<length {
         let randomIndex = Int(arc4random_uniform(UInt32(letters.characters.count)))
-        let char = letters.substringWithRange(letters.startIndex.advancedBy(randomIndex) ... letters.startIndex.advancedBy(randomIndex))
+        let char = letters.substring(with: letters.characters.index(letters.startIndex, offsetBy: randomIndex) ..< letters.characters.index(letters.startIndex, offsetBy: randomIndex + 1))
         result.append(char)
     }
-    return result.joinWithSeparator("")
+    return result.joined(separator: "")
 }
 
 extension XCTestCase {
-    func assertExecutingTime<T>(time: NSTimeInterval, accuracy: NSTimeInterval, file: StaticString = #file, line: UInt = #line, @noescape closure: Void -> T) -> T {
-        let begin = NSDate()
+    @discardableResult
+    func assertExecutingTime<T>(_ time: TimeInterval, accuracy: TimeInterval, file: StaticString = #file, line: UInt = #line, closure: (Void) -> T) -> T {
+        let begin = Date()
         let result = closure()
-        let elapsed = NSDate().timeIntervalSinceDate(begin)
+        let elapsed = Date().timeIntervalSince(begin)
         XCTAssertEqualWithAccuracy(elapsed, time, accuracy: accuracy, "Wrong executing time", file: file, line: line)
         return result
     }

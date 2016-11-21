@@ -2,111 +2,69 @@
 //  Logger.swift
 //  Embassy
 //
-//  Created by Fang-Pen Lin on 5/21/16.
+//  Created by Fang-Pen Lin on 6/2/16.
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
 import Foundation
 
-public final class Logger: LoggerType {
-    let name: String
+public enum LogLevel: Int {
+    case notset = 0
+    case debug = 10
+    case info = 20
+    case warning = 30
+    case error = 40
+    case critical = 50
+
+    var name: String {
+        switch self {
+        case .notset:
+            return "NOTSET"
+        case .debug:
+            return "DEBUG"
+        case .info:
+            return "INFO"
+        case .warning:
+            return "WARNING"
+        case .error:
+            return "ERROR"
+        case .critical:
+            return "CRITICAL"
+        }
+    }
+}
+
+public struct LogRecord {
+    let loggerName: String
     let level: LogLevel
-    private(set) var handlers: [LogHandlerType] = []
+    let message: String
+    let file: String
+    let function: String
+    let line: Int
+    let time: Date
+}
 
-    public init(name: String, level: LogLevel = .INFO) {
-        self.name = name
-        self.level = level
-    }
-
-    public init(fileName: String = #file, level: LogLevel = .INFO) {
-        self.name = Logger.moduleNameForFileName(fileName)
-        self.level = level
-    }
-
-    /// Add handler to self logger
-    ///  - Parameter handler: the handler to add
-    public func addHandler(handler: LogHandlerType) {
-        handlers.append(handler)
-    }
-
-    public func debug(
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        log(.DEBUG, message: message, caller: caller, file: file, line: line)
-    }
-
-    public func info(
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        log(.INFO, message: message, caller: caller, file: file, line: line)
-    }
-
-    public func warning(
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        log(.WARNING, message: message, caller: caller, file: file, line: line)
-    }
-
-    public func error(
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        log(.ERROR, message: message, caller: caller, file: file, line: line)
-    }
-
-    public func critical(
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        log(.CRITICAL, message: message, caller: caller, file: file, line: line)
-    }
-
-    func log(
-        level: LogLevel,
-        @autoclosure message: Void -> String,
-        caller: String = #function,
-        file: String = #file,
-        line: Int = #line
-    ) {
-        let record = LogRecord(
-            loggerName: name,
+extension LogRecord {
+    /// Overwrite message and return a new record
+    ///  - Parameter overwrite: closure to accept self record and return overwritten string
+    ///  - Returns: the overwritten log record
+    public func overwriteMessage(_ overwrite: ((LogRecord) -> String)) -> LogRecord {
+        return LogRecord(
+            loggerName: loggerName,
             level: level,
-            message: message(),
+            message: overwrite(self),
             file: file,
-            function: caller,
+            function: function,
             line: line,
-            time: NSDate()
+            time: time
         )
-        log(record)
     }
+}
 
-    public func log(record: LogRecord) {
-        guard record.level.rawValue >= level.rawValue else {
-            return
-        }
-        for handler in handlers {
-            handler.emit(record)
-        }
-    }
+public protocol Logger {
+    /// Add a handler to the logger
+    func addHandler(_ handler: LogHandler)
 
-    /// Strip file name and return only the name part, e.g. /path/to/MySwiftModule.swift will be
-    /// MySwiftModule
-    ///  - Parameter fileName: file name to be stripped
-    ///  - Returns: stripped file name
-    static func moduleNameForFileName(fileName: String) -> String {
-        return ((fileName as NSString).lastPathComponent as NSString).stringByDeletingPathExtension
-    }
+    /// Write log record to logger
+    func log(_ record: LogRecord)
 }

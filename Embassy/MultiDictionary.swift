@@ -8,45 +8,45 @@
 
 import Foundation
 
-/// Transform for MultiDictionary keys, like lower case
-public protocol KeyTransformType {
+/// Transformer for MultiDictionary keys, like lower case
+public protocol KeyTransformer {
     associatedtype Key: Hashable
-    static func transform(key: Key) -> Key
+    static func transform(_ key: Key) -> Key
 }
 
-/// A key transform that does nothing to the key but simply return it
-public struct NoOpKeyTransform<T: Hashable>: KeyTransformType {
+/// A key transformer that does nothing to the key but simply return it
+public struct NoOpKeyTransform<T: Hashable>: KeyTransformer {
     public typealias Key = T
-    public static func transform(key: T) -> NoOpKeyTransform.Key {
+    public static func transform(_ key: T) -> Key {
         return key
     }
 }
 
-/// A key transform that lower case of the String key, so that the MultiDictionary will be
+/// A key transformer that lower case of the String key, so that the MultiDictionary will be
 /// case-insenstive
-public struct LowercaseKeyTransform: KeyTransformType {
+public struct LowercaseKeyTransform: KeyTransformer {
     public typealias Key = String
-    public static func transform(key: Key) -> LowercaseKeyTransform.Key {
-        return key.lowercaseString
+    public static func transform(_ key: Key) -> Key {
+        return key.lowercased()
     }
 }
 
 /// MultiDictionary is a Dictionary and Array like container, it allows one key to have multiple
 /// values
 public struct MultiDictionary<
-    Key: Hashable,
+    Key,
     Value,
-    KeyTransform: KeyTransformType
+    KeyTransform: KeyTransformer>
     where KeyTransform.Key == Key
-> {
+ {
     typealias ArrayType = Array<(Key, Value)>
     typealias DictionaryType = Dictionary<Key, Array<Value>>
 
     // Items in this multi dictionary
-    private let items: ArrayType
+    fileprivate let items: ArrayType
     // Dictionary mapping from key to tuple of original key (before transform) and all values in
     /// order
-    private let keyValuesMap: DictionaryType
+    fileprivate let keyValuesMap: DictionaryType
 
     public init(items: Array<(Key, Value)>) {
         self.items = items
@@ -63,7 +63,7 @@ public struct MultiDictionary<
     /// Get all values for given key in occurrence order
     ///  - Parameter key: the key
     ///  - Returns: tuple of array of values for given key
-    public func valuesFor(key: Key) -> Array<Value>? {
+    public func valuesFor(_ key: Key) -> Array<Value>? {
         return keyValuesMap[KeyTransform.transform(key)]
     }
     /// Get the first value for given key if available
@@ -74,54 +74,33 @@ public struct MultiDictionary<
     }
 }
 
-// MARK: Indexable
-extension MultiDictionary: Indexable {
+// MARK: CollectionType
+extension MultiDictionary: Collection {
+
     public typealias Index = ArrayType.Index
-    public var startIndex: MultiDictionary.Index {
+
+    public var startIndex : Index {
         return items.startIndex
     }
-    public var endIndex: MultiDictionary.Index {
+
+    public var endIndex : Index {
         return items.endIndex
     }
-}
 
-// MARK: CollectionType
-extension MultiDictionary: CollectionType {
-    public typealias Generator = ArrayType.Generator
-    public typealias SubSequence = ArrayType.SubSequence
-    public func generate() -> MultiDictionary.Generator {
-        return items.generate()
-    }
-    public subscript(position: MultiDictionary.Index) -> MultiDictionary.Generator.Element {
+    public subscript(position: Index) -> Element {
         return items[position]
     }
-    public subscript(bounds: Range<MultiDictionary.Index>) -> MultiDictionary.SubSequence {
-        return items[bounds]
-    }
-    public func prefixUpTo(end: MultiDictionary.Index) -> MultiDictionary.SubSequence {
-        return items.prefixUpTo(end)
-    }
-    public func suffixFrom(start: MultiDictionary.Index) -> MultiDictionary.SubSequence {
-        return items.suffixFrom(start)
-    }
-    public func prefixThrough(position: MultiDictionary.Index) -> MultiDictionary.SubSequence {
-        return items.prefixThrough(position)
-    }
-    public var isEmpty: Bool {
-        return items.isEmpty
-    }
-    public var count: MultiDictionary.Index.Distance {
-        return items.count
-    }
-    public var first: MultiDictionary.Generator.Element? {
-        return items.first
+
+    public func index(after i: Index) -> Index {
+        guard i != endIndex else { fatalError("Cannot increment endIndex") }
+        return i + 1
     }
 }
 
 // MARK: ArrayLiteralConvertible
-extension MultiDictionary: ArrayLiteralConvertible {
+extension MultiDictionary: ExpressibleByArrayLiteral {
     public typealias Element = ArrayType.Element
-    public init(arrayLiteral elements: MultiDictionary.Element...) {
+    public init(arrayLiteral elements: Element...) {
         items = elements
         var keyValuesMap: DictionaryType = [:]
         for (key, value) in items {

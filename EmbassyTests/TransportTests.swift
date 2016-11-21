@@ -11,7 +11,7 @@ import XCTest
 @testable import Embassy
 
 class TransportTests: XCTestCase {
-    let queue = dispatch_queue_create("com.envoy.embassy-tests.event-loop", DISPATCH_QUEUE_SERIAL)
+    let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
     func testBigChunkReadAndWrite() {
         let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 
@@ -40,7 +40,7 @@ class TransportTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             totalReceivedSize += clientReceivedData.last!.characters.count
             if totalReceivedSize >= totalDataSize {
                 loop.stop()
@@ -52,7 +52,7 @@ class TransportTests: XCTestCase {
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
                 totalReceivedSize += serverReceivedData.last!.characters.count
                 if totalReceivedSize >= totalDataSize {
                     loop.stop()
@@ -88,16 +88,16 @@ class TransportTests: XCTestCase {
 
         loop.runForever()
 
-        XCTAssertEqual(serverReceivedData.joinWithSeparator(""), [
+        XCTAssertEqual(serverReceivedData.joined(separator: ""), [
             dataChunk1,
             dataChunk3,
             dataChunk5
-        ].joinWithSeparator(""))
-        XCTAssertEqual(clientReceivedData.joinWithSeparator(""), [
+        ].joined(separator: ""))
+        XCTAssertEqual(clientReceivedData.joined(separator: ""), [
             dataChunk2,
             dataChunk4,
             dataChunk6
-        ].joinWithSeparator(""))
+        ].joined(separator: ""))
     }
 
     func testReadAndWrite() {
@@ -113,7 +113,7 @@ class TransportTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
                 loop.stop()
             }
@@ -124,7 +124,7 @@ class TransportTests: XCTestCase {
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
                 if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
                     loop.stop()
                 }
@@ -192,7 +192,7 @@ class TransportTests: XCTestCase {
                     loop.stop()
                 },
                 readDataCallback: { data in
-                    serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                    serverReceivedData.append(String(bytes: data, encoding: .utf8)!)
                 }
             )
         }
@@ -223,7 +223,7 @@ class TransportTests: XCTestCase {
         XCTAssert(serverTransportClosed)
         XCTAssert(clientTransport.closed)
         XCTAssert(serverTransport.closed)
-        XCTAssertEqual(serverReceivedData.joinWithSeparator("").characters.count, "hello".characters.count + bigDataChunk.characters.count)
+        XCTAssertEqual(serverReceivedData.joined(separator: "").characters.count, "hello".characters.count + bigDataChunk.characters.count)
     }
 
     func testReadingPause() {
@@ -239,7 +239,7 @@ class TransportTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
                 loop.stop()
             }
@@ -250,7 +250,7 @@ class TransportTests: XCTestCase {
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: NSUTF8StringEncoding)!)
+                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
                 if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
                     loop.stop()
                 }

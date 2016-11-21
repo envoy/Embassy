@@ -1,5 +1,5 @@
 //
-//  LogHandlerType.swift
+//  LogHandler.swift
 //  Embassy
 //
 //  Created by Fang-Pen Lin on 6/2/16.
@@ -8,10 +8,10 @@
 
 import Foundation
 
-public protocol LogHandlerType {
-    var formatter: LogFormatterType? { get set }
+public protocol LogHandler {
+    var formatter: LogFormatter? { get set }
 
     /// Handle given record from logger
     ///  - Parameter record: log record
-    func emit(record: LogRecord)
+    func emit(_ record: LogRecord)
 }

@@ -13,7 +13,7 @@ struct HeapSort {
     ///  - Parameter heap: the heap queue array, should already be in heap order
     ///  - Parameter isOrderredBefore: the function to return is the first argument's order before the second argument
     ///  - Parameter item: the new item to be appended into the heap queue
-    static func heapPush<T>(inout heap: Array<T>, item: T, isOrderredBefore: (T, T) -> Bool) {
+    static func heapPush<T>(_ heap: inout Array<T>, item: T, isOrderredBefore: (T, T) -> Bool) {
         heap.append(item)
         shiftDown(&heap, startPos: 0, pos: heap.count - 1, isOrderredBefore: isOrderredBefore)
     }
@@ -21,7 +21,7 @@ struct HeapSort {
     /// Do a heap push to the heap queue (maintained the heap in correct order)
     ///  - Parameter heap: the heap queue array, should already be in heap order
     ///  - Parameter item: the new item to be appended into the heap queue
-    static func heapPush<T: Comparable>(inout heap: Array<T>, item: T) {
+    static func heapPush<T: Comparable>(_ heap: inout Array<T>, item: T) {
         heapPush(&heap, item: item, isOrderredBefore: <)
     }
 
@@ -29,7 +29,7 @@ struct HeapSort {
     ///  - Parameter heap: the heap queue array, should already be in heap order
     ///  - Parameter isOrderredBefore: the function to return is the first argument's order before the second argument
     ///  - Returns: the smallest item popped from the heap queue
-    static func heapPop<T>(inout heap: Array<T>, isOrderredBefore: (T, T) -> Bool) -> T {
+    static func heapPop<T>(_ heap: inout Array<T>, isOrderredBefore: (T, T) -> Bool) -> T {
         let lastItem = heap.removeLast()
         guard !heap.isEmpty else {
             return lastItem
@@ -43,11 +43,11 @@ struct HeapSort {
     /// Do a smallest heap pop from the heap queue
     ///  - Parameter heap: the heap queue array, should already be in heap order
     ///  - Returns: the smallest item popped from the heap queue
-    static func heapPop<T: Comparable>(inout heap: Array<T>) -> T {
+    static func heapPop<T: Comparable>(_ heap: inout Array<T>) -> T {
         return heapPop(&heap, isOrderredBefore: <)
     }
 
-    private static func shiftDown<T>(inout heap: Array<T>, startPos: Array<T>.Index, pos: Array<T>.Index, isOrderredBefore: (T, T) -> Bool) {
+    private static func shiftDown<T>(_ heap: inout Array<T>, startPos: Array<T>.Index, pos: Array<T>.Index, isOrderredBefore: (T, T) -> Bool) {
         var pos = pos
         let newItem = heap[pos]
         // Follow the path to the root, moving parents down until finding a place newitem fits.
@@ -65,7 +65,7 @@ struct HeapSort {
         heap[pos] = newItem
     }
 
-    private static func shiftUp<T>(inout heap: Array<T>, pos: Array<T>.Index, isOrderredBefore: (T, T) -> Bool) {
+    private static func shiftUp<T>(_ heap: inout Array<T>, pos: Array<T>.Index, isOrderredBefore: (T, T) -> Bool) {
         var pos = pos
         let endPos = heap.count
         let newItem = heap[pos]

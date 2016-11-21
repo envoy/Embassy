@@ -11,19 +11,19 @@ import Foundation
 public final class Transport {
     enum CloseReason {
         /// Connection closed by peer
-        case ByPeer
+        case byPeer
         /// Connection closed by ourselve
-        case ByLocal
+        case byLocal
 
         var isByPeer: Bool {
-            if case .ByPeer = self {
+            if case .byPeer = self {
                 return true
             }
             return false
         }
 
         var isByLocal: Bool {
-            if case .ByLocal = self {
+            if case .byLocal = self {
                 return true
             }
             return false
@@ -37,17 +37,17 @@ public final class Transport {
     private(set) var closed: Bool = false
     /// Is this transport closing
     private(set) var closing: Bool = false
-    var closedCallback: (CloseReason -> Void)?
-    var readDataCallback: ([UInt8] -> Void)?
+    var closedCallback: ((CloseReason) -> Void)?
+    var readDataCallback: ((Data) -> Void)?
 
     private let socket: TCPSocket
-    private let eventLoop: EventLoopType
+    private let eventLoop: EventLoop
     // buffer for sending data out
-    private var outgoingBuffer = [UInt8]()
+    private var outgoingBuffer = Data()
     // is reading enabled or not
     private var reading: Bool = true
 
-    init(socket: TCPSocket, eventLoop: EventLoopType, closedCallback: (CloseReason -> Void)? = nil, readDataCallback: ([UInt8] -> Void)? = nil) {
+    init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: ((CloseReason) -> Void)? = nil, readDataCallback: ((Data) -> Void)? = nil) {
         socket.ignoreSigPipe = true
         self.socket = socket
         self.eventLoop = eventLoop
@@ -64,21 +64,21 @@ public final class Transport {
 
     /// Send data to peer (append in buffer and will be sent out later)
     ///  - Parameter data: data to send
-    func write(data: [UInt8]) {
+    func write(_ data: Data) {
         // ensure we are not closed nor closing
         guard !closed && !closing else {
             // TODO: or raise error?
             return
         }
         // TODO: more efficient way to handle the outgoing buffer?
-        outgoingBuffer += data
+        outgoingBuffer.append(data)
         handleWrite()
     }
 
     /// Send string with UTF8 encoding to peer
     ///  - Parameter string: string to send as UTF8
-    func writeUTF8(string: String) {
-        write(Array(string.utf8))
+    func writeUTF8(_ string: String) {
+        write(Data(string.utf8))
     }
 
     /// Flush outgoing data and close the transport
@@ -92,7 +92,7 @@ public final class Transport {
         handleWrite()
     }
 
-    func resumeReading(reading: Bool) {
+    func resumeReading(_ reading: Bool) {
         // switch from not-reading to reading
         if reading && !self.reading {
             // call handle read later to check is there data available for reading
@@ -108,7 +108,7 @@ public final class Transport {
         eventLoop.removeReader(socket.fileDescriptor)
         eventLoop.removeWriter(socket.fileDescriptor)
         if let callback = closedCallback {
-            callback(.ByPeer)
+            callback(.byPeer)
         }
         socket.close()
     }
@@ -121,11 +121,11 @@ public final class Transport {
         guard reading else {
             return
         }
-        var data: [UInt8]!
+        var data: Data!
         do {
             data = try socket.recv(Transport.recvChunkSize)
-        } catch OSError.IOError(let number, _) {
-            guard Int32(number) != EAGAIN else {
+        } catch OSError.ioError(let number, _) {
+            guard number != EAGAIN else {
                 // if it's EAGAIN, it means no data to be read for now, just return
                 // (usually means that this function was called by resumeReading)
                 return
@@ -159,7 +159,7 @@ public final class Transport {
                 eventLoop.removeReader(socket.fileDescriptor)
                 eventLoop.removeWriter(socket.fileDescriptor)
                 if let callback = closedCallback {
-                    callback(.ByLocal)
+                    callback(.byLocal)
                 }
                 socket.close()
             }
@@ -167,9 +167,9 @@ public final class Transport {
         }
         do {
             let sentBytes = try socket.send(outgoingBuffer)
-            outgoingBuffer = Array(outgoingBuffer[sentBytes..<outgoingBuffer.count])
-        } catch OSError.IOError(let number, _) {
-            if Int32(number) == EPIPE {
+            outgoingBuffer.removeFirst(sentBytes)
+        } catch OSError.ioError(let number, _) {
+            if number == EPIPE {
                 closedByPeer()
             } else {
                 fatalError("Failed to send, errno=\(errno), message=\(lastErrorDescription())")
