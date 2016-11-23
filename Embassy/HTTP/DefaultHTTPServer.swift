@@ -21,8 +21,8 @@ public final class DefaultHTTPServer: HTTPServer {
     private var acceptSocket: TCPSocket!
     private let eventLoop: EventLoop
     private var connections = Set<HTTPConnection>()
-
-    public init(eventLoop: EventLoop, interface: String = "::1", port: Int = 8080, app: @escaping SWSGI) {
+    
+    public init(eventLoop: EventLoop, interface: String = "::1", port: Int = 0, app: @escaping SWSGI) {
         self.eventLoop = eventLoop
         self.app = app
         self.interface = interface
@@ -35,13 +35,17 @@ public final class DefaultHTTPServer: HTTPServer {
         eventLoop: EventLoop,
         app: @escaping SWSGI,
         interface: String = "::1",
-        port: Int = 8080
+        port: Int = 0
     ) {
         self.init(eventLoop: eventLoop, interface: interface, port: port, app: app)
     }
 
     deinit {
         stop()
+    }
+
+    public var listenAddress: (host: String, port: Int) {
+        return try! acceptSocket.getSockName()
     }
 
     public func start() throws {

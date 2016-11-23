@@ -152,7 +152,7 @@ public final class TCPSocket {
     @discardableResult
     func send(_ bytes: Data) throws -> Int {
         let bytesSent = bytes.withUnsafeBytes { pointer in
-          Darwin.send(fileDescriptor, pointer, bytes.count, Int32(0))
+            Darwin.send(fileDescriptor, pointer, bytes.count, Int32(0))
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -164,7 +164,7 @@ public final class TCPSocket {
     ///  - Parameter size: size of bytes to read
     ///  - Returns: bytes read from peer
     func recv(_ size: Int) throws -> Data {
-      var bytes = Data(count: size)
+        var bytes = Data(count: size)
         let bytesRead = bytes.withUnsafeMutableBytes { pointer in
             return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
         }
@@ -181,19 +181,38 @@ public final class TCPSocket {
     }
 
     func getPeerName() throws -> (String, Int) {
-        var address = sockaddr_in6()
-        var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
-        let result = withUnsafeMutablePointer(to: &address) { pointer in
-            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.getpeername(fileDescriptor, pointer, &size)
-            }
-        }
-        guard result >= 0 else {
-            throw OSError.lastIOError()
-        }
-        return (try structToIPAddress(address.sin6_addr), Int(ntohs(address.sin6_port)))
+        return try getName(Darwin.getpeername)
     }
 
+    func getSockName() throws -> (String, Int) {
+        return try getName(Darwin.getsockname)
+    }
+    
+    private func getName(_ function: (Int32, UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) -> Int32) throws -> (String, Int) {
+        var address = sockaddr_storage()
+        var size = socklen_t(MemoryLayout<sockaddr_storage>.size)
+        return try withUnsafeMutablePointer(to: &address) { pointer in
+            let result = try pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { addressptr in
+                return function(fileDescriptor, addressptr, &size)
+            }
+            guard result >= 0 else {
+                throw OSError.lastIOError()
+            }
+            switch Int32(address.ss_family) {
+            case AF_INET:
+                return try pointer.withMemoryRebound(to: sockaddr_in.self, capacity: MemoryLayout<sockaddr_in>.size) { addressptr in
+                    return (try structToAddress(addressptr.pointee.sin_addr, family: AF_INET, addressLength: INET_ADDRSTRLEN), Int(ntohs(addressptr.pointee.sin_port)))
+                }
+            case AF_INET6:
+                return try pointer.withMemoryRebound(to: sockaddr_in6.self, capacity: MemoryLayout<sockaddr_in6>.size) { addressptr in
+                    return (try structToAddress(addressptr.pointee.sin6_addr, family: AF_INET6, addressLength: INET6_ADDRSTRLEN), Int(ntohs(addressptr.pointee.sin6_port)))
+                }
+            default:
+                fatalError("Unsupported address family")
+            }
+        }
+    }
+    
     // Convert IP address to binary struct
     private func ipAddressToStruct(_ address: String) throws -> in6_addr {
         // convert interface string into IPv6 address struct
@@ -203,30 +222,24 @@ public final class TCPSocket {
         }
         return binary
     }
-
-    // Convert struct to IPAddress
-    private func structToIPAddress(_ addrStruct: in6_addr) throws -> String {
+    
+    private func structToAddress<StructType>(_ addrStruct: StructType, family: Int32, addressLength: Int32) throws -> String {
         var addrStruct = addrStruct
         // convert address struct into address string
-        var address = [UInt8](repeating: 0, count: Int(INET6_ADDRSTRLEN))
-        guard address.withUnsafeMutableBufferPointer({
-            $0.baseAddress!.withMemoryRebound(to: Int8.self, capacity: address.count, {
-                inet_ntop(
-                    AF_INET6,
-                    &addrStruct,
-                    $0,
-                    socklen_t(MemoryLayout<sockaddr_in6>.size)
-                  ) != nil
-            })
+        var address = Data(count: Int(addressLength))
+        guard address.withUnsafeMutableBytes({ pointer in
+            inet_ntop(
+                family,
+                &addrStruct,
+                pointer,
+                socklen_t(MemoryLayout<StructType>.size)
+                ) != nil
         }) else {
             throw OSError.lastIOError()
         }
-        let bytes: [UInt8]
         if let index = address.index(of: 0) {
-            bytes = Array(address.prefix(upTo: index))
-        } else {
-            bytes = address
+            address = address.subdata(in: 0 ..< index)
         }
-        return String(bytes: bytes as [UInt8], encoding: String.Encoding.utf8)!
+        return String(data: address, encoding: .utf8)!
     }
 }
