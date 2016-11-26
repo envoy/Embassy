@@ -169,9 +169,12 @@ public final class Transport {
             let sentBytes = try socket.send(outgoingBuffer)
             outgoingBuffer.removeFirst(sentBytes)
         } catch OSError.ioError(let number, _) {
-            if number == EPIPE {
+            switch number {
+            case EAGAIN:
+                break
+            case EPIPE:
                 closedByPeer()
-            } else {
+            default:
                 fatalError("Failed to send, errno=\(errno), message=\(lastErrorDescription())")
             }
         } catch {
