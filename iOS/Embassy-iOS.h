@@ -1,5 +1,5 @@
 //
-//  Embassy.h
+//  Embassy-iOS.h
 //  Embassy
 //
 //  Created by Fang-Pen Lin on 5/19/16.

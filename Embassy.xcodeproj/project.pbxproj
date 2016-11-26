@@ -7,6 +7,47 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA6732641DE92431003ABD4E /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
+		AA6732651DE92431003ABD4E /* TCPSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */; };
+		AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
+		AA6732671DE92431003ABD4E /* SelectorEventLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */; };
+		AA6732681DE92431003ABD4E /* TransportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719D1CF1275A00C0C21C /* TransportTests.swift */; };
+		AA6732691DE92431003ABD4E /* MultiDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */; };
+		AA67326A1DE92431003ABD4E /* HTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */; };
+		AA67326B1DE92431003ABD4E /* HeapSortTetsts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */; };
+		AA67326C1DE92533003ABD4E /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
+		AA67326D1DE92533003ABD4E /* SWSGIUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */; };
+		AA67326E1DE92533003ABD4E /* MultiDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */; };
+		AA67326F1DE92533003ABD4E /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
+		AA6732701DE92533003ABD4E /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3981CF0F24500342389 /* Errors.swift */; };
+		AA6732711DE92533003ABD4E /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
+		AA6732721DE92538003ABD4E /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687531D00C07F00FA53F2 /* Logger.swift */; };
+		AA6732731DE92538003ABD4E /* LogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687601D00D7E100FA53F2 /* LogFormatter.swift */; };
+		AA6732741DE92538003ABD4E /* LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687511D00BC1100FA53F2 /* LogHandler.swift */; };
+		AA6732751DE92538003ABD4E /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
+		AA6732761DE92538003ABD4E /* DefaultLogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */; };
+		AA6732771DE92538003ABD4E /* TransformLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687551D00C20C00FA53F2 /* TransformLogHandler.swift */; };
+		AA6732781DE92538003ABD4E /* PropagateLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687581D00C47D00FA53F2 /* PropagateLogHandler.swift */; };
+		AA6732791DE92538003ABD4E /* PrintLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875A1D00C70400FA53F2 /* PrintLogHandler.swift */; };
+		AA67327A1DE92538003ABD4E /* FileLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */; };
+		AA67327B1DE9253D003ABD4E /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
+		AA67327C1DE9253D003ABD4E /* DefaultHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140B1CEE6FE60060CCB7 /* DefaultHTTPServer.swift */; };
+		AA67327D1DE9253D003ABD4E /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
+		AA67327E1DE9253D003ABD4E /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719F1CF152F300C0C21C /* HTTPRequest.swift */; };
+		AA67327F1DE9253D003ABD4E /* HTTPHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */; };
+		AA6732801DE92542003ABD4E /* Selector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38C1CEF9B9700342389 /* Selector.swift */; };
+		AA6732811DE92542003ABD4E /* KqueueSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3921CEFD79100342389 /* KqueueSelector.swift */; };
+		AA6732821DE92542003ABD4E /* EventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */; };
+		AA6732831DE92542003ABD4E /* SelectorEventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */; };
+		AA6732841DE92542003ABD4E /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
+		AA6732851DE92542003ABD4E /* TCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */; };
+		AA6732861DE92542003ABD4E /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
+		AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */; };
+		AA9242D71DE91EA2009FE50B /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA9242CE1DE91EA2009FE50B /* Embassy.framework */; };
+		AA9242DC1DE91EA2009FE50B /* Embassy_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9242DB1DE91EA2009FE50B /* Embassy_macOSTests.swift */; };
+		AA9242DE1DE91EA2009FE50B /* Embassy-macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AA9242ED1DE920D6009FE50B /* Embassy-iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */; };
+		AA9242EF1DE920F8009FE50B /* Embassy_iOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9242E71DE920C9009FE50B /* Embassy_iOSTests.swift */; };
 		D83A71961CF119D200C0C21C /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
 		D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */; };
 		D83A719C1CF1230E00C0C21C /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
@@ -15,7 +56,6 @@
 		D83A71A21CF1542300C0C21C /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
 		D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */; };
 		D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
-		D85613ED1CEE6B160060CCB7 /* Embassy.h in Headers */ = {isa = PBXBuildFile; fileRef = D85613EC1CEE6B160060CCB7 /* Embassy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D85613F41CEE6B160060CCB7 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
 		D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
 		D85614081CEE6DB20060CCB7 /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
@@ -48,6 +88,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AA9242D81DE91EA2009FE50B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D85613E01CEE6B160060CCB7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA9242CD1DE91EA2009FE50B;
+			remoteInfo = "Embassy-macOS";
+		};
 		D85613F51CEE6B160060CCB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D85613E01CEE6B160060CCB7 /* Project object */;
@@ -58,6 +105,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AA9242CE1DE91EA2009FE50B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Embassy-macOS.h"; sourceTree = "<group>"; };
+		AA9242D11DE91EA2009FE50B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA9242DB1DE91EA2009FE50B /* Embassy_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Embassy_macOSTests.swift; sourceTree = "<group>"; };
+		AA9242DD1DE91EA2009FE50B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA9242E71DE920C9009FE50B /* Embassy_iOSTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Embassy_iOSTests.swift; sourceTree = "<group>"; };
+		AA9242E81DE920C9009FE50B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Embassy-iOS.h"; sourceTree = "<group>"; };
+		AA9242EC1DE920D6009FE50B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D83A71951CF119D200C0C21C /* IOUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOUtils.swift; sourceTree = "<group>"; };
 		D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorEventLoopTests.swift; sourceTree = "<group>"; };
 		D83A719B1CF1230E00C0C21C /* Transport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transport.swift; sourceTree = "<group>"; };
@@ -67,10 +124,7 @@
 		D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerTests.swift; sourceTree = "<group>"; };
 		D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultLogger.swift; sourceTree = "<group>"; };
 		D85613E91CEE6B160060CCB7 /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D85613EC1CEE6B160060CCB7 /* Embassy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Embassy.h; sourceTree = "<group>"; };
-		D85613EE1CEE6B160060CCB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D85613F31CEE6B160060CCB7 /* EmbassyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EmbassyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D85613FA1CEE6B160060CCB7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85614051CEE6C0C0060CCB7 /* SWSGI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGI.swift; sourceTree = "<group>"; };
 		D85614071CEE6DB20060CCB7 /* HTTPServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServer.swift; sourceTree = "<group>"; };
 		D856140B1CEE6FE60060CCB7 /* DefaultHTTPServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultHTTPServer.swift; sourceTree = "<group>"; };
@@ -102,6 +156,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AA9242CA1DE91EA2009FE50B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA9242D31DE91EA2009FE50B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA9242D71DE91EA2009FE50B /* Embassy.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D85613E51CEE6B160060CCB7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -120,20 +189,64 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA9242CF1DE91EA2009FE50B /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */,
+				AA9242D11DE91EA2009FE50B /* Info.plist */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		AA9242DA1DE91EA2009FE50B /* macOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				AA9242DB1DE91EA2009FE50B /* Embassy_macOSTests.swift */,
+				AA9242DD1DE91EA2009FE50B /* Info.plist */,
+			);
+			path = macOSTests;
+			sourceTree = "<group>";
+		};
+		AA9242E51DE9200A009FE50B /* iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				AA9242E71DE920C9009FE50B /* Embassy_iOSTests.swift */,
+				AA9242E81DE920C9009FE50B /* Info.plist */,
+			);
+			path = iOSTests;
+			sourceTree = "<group>";
+		};
+		AA9242E61DE9201D009FE50B /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */,
+				AA9242EC1DE920D6009FE50B /* Info.plist */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
 		D85613DF1CEE6B160060CCB7 = {
 			isa = PBXGroup;
 			children = (
 				D85613EB1CEE6B160060CCB7 /* Embassy */,
 				D85613F71CEE6B160060CCB7 /* EmbassyTests */,
+				AA9242E61DE9201D009FE50B /* iOS */,
+				AA9242E51DE9200A009FE50B /* iOSTests */,
+				AA9242CF1DE91EA2009FE50B /* macOS */,
+				AA9242DA1DE91EA2009FE50B /* macOSTests */,
 				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		D85613EA1CEE6B160060CCB7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				D85613E91CEE6B160060CCB7 /* Embassy.framework */,
-				D85613F31CEE6B160060CCB7 /* EmbassyTests.xctest */,
+				D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */,
+				AA9242CE1DE91EA2009FE50B /* Embassy.framework */,
+				AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,14 +257,12 @@
 				D866875D1D00D69900FA53F2 /* IO */,
 				D866875C1D00D67700FA53F2 /* HTTP */,
 				D86687571D00C21300FA53F2 /* Logging */,
-				D85613EC1CEE6B160060CCB7 /* Embassy.h */,
 				D85614051CEE6C0C0060CCB7 /* SWSGI.swift */,
 				D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */,
 				D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */,
 				D898DC8D1CF665010027E17E /* HeapSort.swift */,
 				D8F3D3981CF0F24500342389 /* Errors.swift */,
 				D898DC841CF62E1B0027E17E /* Atomic.swift */,
-				D85613EE1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = Embassy;
 			sourceTree = "<group>";
@@ -168,7 +279,6 @@
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
-				D85613FA1CEE6B160060CCB7 /* Info.plist */,
 			);
 			path = EmbassyTests;
 			sourceTree = "<group>";
@@ -218,20 +328,64 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		AA9242CB1DE91EA2009FE50B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA9242DE1DE91EA2009FE50B /* Embassy-macOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D85613E61CEE6B160060CCB7 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85613ED1CEE6B160060CCB7 /* Embassy.h in Headers */,
+				AA9242ED1DE920D6009FE50B /* Embassy-iOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D85613E81CEE6B160060CCB7 /* Embassy */ = {
+		AA9242CD1DE91EA2009FE50B /* Embassy-macOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D85613FD1CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy" */;
+			buildConfigurationList = AA9242DF1DE91EA2009FE50B /* Build configuration list for PBXNativeTarget "Embassy-macOS" */;
+			buildPhases = (
+				AA9242C91DE91EA2009FE50B /* Sources */,
+				AA9242CA1DE91EA2009FE50B /* Frameworks */,
+				AA9242CB1DE91EA2009FE50B /* Headers */,
+				AA9242CC1DE91EA2009FE50B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Embassy-macOS";
+			productName = "Embassy-macOS";
+			productReference = AA9242CE1DE91EA2009FE50B /* Embassy.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		AA9242D51DE91EA2009FE50B /* Embassy-macOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA9242E21DE91EA2009FE50B /* Build configuration list for PBXNativeTarget "Embassy-macOSTests" */;
+			buildPhases = (
+				AA9242D21DE91EA2009FE50B /* Sources */,
+				AA9242D31DE91EA2009FE50B /* Frameworks */,
+				AA9242D41DE91EA2009FE50B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA9242D91DE91EA2009FE50B /* PBXTargetDependency */,
+			);
+			name = "Embassy-macOSTests";
+			productName = "Embassy-macOSTests";
+			productReference = AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D85613E81CEE6B160060CCB7 /* Embassy-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D85613FD1CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy-iOS" */;
 			buildPhases = (
 				D85613E41CEE6B160060CCB7 /* Sources */,
 				D85613E51CEE6B160060CCB7 /* Frameworks */,
@@ -242,14 +396,14 @@
 			);
 			dependencies = (
 			);
-			name = Embassy;
+			name = "Embassy-iOS";
 			productName = Embassy;
 			productReference = D85613E91CEE6B160060CCB7 /* Embassy.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D85613F21CEE6B160060CCB7 /* EmbassyTests */ = {
+		D85613F21CEE6B160060CCB7 /* Embassy-iOSTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D85614001CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "EmbassyTests" */;
+			buildConfigurationList = D85614001CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy-iOSTests" */;
 			buildPhases = (
 				D85613EF1CEE6B160060CCB7 /* Sources */,
 				D85613F01CEE6B160060CCB7 /* Frameworks */,
@@ -260,9 +414,9 @@
 			dependencies = (
 				D85613F61CEE6B160060CCB7 /* PBXTargetDependency */,
 			);
-			name = EmbassyTests;
+			name = "Embassy-iOSTests";
 			productName = EmbassyTests;
-			productReference = D85613F31CEE6B160060CCB7 /* EmbassyTests.xctest */;
+			productReference = D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -271,10 +425,18 @@
 		D85613E01CEE6B160060CCB7 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 0810;
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Fang-Pen Lin";
 				TargetAttributes = {
+					AA9242CD1DE91EA2009FE50B = {
+						CreatedOnToolsVersion = 8.1;
+						ProvisioningStyle = Automatic;
+					};
+					AA9242D51DE91EA2009FE50B = {
+						CreatedOnToolsVersion = 8.1;
+						ProvisioningStyle = Automatic;
+					};
 					D85613E81CEE6B160060CCB7 = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0800;
@@ -297,13 +459,29 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D85613E81CEE6B160060CCB7 /* Embassy */,
-				D85613F21CEE6B160060CCB7 /* EmbassyTests */,
+				D85613E81CEE6B160060CCB7 /* Embassy-iOS */,
+				D85613F21CEE6B160060CCB7 /* Embassy-iOSTests */,
+				AA9242CD1DE91EA2009FE50B /* Embassy-macOS */,
+				AA9242D51DE91EA2009FE50B /* Embassy-macOSTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AA9242CC1DE91EA2009FE50B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA9242D41DE91EA2009FE50B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D85613E71CEE6B160060CCB7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,6 +499,57 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AA9242C91DE91EA2009FE50B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA6732821DE92542003ABD4E /* EventLoop.swift in Sources */,
+				AA67326C1DE92533003ABD4E /* SWSGI.swift in Sources */,
+				AA6732841DE92542003ABD4E /* Transport.swift in Sources */,
+				AA6732861DE92542003ABD4E /* IOUtils.swift in Sources */,
+				AA6732701DE92533003ABD4E /* Errors.swift in Sources */,
+				AA6732851DE92542003ABD4E /* TCPSocket.swift in Sources */,
+				AA67327B1DE9253D003ABD4E /* HTTPServer.swift in Sources */,
+				AA67326E1DE92533003ABD4E /* MultiDictionary.swift in Sources */,
+				AA67327A1DE92538003ABD4E /* FileLogHandler.swift in Sources */,
+				AA6732741DE92538003ABD4E /* LogHandler.swift in Sources */,
+				AA67327C1DE9253D003ABD4E /* DefaultHTTPServer.swift in Sources */,
+				AA67327D1DE9253D003ABD4E /* HTTPConnection.swift in Sources */,
+				AA6732811DE92542003ABD4E /* KqueueSelector.swift in Sources */,
+				AA6732731DE92538003ABD4E /* LogFormatter.swift in Sources */,
+				AA6732761DE92538003ABD4E /* DefaultLogFormatter.swift in Sources */,
+				AA6732751DE92538003ABD4E /* DefaultLogger.swift in Sources */,
+				AA67327F1DE9253D003ABD4E /* HTTPHeaderParser.swift in Sources */,
+				AA6732791DE92538003ABD4E /* PrintLogHandler.swift in Sources */,
+				AA67326D1DE92533003ABD4E /* SWSGIUtils.swift in Sources */,
+				AA6732771DE92538003ABD4E /* TransformLogHandler.swift in Sources */,
+				AA6732721DE92538003ABD4E /* Logger.swift in Sources */,
+				AA6732781DE92538003ABD4E /* PropagateLogHandler.swift in Sources */,
+				AA67327E1DE9253D003ABD4E /* HTTPRequest.swift in Sources */,
+				AA6732711DE92533003ABD4E /* Atomic.swift in Sources */,
+				AA67326F1DE92533003ABD4E /* HeapSort.swift in Sources */,
+				AA6732801DE92542003ABD4E /* Selector.swift in Sources */,
+				AA6732831DE92542003ABD4E /* SelectorEventLoop.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA9242D21DE91EA2009FE50B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */,
+				AA9242DC1DE91EA2009FE50B /* Embassy_macOSTests.swift in Sources */,
+				AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */,
+				AA67326A1DE92431003ABD4E /* HTTPServerTests.swift in Sources */,
+				AA6732651DE92431003ABD4E /* TCPSocketTests.swift in Sources */,
+				AA6732691DE92431003ABD4E /* MultiDictionaryTests.swift in Sources */,
+				AA6732681DE92431003ABD4E /* TransportTests.swift in Sources */,
+				AA6732641DE92431003ABD4E /* HTTPHeaderParserTests.swift in Sources */,
+				AA6732671DE92431003ABD4E /* SelectorEventLoopTests.swift in Sources */,
+				AA67326B1DE92431003ABD4E /* HeapSortTetsts.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D85613E41CEE6B160060CCB7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -359,6 +588,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA9242EF1DE920F8009FE50B /* Embassy_iOSTests.swift in Sources */,
 				D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */,
 				D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */,
 				D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */,
@@ -374,14 +604,105 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AA9242D91DE91EA2009FE50B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA9242CD1DE91EA2009FE50B /* Embassy-macOS */;
+			targetProxy = AA9242D81DE91EA2009FE50B /* PBXContainerItemProxy */;
+		};
 		D85613F61CEE6B160060CCB7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D85613E81CEE6B160060CCB7 /* Embassy */;
+			target = D85613E81CEE6B160060CCB7 /* Embassy-iOS */;
 			targetProxy = D85613F51CEE6B160060CCB7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		AA9242E01DE91EA2009FE50B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = macOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
+				PRODUCT_NAME = Embassy;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		AA9242E11DE91EA2009FE50B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = macOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
+				PRODUCT_NAME = Embassy;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		AA9242E31DE91EA2009FE50B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = macOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		AA9242E41DE91EA2009FE50B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = macOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
 		D85613FB1CEE6B160060CCB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -487,11 +808,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Embassy;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
@@ -507,11 +828,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Embassy;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
 			};
@@ -520,9 +841,9 @@
 		D85614011CEE6B160060CCB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = iOSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.EmbassyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -531,9 +852,9 @@
 		D85614021CEE6B160060CCB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = iOSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.EmbassyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -542,6 +863,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AA9242DF1DE91EA2009FE50B /* Build configuration list for PBXNativeTarget "Embassy-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA9242E01DE91EA2009FE50B /* Debug */,
+				AA9242E11DE91EA2009FE50B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA9242E21DE91EA2009FE50B /* Build configuration list for PBXNativeTarget "Embassy-macOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA9242E31DE91EA2009FE50B /* Debug */,
+				AA9242E41DE91EA2009FE50B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D85613E31CEE6B160060CCB7 /* Build configuration list for PBXProject "Embassy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -551,7 +890,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D85613FD1CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy" */ = {
+		D85613FD1CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D85613FE1CEE6B160060CCB7 /* Debug */,
@@ -560,7 +899,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D85614001CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "EmbassyTests" */ = {
+		D85614001CEE6B160060CCB7 /* Build configuration list for PBXNativeTarget "Embassy-iOSTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D85614011CEE6B160060CCB7 /* Debug */,
