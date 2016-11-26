@@ -97,4 +97,26 @@ class TCPSocketTests: XCTestCase {
         XCTAssertEqual(try! acceptedSocket.getPeerName().0, "::1")
         XCTAssertEqual(try! clientSocket.getPeerName().0, "::1")
     }
+
+    func testGetSockName() {
+        let port = try! getUnusedTCPPort()
+        let listenSocket = try! TCPSocket(blocking: true)
+        try! listenSocket.bind(port)
+        try! listenSocket.listen()
+
+        let exp0 = expectation(description: "socket accepcted")
+        var acceptedSocket: TCPSocket!
+        queue.async {
+            acceptedSocket = try! listenSocket.accept()
+            exp0.fulfill()
+        }
+
+        let clientSocket = try! TCPSocket(blocking: true)
+        try! clientSocket.connect("::1", port: port)
+
+        waitForExpectations(timeout: 4, handler: nil)
+
+        XCTAssertEqual(try! acceptedSocket.getSockName().0, "::1")
+        XCTAssertEqual(try! clientSocket.getSockName().0, "::1")
+    }
 }
