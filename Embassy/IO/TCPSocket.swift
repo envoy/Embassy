@@ -192,7 +192,7 @@ public final class TCPSocket {
         var address = sockaddr_storage()
         var size = socklen_t(MemoryLayout<sockaddr_storage>.size)
         return try withUnsafeMutablePointer(to: &address) { pointer in
-            let result = try pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { addressptr in
+            let result = pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { addressptr in
                 return function(fileDescriptor, addressptr, &size)
             }
             guard result >= 0 else {
