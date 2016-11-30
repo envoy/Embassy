@@ -232,8 +232,8 @@ public final class TCPSocket {
                 family,
                 &addrStruct,
                 pointer,
-                socklen_t(MemoryLayout<StructType>.size)
-                ) != nil
+                socklen_t(addressLength)
+            ) != nil
         }) else {
             throw OSError.lastIOError()
         }
