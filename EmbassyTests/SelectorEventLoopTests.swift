@@ -19,7 +19,9 @@ class SelectorEventLoopTests: XCTestCase {
         loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 
         // set a 30 seconds timeout
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(
+            deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
+        ) {
             if self.loop.running {
                 self.loop.stop()
                 XCTFail("Time out")
@@ -32,7 +34,9 @@ class SelectorEventLoopTests: XCTestCase {
     }
 
     func testStop() {
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(
+            deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
+        ) {
             XCTAssert(self.loop.running)
             self.loop.stop()
             XCTAssertFalse(self.loop.running)

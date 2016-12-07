@@ -188,7 +188,7 @@ public final class HTTPConnection {
         handler(data)
         readDataLength += data.count
         // we finish reading all the content, send EOF to input handler
-        if let length = contentLength , readDataLength >= length {
+        if let length = contentLength, readDataLength >= length {
             handler(Data())
             inputHandler = nil
         }
