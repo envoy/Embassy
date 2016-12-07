@@ -22,7 +22,7 @@ public struct NoOpKeyTransform<T: Hashable>: KeyTransformer {
     }
 }
 
-/// A key transformer that lower case of the String key, so that the MultiDictionary will be
+/// A key transformer that lowers case of the String key, so that the MultiDictionary will be
 /// case-insenstive
 public struct LowercaseKeyTransform: KeyTransformer {
     public typealias Key = String
@@ -79,11 +79,11 @@ extension MultiDictionary: Collection {
 
     public typealias Index = ArrayType.Index
 
-    public var startIndex : Index {
+    public var startIndex: Index {
         return items.startIndex
     }
 
-    public var endIndex : Index {
+    public var endIndex: Index {
         return items.endIndex
     }
 
