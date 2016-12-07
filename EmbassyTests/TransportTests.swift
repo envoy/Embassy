@@ -222,7 +222,10 @@ class TransportTests: XCTestCase {
         XCTAssert(serverTransportClosed)
         XCTAssert(clientTransport.closed)
         XCTAssert(serverTransport.closed)
-        XCTAssertEqual(serverReceivedData.joined(separator: "").characters.count, "hello".characters.count + bigDataChunk.characters.count)
+        XCTAssertEqual(
+            serverReceivedData.joined(separator: "").characters.count,
+            "hello".characters.count + bigDataChunk.characters.count
+        )
     }
 
     func testReadingPause() {

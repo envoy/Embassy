@@ -41,7 +41,10 @@ func getUnusedTCPPort() throws -> Int {
     let addressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
     // given port 0, and bind, it will find us an available port
     guard withUnsafePointer(to: &address, { pointer in
-        return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(addressSize)) { pointer in
+        return pointer.withMemoryRebound(
+            to: sockaddr.self,
+            capacity: Int(addressSize)
+        ) { pointer in
             return Darwin.bind(fileDescriptor, pointer, addressSize) >= 0
         }
     }) else {
@@ -51,7 +54,10 @@ func getUnusedTCPPort() throws -> Int {
     var socketAddress = sockaddr_in()
     var socketAddressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
     guard withUnsafeMutablePointer(to: &socketAddress, { pointer in
-        return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(socketAddressSize)) { pointer in
+        return pointer.withMemoryRebound(
+            to: sockaddr.self,
+            capacity: Int(socketAddressSize)
+        ) { pointer in
             return getsockname(fileDescriptor, pointer, &socketAddressSize) >= 0
         }
     }) else {
@@ -65,7 +71,10 @@ func makeRandomString(_ length: Int) -> String {
     var result: [String] = []
     for _ in 0..<length {
         let randomIndex = Int(arc4random_uniform(UInt32(letters.characters.count)))
-        let char = letters.substring(with: letters.characters.index(letters.startIndex, offsetBy: randomIndex) ..< letters.characters.index(letters.startIndex, offsetBy: randomIndex + 1))
+        let char = letters.substring(
+            with: letters.characters.index(letters.startIndex, offsetBy: randomIndex) ..<
+                  letters.characters.index(letters.startIndex, offsetBy: randomIndex + 1)
+        )
         result.append(char)
     }
     return result.joined(separator: "")
@@ -73,11 +82,24 @@ func makeRandomString(_ length: Int) -> String {
 
 extension XCTestCase {
     @discardableResult
-    func assertExecutingTime<T>(_ time: TimeInterval, accuracy: TimeInterval, file: StaticString = #file, line: UInt = #line, closure: (Void) -> T) -> T {
+    func assertExecutingTime<T>(
+        _ time: TimeInterval,
+        accuracy: TimeInterval,
+        file: StaticString = #file,
+        line: UInt = #line,
+        closure: (Void) -> T
+    ) -> T {
         let begin = Date()
         let result = closure()
         let elapsed = Date().timeIntervalSince(begin)
-        XCTAssertEqualWithAccuracy(elapsed, time, accuracy: accuracy, "Wrong executing time", file: file, line: line)
+        XCTAssertEqualWithAccuracy(
+            elapsed,
+            time,
+            accuracy: accuracy,
+            "Wrong executing time",
+            file: file,
+            line: line
+        )
         return result
     }
 }
