@@ -16,9 +16,9 @@ public struct PrintLogHandler: LogHandler {
         self.formatter = formatter
     }
 
-    public func emit(_ record: LogRecord) {
+    public func emit(record: LogRecord) {
         if let formatter = formatter {
-            print(formatter.format(record))
+            print(formatter.format(record: record))
         }
     }
 }

@@ -16,7 +16,7 @@ class TCPSocketTests: XCTestCase {
     func testAccept() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         let exp0 = expectation(description: "socket accepcted")
@@ -27,7 +27,7 @@ class TCPSocketTests: XCTestCase {
         }
 
         let clientSocket = try! TCPSocket()
-        try! clientSocket.connect("::1", port: port)
+        try! clientSocket.connect(host: "::1", port: port)
 
         waitForExpectations(timeout: 3) { error in
             XCTAssertNil(error)
@@ -38,7 +38,7 @@ class TCPSocketTests: XCTestCase {
     func testReadAndWrite() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         let exp0 = expectation(description: "socket accepcted")
@@ -49,7 +49,7 @@ class TCPSocketTests: XCTestCase {
         }
 
         let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect("::1", port: port)
+        try! clientSocket.connect(host: "::1", port: port)
 
         waitForExpectations(timeout: 4) { error in
             XCTAssertNil(error)
@@ -61,11 +61,11 @@ class TCPSocketTests: XCTestCase {
         var receivedData: Data?
         let exp1 = expectation(description: "socket received")
 
-        let sentBytes = try! clientSocket.send(bytesToSend)
+        let sentBytes = try! clientSocket.send(data: bytesToSend)
         XCTAssertEqual(sentBytes, bytesToSend.count)
 
         queue.async {
-            receivedData = try! acceptedSocket.recv(1024)
+            receivedData = try! acceptedSocket.recv(size: 1024)
             exp1.fulfill()
         }
 
@@ -79,7 +79,7 @@ class TCPSocketTests: XCTestCase {
     func testGetPeerName() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         let exp0 = expectation(description: "socket accepcted")
@@ -90,7 +90,7 @@ class TCPSocketTests: XCTestCase {
         }
 
         let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect("::1", port: port)
+        try! clientSocket.connect(host: "::1", port: port)
 
         waitForExpectations(timeout: 4, handler: nil)
 
@@ -101,7 +101,7 @@ class TCPSocketTests: XCTestCase {
     func testGetSockName() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         let exp0 = expectation(description: "socket accepcted")
@@ -112,7 +112,7 @@ class TCPSocketTests: XCTestCase {
         }
 
         let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect("::1", port: port)
+        try! clientSocket.connect(host: "::1", port: port)
 
         waitForExpectations(timeout: 4, handler: nil)
 

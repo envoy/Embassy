@@ -13,5 +13,5 @@ public protocol LogHandler {
 
     /// Handle given record from logger
     ///  - Parameter record: log record
-    func emit(_ record: LogRecord)
+    func emit(record: LogRecord)
 }

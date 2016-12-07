@@ -34,17 +34,17 @@ public protocol EventLoop {
 
     /// Call given callback as soon as possible (the next event loop iteration)
     ///  - Parameter callback: the callback function to be called
-    func callSoon(_ callback: @escaping (Void) -> Void)
+    func call(callback: @escaping (Void) -> Void)
 
-    /// Call given callback `delay` seconds later
-    ///  - Parameter delay: delaying in seconds
+    /// Call given callback `withDelay` seconds later
+    ///  - Parameter withDelay: delaying in seconds
     ///  - Parameter callback: the callback function to be called
-    func callLater(_ delay: TimeInterval, callback: @escaping (Void) -> Void)
+    func call(withDelay: TimeInterval, callback: @escaping (Void) -> Void)
 
     /// Call given callback at specific time
-    ///  - Parameter time: time the callback to be called
+    ///  - Parameter atTime: time the callback to be called
     ///  - Parameter callback: the callback function to be called
-    func callAt(_ time: Date, callback: @escaping (Void) -> Void)
+    func call(atTime: Date, callback: @escaping (Void) -> Void)
 
     /// Stop the event loop
     func stop()

@@ -59,7 +59,7 @@ final class Atomic<Value> {
     /// Atomically replaces the contents of the variable.
     ///
     /// Returns the old value.
-    func swap(_ newValue: Value) -> Value {
+    func swap(newValue: Value) -> Value {
         return modify { _ in newValue }
     }
 
@@ -67,7 +67,7 @@ final class Atomic<Value> {
     ///
     /// Returns the old value.
     @discardableResult
-    func modify(_ action: (Value) throws -> Value) rethrows -> Value {
+    func modify(action: (Value) throws -> Value) rethrows -> Value {
         return try withValue { value in
             _value = try action(value)
             return value
@@ -78,7 +78,7 @@ final class Atomic<Value> {
     /// variable.
     ///
     /// Returns the result of the action.
-    func withValue<Result>(_ action: (Value) throws -> Result) rethrows -> Result {
+    func withValue<Result>(action: (Value) throws -> Result) rethrows -> Result {
         lock()
         defer { unlock() }
 

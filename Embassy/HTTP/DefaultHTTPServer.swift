@@ -21,23 +21,17 @@ public final class DefaultHTTPServer: HTTPServer {
     private var acceptSocket: TCPSocket!
     private let eventLoop: EventLoop
     private var connections = Set<HTTPConnection>()
-    
-    public init(eventLoop: EventLoop, interface: String = "::1", port: Int = 0, app: @escaping SWSGI) {
+
+    public init(
+        eventLoop: EventLoop,
+        interface: String = "::1",
+        port: Int = 0,
+        app: @escaping SWSGI
+    ) {
         self.eventLoop = eventLoop
         self.app = app
         self.interface = interface
         self.port = port
-    }
-
-    // deprecated init, just for backward backward compatibility, use designed init instead, as
-    // it has app as the tailing closure, make it easier to write.
-    public convenience init(
-        eventLoop: EventLoop,
-        app: @escaping SWSGI,
-        interface: String = "::1",
-        port: Int = 0
-    ) {
-        self.init(eventLoop: eventLoop, interface: interface, port: port, app: app)
     }
 
     deinit {
@@ -55,7 +49,7 @@ public final class DefaultHTTPServer: HTTPServer {
         }
         logger.info("Starting HTTP server on [\(interface)]:\(port) ...")
         acceptSocket = try TCPSocket()
-        try acceptSocket.bind(port, interface: interface)
+        try acceptSocket.bind(port: port, interface: interface)
         try acceptSocket.listen()
         eventLoop.setReader(acceptSocket.fileDescriptor) { [unowned self] in
             self.handleNewConnection()
@@ -79,7 +73,7 @@ public final class DefaultHTTPServer: HTTPServer {
 
     public func stopAndWait() {
         let semaphore = DispatchSemaphore(value: 0)
-        eventLoop.callSoon {
+        eventLoop.call {
             self.stop()
             semaphore.signal()
         }

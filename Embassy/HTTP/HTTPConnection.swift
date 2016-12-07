@@ -67,7 +67,7 @@ public final class HTTPConnection {
         ) { [unowned self] record in
             return record.overwriteMessage { [unowned self] in"[\(self.uuid)] \($0.message)" }
         }
-        self.logger.addHandler(contextHandler)
+        self.logger.add(handler: contextHandler)
     }
 
     public func close() {
@@ -125,7 +125,7 @@ public final class HTTPConnection {
             version: version,
             headers: headers
         )
-        var environ = SWSGIUtils.environForRequest(request)
+        var environ = SWSGIUtils.environFor(request: request)
         environ["SERVER_NAME"] = serverName
         environ["SERVER_PORT"] = String(serverPort)
         environ["SERVER_PROTOCOL"] = "HTTP/1.1"
@@ -157,7 +157,7 @@ public final class HTTPConnection {
         // change state for incoming request to
         requestState = .readingBody
         // pause the reading for now, let `swsgi.input` called and resume it later
-        transport.resumeReading(false)
+        transport.resume(reading: false)
 
         app(environ, startResponse, sendBody)
     }
@@ -172,12 +172,12 @@ public final class HTTPConnection {
                 }
                 self.initialBody = nil
             }
-            transport.resumeReading(true)
+            transport.resume(reading: true)
             logger.info("Resume reading")
         // if the input handler is set to nil, it means pause reading
         } else {
             logger.info("Pause reading")
-            transport.resumeReading(false)
+            transport.resume(reading: false)
         }
     }
 
@@ -217,7 +217,7 @@ public final class HTTPConnection {
             headersPart,
             "\r\n"
         ]
-        transport.writeUTF8(parts.joined(separator: "\r\n"))
+        transport.write(string: parts.joined(separator: "\r\n"))
         responseState = .sendingBody
     }
 
@@ -232,7 +232,7 @@ public final class HTTPConnection {
             transport.close()
             return
         }
-        transport.write(data)
+        transport.write(data: data)
     }
 
     // called to handle connection closed

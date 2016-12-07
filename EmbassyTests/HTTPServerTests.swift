@@ -99,7 +99,7 @@ class HTTPServerTests: XCTestCase {
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
                 self.loop.stop()
-            }) 
+            })
             task.resume()
         }
 
@@ -138,7 +138,7 @@ class HTTPServerTests: XCTestCase {
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
                 self.loop.stop()
-            }) 
+            })
             task.resume()
         }
 
@@ -163,13 +163,13 @@ class HTTPServerTests: XCTestCase {
 
             let loop = environ["embassy.event_loop"] as! EventLoop
 
-            loop.callLater(1) {
+            loop.call(withDelay: 1) {
                 sendBody(Data("hello ".utf8))
             }
-            loop.callLater(2) {
+            loop.call(withDelay: 2) {
                 sendBody(Data("baby ".utf8))
             }
-            loop.callLater(3) {
+            loop.call(withDelay: 3) {
                 sendBody(Data("fin".utf8))
                 sendBody(Data())
             }
@@ -186,7 +186,7 @@ class HTTPServerTests: XCTestCase {
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
                 self.loop.stop()
-            }) 
+            })
             task.resume()
         }
 
@@ -224,7 +224,7 @@ class HTTPServerTests: XCTestCase {
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
             let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
                 self.loop.stop()
-            }) 
+            })
             task.resume()
         }
 

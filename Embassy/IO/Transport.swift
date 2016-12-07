@@ -47,7 +47,12 @@ public final class Transport {
     // is reading enabled or not
     private var reading: Bool = true
 
-    init(socket: TCPSocket, eventLoop: EventLoop, closedCallback: ((CloseReason) -> Void)? = nil, readDataCallback: ((Data) -> Void)? = nil) {
+    init(
+        socket: TCPSocket,
+        eventLoop: EventLoop,
+        closedCallback: ((CloseReason) -> Void)? = nil,
+        readDataCallback: ((Data) -> Void)? = nil
+    ) {
         socket.ignoreSigPipe = true
         self.socket = socket
         self.eventLoop = eventLoop
@@ -64,7 +69,7 @@ public final class Transport {
 
     /// Send data to peer (append in buffer and will be sent out later)
     ///  - Parameter data: data to send
-    func write(_ data: Data) {
+    func write(data: Data) {
         // ensure we are not closed nor closing
         guard !closed && !closing else {
             // TODO: or raise error?
@@ -77,8 +82,8 @@ public final class Transport {
 
     /// Send string with UTF8 encoding to peer
     ///  - Parameter string: string to send as UTF8
-    func writeUTF8(_ string: String) {
-        write(Data(string.utf8))
+    func write(string: String) {
+        write(data: Data(string.utf8))
     }
 
     /// Flush outgoing data and close the transport
@@ -92,11 +97,11 @@ public final class Transport {
         handleWrite()
     }
 
-    func resumeReading(_ reading: Bool) {
+    func resume(reading: Bool) {
         // switch from not-reading to reading
         if reading && !self.reading {
             // call handle read later to check is there data available for reading
-            eventLoop.callSoon {
+            eventLoop.call {
                 self.handleRead()
             }
         }
@@ -123,7 +128,7 @@ public final class Transport {
         }
         var data: Data!
         do {
-            data = try socket.recv(Transport.recvChunkSize)
+            data = try socket.recv(size: Transport.recvChunkSize)
         } catch OSError.ioError(let number, _) {
             guard number != EAGAIN else {
                 // if it's EAGAIN, it means no data to be read for now, just return
@@ -166,7 +171,7 @@ public final class Transport {
             return
         }
         do {
-            let sentBytes = try socket.send(outgoingBuffer)
+            let sentBytes = try socket.send(data: outgoingBuffer)
             outgoingBuffer.removeFirst(sentBytes)
         } catch OSError.ioError(let number, _) {
             switch number {

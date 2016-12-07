@@ -19,7 +19,7 @@ public struct TransformLogHandler: LogHandler {
         self.transform = transform
     }
 
-    public func emit(_ record: LogRecord) {
-        handler.emit(transform(record))
+    public func emit(record: LogRecord) {
+        handler.emit(record: transform(record))
     }
 }

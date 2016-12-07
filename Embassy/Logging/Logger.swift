@@ -48,7 +48,7 @@ extension LogRecord {
     /// Overwrite message and return a new record
     ///  - Parameter overwrite: closure to accept self record and return overwritten string
     ///  - Returns: the overwritten log record
-    public func overwriteMessage(_ overwrite: ((LogRecord) -> String)) -> LogRecord {
+    public func overwriteMessage(overwrite: ((LogRecord) -> String)) -> LogRecord {
         return LogRecord(
             loggerName: loggerName,
             level: level,
@@ -63,8 +63,8 @@ extension LogRecord {
 
 public protocol Logger {
     /// Add a handler to the logger
-    func addHandler(_ handler: LogHandler)
+    func add(handler: LogHandler)
 
     /// Write log record to logger
-    func log(_ record: LogRecord)
+    func log(record: LogRecord)
 }

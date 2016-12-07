@@ -314,10 +314,10 @@
 		D866875D1D00D69900FA53F2 /* IO */ = {
 			isa = PBXGroup;
 			children = (
-				D8F3D38C1CEF9B9700342389 /* Selector.swift */,
-				D8F3D3921CEFD79100342389 /* KqueueSelector.swift */,
 				D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */,
+				D8F3D38C1CEF9B9700342389 /* Selector.swift */,
 				D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */,
+				D8F3D3921CEFD79100342389 /* KqueueSelector.swift */,
 				D83A719B1CF1230E00C0C21C /* Transport.swift */,
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
 				D83A71951CF119D200C0C21C /* IOUtils.swift */,

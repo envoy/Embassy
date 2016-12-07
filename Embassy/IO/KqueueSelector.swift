@@ -31,7 +31,11 @@ public final class KqueueSelector: Selector {
     }
 
     @discardableResult
-    public func register(_ fileDescriptor: Int32, events: Set<IOEvent>, data: Any?) throws -> SelectorKey {
+    public func register(
+        _ fileDescriptor: Int32,
+        events: Set<IOEvent>,
+        data: Any?
+    ) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
         guard fileDescriptorMap[fileDescriptor] == nil else {
             throw LocalError.keyError(fileDescriptor: fileDescriptor)
@@ -118,7 +122,7 @@ public final class KqueueSelector: Selector {
         _ = Darwin.close(kqueue)
     }
 
-    public func select(_ timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
+    public func select(timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
         var timeSpec: timespec?
         let timeSpecPointer: UnsafePointer<timespec>?
         if let timeout = timeout {
@@ -136,7 +140,14 @@ public final class KqueueSelector: Selector {
 
         var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
         let eventCount = kevents.withUnsafeMutableBufferPointer { pointer in
-             return Darwin.kevent(kqueue, nil, 0, pointer.baseAddress, Int32(selectMaximumEvent), timeSpecPointer)
+             return Darwin.kevent(
+                kqueue,
+                nil,
+                0,
+                pointer.baseAddress,
+                Int32(selectMaximumEvent),
+                timeSpecPointer
+            )
         }
         guard eventCount >= 0 else {
             throw OSError.lastIOError()

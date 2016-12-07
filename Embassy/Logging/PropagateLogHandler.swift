@@ -17,7 +17,7 @@ public struct PropagateLogHandler: LogHandler {
         self.logger = logger
     }
 
-    public func emit(_ record: LogRecord) {
-        logger.log(record)
+    public func emit(record: LogRecord) {
+        logger.log(record: record)
     }
 }

@@ -23,10 +23,10 @@ public struct FileLogHandler: LogHandler {
         self.formatter = formatter
     }
 
-    public func emit(_ record: LogRecord) {
+    public func emit(record: LogRecord) {
         queue.async {
             if let formatter = self.formatter {
-                let msg = formatter.format(record) + "\n"
+                let msg = formatter.format(record: record) + "\n"
                 self.fileHandle.write(msg.data(using: String.Encoding.utf8)!)
                 self.fileHandle.synchronizeFile()
             }

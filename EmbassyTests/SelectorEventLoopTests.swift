@@ -47,7 +47,7 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testCallSoon() {
         var called = false
-        loop.callSoon {
+        loop.call {
             called = true
             self.loop.stop()
         }
@@ -59,16 +59,16 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testCallLater() {
         var events: [Int] = []
-        loop.callLater(0) {
+        loop.call(withDelay: 0) {
             events.append(0)
         }
-        loop.callLater(1) {
+        loop.call(withDelay: 1) {
             events.append(1)
         }
-        loop.callLater(2) {
+        loop.call(withDelay: 2) {
             self.loop.stop()
         }
-        loop.callLater(3) {
+        loop.call(withDelay: 3) {
             events.append(3)
         }
         assertExecutingTime(2, accuracy: 0.5) {
@@ -80,20 +80,20 @@ class SelectorEventLoopTests: XCTestCase {
     func testCallAtOrder() {
         var events: [Int] = []
         let now = Date()
-        loop.callAt(now.addingTimeInterval(0)) {
+        loop.call(atTime: now.addingTimeInterval(0)) {
             events.append(0)
         }
-        loop.callAt(now.addingTimeInterval(0.000002)) {
+        loop.call(atTime: now.addingTimeInterval(0.000002)) {
             events.append(2)
         }
-        loop.callAt(now.addingTimeInterval(0.000001)) {
+        loop.call(atTime: now.addingTimeInterval(0.000001)) {
             events.append(1)
         }
-        loop.callAt(now.addingTimeInterval(0.000004)) {
+        loop.call(atTime: now.addingTimeInterval(0.000004)) {
             events.append(4)
             self.loop.stop()
         }
-        loop.callAt(now.addingTimeInterval(0.000003)) {
+        loop.call(atTime: now.addingTimeInterval(0.000003)) {
             events.append(3)
         }
         assertExecutingTime(0, accuracy: 0.5) {
@@ -105,7 +105,7 @@ class SelectorEventLoopTests: XCTestCase {
     func testSetReader() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
         var readerCalled = false
 
@@ -117,8 +117,8 @@ class SelectorEventLoopTests: XCTestCase {
         let clientSocket = try! TCPSocket()
 
         // make a connect 1 seconds later
-        loop.callLater(1) {
-            try! clientSocket.connect("::1", port: port)
+        loop.call(withDelay: 1) {
+            try! clientSocket.connect(host: "::1", port: port)
         }
 
         assertExecutingTime(1.0, accuracy: 0.5) {
@@ -130,7 +130,7 @@ class SelectorEventLoopTests: XCTestCase {
     func testSetWriter() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
         var writerCalled = false
 
@@ -142,8 +142,8 @@ class SelectorEventLoopTests: XCTestCase {
         }
 
         // make a connect 1 seconds later
-        loop.callLater(1) {
-            try! clientSocket.connect("::1", port: port)
+        loop.call(withDelay: 1) {
+            try! clientSocket.connect(host: "::1", port: port)
         }
 
         assertExecutingTime(1.0, accuracy: 0.5) {
@@ -155,7 +155,7 @@ class SelectorEventLoopTests: XCTestCase {
     func testRemoveReader() {
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port)
+        try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         let clientSocket = try! TCPSocket()
@@ -163,7 +163,7 @@ class SelectorEventLoopTests: XCTestCase {
 
         var readData = [String]()
         let readAcceptedSocket = {
-            let data = try! acceptedSocket.recv(1024)
+            let data = try! acceptedSocket.recv(size: 1024)
             readData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if readData.count >= 2 {
                 self.loop.removeReader(acceptedSocket.fileDescriptor)
@@ -175,18 +175,18 @@ class SelectorEventLoopTests: XCTestCase {
             self.loop.setReader(acceptedSocket.fileDescriptor, callback: readAcceptedSocket)
         }
 
-        try! clientSocket.connect("::1", port: port)
+        try! clientSocket.connect(host: "::1", port: port)
 
-        loop.callLater(1) {
-            try! clientSocket.send(Data("hello".utf8))
+        loop.call(withDelay: 1) {
+            try! clientSocket.send(data: Data("hello".utf8))
         }
-        loop.callLater(2) {
-            try! clientSocket.send(Data("baby".utf8))
+        loop.call(withDelay: 2) {
+            try! clientSocket.send(data: Data("baby".utf8))
         }
-        loop.callLater(3) {
-            try! clientSocket.send(Data("fin".utf8))
+        loop.call(withDelay: 3) {
+            try! clientSocket.send(data: Data("fin".utf8))
         }
-        loop.callLater(4) {
+        loop.call(withDelay: 4) {
             self.loop.stop()
         }
 

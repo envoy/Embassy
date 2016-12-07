@@ -25,7 +25,7 @@ public final class DefaultLogger: Logger {
 
     /// Add handler to self logger
     ///  - Parameter handler: the handler to add
-    public func addHandler(_ handler: LogHandler) {
+    public func add(handler: LogHandler) {
         handlers.append(handler)
     }
 
@@ -35,7 +35,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(.debug, message: message, caller: caller, file: file, line: line)
+        log(level: .debug, message: message, caller: caller, file: file, line: line)
     }
 
     public func info(
@@ -44,7 +44,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(.info, message: message, caller: caller, file: file, line: line)
+        log(level: .info, message: message, caller: caller, file: file, line: line)
     }
 
     public func warning(
@@ -53,7 +53,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(.warning, message: message, caller: caller, file: file, line: line)
+        log(level: .warning, message: message, caller: caller, file: file, line: line)
     }
 
     public func error(
@@ -62,7 +62,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(.error, message: message, caller: caller, file: file, line: line)
+        log(level: .error, message: message, caller: caller, file: file, line: line)
     }
 
     public func critical(
@@ -71,11 +71,11 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(.critical, message: message, caller: caller, file: file, line: line)
+        log(level: .critical, message: message, caller: caller, file: file, line: line)
     }
 
     func log(
-        _ level: LogLevel,
+        level: LogLevel,
         message: @autoclosure (Void) -> String,
         caller: String = #function,
         file: String = #file,
@@ -90,15 +90,15 @@ public final class DefaultLogger: Logger {
             line: line,
             time: Date()
         )
-        log(record)
+        log(record: record)
     }
 
-    public func log(_ record: LogRecord) {
+    public func log(record: LogRecord) {
         guard record.level.rawValue >= level.rawValue else {
             return
         }
         for handler in handlers {
-            handler.emit(record)
+            handler.emit(record: record)
         }
     }
 

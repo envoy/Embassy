@@ -42,8 +42,8 @@ public final class SelectorEventLoop: EventLoop {
         }
         pipeReceiver = pipeFds[0]
         pipeSender = pipeFds[1]
-        IOUtils.setBlocking(pipeSender, blocking: false)
-        IOUtils.setBlocking(pipeReceiver, blocking: false)
+        IOUtils.setBlocking(fileDescriptor: pipeSender, blocking: false)
+        IOUtils.setBlocking(fileDescriptor: pipeReceiver, blocking: false)
         // subscribe to pipe receiver read-ready event, do nothing, just allow selector
         // to be interrupted
         setReader(pipeReceiver) {}
@@ -61,10 +61,18 @@ public final class SelectorEventLoop: EventLoop {
             let oldHandle = key.data as! CallbackHandle
             let handle = CallbackHandle(reader: callback, writer: oldHandle.writer)
             try! selector.unregister(fileDescriptor)
-            try! selector.register(fileDescriptor, events: key.events.union([.read]), data: handle)
+            try! selector.register(
+                fileDescriptor,
+                events: key.events.union([.read]),
+                data: handle
+            )
         // register the new file descriptor
         } else {
-            try! selector.register(fileDescriptor, events: [.read], data: CallbackHandle(reader: callback))
+            try! selector.register(
+                fileDescriptor,
+                events: [.read],
+                data: CallbackHandle(reader: callback)
+            )
         }
     }
 
@@ -88,10 +96,18 @@ public final class SelectorEventLoop: EventLoop {
             let oldHandle = key.data as! CallbackHandle
             let handle = CallbackHandle(reader: oldHandle.reader, writer: callback)
             try! selector.unregister(fileDescriptor)
-            try! selector.register(fileDescriptor, events: key.events.union([.write]), data: handle)
+            try! selector.register(
+                fileDescriptor,
+                events: key.events.union([.write]),
+                data: handle
+            )
             // register the new file descriptor
         } else {
-            try! selector.register(fileDescriptor, events: [.write], data: CallbackHandle(writer: callback))
+            try! selector.register(
+                fileDescriptor,
+                events: [.write],
+                data: CallbackHandle(writer: callback)
+            )
         }
     }
 
@@ -109,7 +125,7 @@ public final class SelectorEventLoop: EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
 
-    public func callSoon(_ callback: @escaping (Void) -> Void) {
+    public func call(callback: @escaping (Void) -> Void) {
         readyCallbacks.modify { callbacks in
             var callbacks = callbacks
             callbacks.append(callback)
@@ -118,14 +134,16 @@ public final class SelectorEventLoop: EventLoop {
         interruptSelector()
     }
 
-    public func callLater(_ delay: TimeInterval, callback: @escaping (Void) -> Void) {
-        callAt(Date().addingTimeInterval(delay), callback: callback)
+    public func call(withDelay delay: TimeInterval, callback: @escaping (Void) -> Void) {
+        call(atTime: Date().addingTimeInterval(delay), callback: callback)
     }
 
-    public func callAt(_ time: Date, callback: @escaping (Void) -> Void) {
+    public func call(atTime time: Date, callback: @escaping (Void) -> Void) {
         scheduledCallbacks.modify { callbacks in
             var callbacks = callbacks
-            HeapSort.heapPush(&callbacks, item: (time, callback)) { $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970 }
+            HeapSort.heapPush(&callbacks, item: (time, callback)) {
+                $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970
+            }
             return callbacks
         }
         interruptSelector()
@@ -146,14 +164,18 @@ public final class SelectorEventLoop: EventLoop {
     // interrupt the selector
     private func interruptSelector() {
         let byte = [UInt8](repeating: 0, count: 1)
-        assert(write(pipeSender, byte, byte.count) >= 0, "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())")
+        assert(
+            write(pipeSender, byte, byte.count) >= 0,
+            "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())"
+        )
     }
 
     // Run once iteration for the event loop
     private func runOnce() {
         var timeout: TimeInterval?
         scheduledCallbacks.withValue { callbacks in
-            // as the scheduledCallbacks is a heap queue, the first one will be the smallest one (the latest one)
+            // as the scheduledCallbacks is a heap queue, the first one will be the smallest one
+            // (the latest one)
             if let firstTuple = callbacks.first {
                 // schedule timeout for the very next scheduled callback
                 let (minTime, _) = firstTuple
@@ -166,7 +188,7 @@ public final class SelectorEventLoop: EventLoop {
         var events: [(SelectorKey, Set<IOEvent>)] = []
         // Poll IO events
         do {
-            events = try selector.select(timeout)
+            events = try selector.select(timeout: timeout)
         } catch OSError.ioError(let number, let message) {
             assert(number == EINTR, "Failed to call selector, errno=\(number), message=\(message)")
         } catch {
@@ -197,16 +219,21 @@ public final class SelectorEventLoop: EventLoop {
             var notExpiredCallbacks = callbacks
             // keep poping expired callbacks
             let timestamp = now.timeIntervalSince1970
-            while !notExpiredCallbacks.isEmpty && timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970  {
+            while (
+                !notExpiredCallbacks.isEmpty &&
+                timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970
+            ) {
                 // pop the expired callbacks from heap queue and add them to ready callback list
-                let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) { $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970 }
+                let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) {
+                    $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970
+                }
                 readyScheduledCallbacks.append(callback)
             }
             return notExpiredCallbacks
         }
 
         // Call ready callbacks
-        let callbacks = readyCallbacks.swap([]) + readyScheduledCallbacks
+        let callbacks = readyCallbacks.swap(newValue: []) + readyScheduledCallbacks
         for callback in callbacks {
             callback()
         }
