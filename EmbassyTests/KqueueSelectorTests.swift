@@ -69,7 +69,7 @@ class KqueueSelectorTests: XCTestCase {
             events: [.read],
             data: nil
         )) { error in
-            guard let error = error as? KqueueSelector.LocalError else {
+            guard let error = error as? KqueueSelector.Error else {
                 XCTFail()
                 return
             }
@@ -85,7 +85,7 @@ class KqueueSelectorTests: XCTestCase {
         let socket = try! TCPSocket()
 
         XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
-            guard let error = error as? KqueueSelector.LocalError else {
+            guard let error = error as? KqueueSelector.Error else {
                 XCTFail()
                 return
             }

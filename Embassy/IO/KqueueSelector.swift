@@ -9,7 +9,7 @@
 import Foundation
 
 public final class KqueueSelector: Selector {
-    enum LocalError: Error {
+    enum Error: Swift.Error {
         case keyError(fileDescriptor: Int32)
     }
 
@@ -38,7 +38,7 @@ public final class KqueueSelector: Selector {
     ) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
         guard fileDescriptorMap[fileDescriptor] == nil else {
-            throw LocalError.keyError(fileDescriptor: fileDescriptor)
+            throw Error.keyError(fileDescriptor: fileDescriptor)
         }
         let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
         fileDescriptorMap[fileDescriptor] = key
@@ -81,7 +81,7 @@ public final class KqueueSelector: Selector {
     public func unregister(_ fileDescriptor: Int32) throws -> SelectorKey {
         // ensure the file descriptor exists
         guard let key = fileDescriptorMap[fileDescriptor] else {
-            throw LocalError.keyError(fileDescriptor: fileDescriptor)
+            throw Error.keyError(fileDescriptor: fileDescriptor)
         }
         fileDescriptorMap.removeValue(forKey: fileDescriptor)
         var kevents: [Darwin.kevent] = []
