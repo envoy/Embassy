@@ -44,8 +44,6 @@
 		AA6732861DE92542003ABD4E /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
 		AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */; };
 		AA9242D71DE91EA2009FE50B /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA9242CE1DE91EA2009FE50B /* Embassy.framework */; };
-		AA9242DE1DE91EA2009FE50B /* Embassy-macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AA9242ED1DE920D6009FE50B /* Embassy-iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */; };
 		D83A71961CF119D200C0C21C /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
 		D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */; };
 		D83A719C1CF1230E00C0C21C /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
@@ -104,11 +102,7 @@
 
 /* Begin PBXFileReference section */
 		AA9242CE1DE91EA2009FE50B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Embassy-macOS.h"; sourceTree = "<group>"; };
-		AA9242D11DE91EA2009FE50B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Embassy-iOS.h"; sourceTree = "<group>"; };
-		AA9242EC1DE920D6009FE50B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D83A71951CF119D200C0C21C /* IOUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOUtils.swift; sourceTree = "<group>"; };
 		D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorEventLoopTests.swift; sourceTree = "<group>"; };
 		D83A719B1CF1230E00C0C21C /* Transport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transport.swift; sourceTree = "<group>"; };
@@ -183,22 +177,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA9242CF1DE91EA2009FE50B /* macOS */ = {
+		D85588E41DF7E7D00077E1EB /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				AA9242D01DE91EA2009FE50B /* Embassy-macOS.h */,
-				AA9242D11DE91EA2009FE50B /* Info.plist */,
 			);
-			path = macOS;
+			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		AA9242E61DE9201D009FE50B /* iOS */ = {
+		D85588E51DF7E8720077E1EB /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				AA9242EB1DE920D6009FE50B /* Embassy-iOS.h */,
-				AA9242EC1DE920D6009FE50B /* Info.plist */,
 			);
-			path = iOS;
+			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		D85613DF1CEE6B160060CCB7 = {
@@ -206,8 +196,6 @@
 			children = (
 				D85613EB1CEE6B160060CCB7 /* Embassy */,
 				D85613F71CEE6B160060CCB7 /* EmbassyTests */,
-				AA9242E61DE9201D009FE50B /* iOS */,
-				AA9242CF1DE91EA2009FE50B /* macOS */,
 				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
 			indentWidth = 4;
@@ -231,6 +219,7 @@
 				D866875D1D00D69900FA53F2 /* IO */,
 				D866875C1D00D67700FA53F2 /* HTTP */,
 				D86687571D00C21300FA53F2 /* Logging */,
+				D85588E41DF7E7D00077E1EB /* Supporting Files */,
 				D85614051CEE6C0C0060CCB7 /* SWSGI.swift */,
 				D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */,
 				D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */,
@@ -244,6 +233,7 @@
 		D85613F71CEE6B160060CCB7 /* EmbassyTests */ = {
 			isa = PBXGroup;
 			children = (
+				D85588E51DF7E8720077E1EB /* Supporting Files */,
 				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
@@ -306,7 +296,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA9242DE1DE91EA2009FE50B /* Embassy-macOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,7 +303,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA9242ED1DE920D6009FE50B /* Embassy-iOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -601,7 +589,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = macOS/Info.plist;
+				INFOPLIST_FILE = Embassy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -626,7 +614,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = macOS/Info.plist;
+				INFOPLIST_FILE = Embassy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -646,7 +634,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = macOSTests/Info.plist;
+				INFOPLIST_FILE = EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
@@ -665,7 +653,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = macOSTests/Info.plist;
+				INFOPLIST_FILE = EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
@@ -780,7 +768,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = iOS/Info.plist;
+				INFOPLIST_FILE = Embassy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
@@ -800,7 +788,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = iOS/Info.plist;
+				INFOPLIST_FILE = Embassy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
@@ -813,7 +801,7 @@
 		D85614011CEE6B160060CCB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = iOSTests/Info.plist;
+				INFOPLIST_FILE = EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -824,7 +812,7 @@
 		D85614021CEE6B160060CCB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = iOSTests/Info.plist;
+				INFOPLIST_FILE = EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
