@@ -7,8 +7,15 @@ env:
     - WORKSPACE=Embassy.xcworkspace
     - IOS_FRAMEWORK_SCHEME="Embassy-iOS"
     - IOS_SDK=iphonesimulator10.1
+    - MACOS_FRAMEWORK_SCHEME="Embassy-macOS"
+    - MACOS_SDK=macosx10.12
   matrix:
     - DESTINATION="OS=10.1,name=iPhone 6S"     SCHEME="$IOS_FRAMEWORK_SCHEME"     SDK="$IOS_SDK"
+    - DESTINATION="arch=x86_64"                SCHEME="$MACOS_FRAMEWORK_SCHEME"   SDK="$MACOS_SDK"
 
 script:
-  - set -o pipefail && xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO test | xcpretty -c;
+  - >
+    set -o pipefail &&
+    xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -sdk "$SDK"
+    -destination "$DESTINATION" -configuration Debug
+    ONLY_ACTIVE_ARCH=NO test | xcpretty -c;
