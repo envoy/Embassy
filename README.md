@@ -13,6 +13,7 @@ Super lightweight async HTTP server in pure Swift for iOS UI Automatic testing d
 
 ## Features
 
+ - Supports Swift 3
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
@@ -25,18 +26,18 @@ Here's a simple example shows how Embassy works.
 
 ```Swift
 let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
-let server = HTTPServer(eventLoop: loop, port: 8080) {
+let server = DefaultHTTPServer(eventLoop: loop, port: 8080) {
     (
-      environ: [String: Any],
-      startResponse: ((String, [(String, String)]) -> Void),
-      sendBody: ([UInt8] -> Void)
+        environ: [String: Any],
+        startResponse: ((String, [(String, String)]) -> Void),
+        sendBody: ((Data) -> Void)
     ) in
     // Start HTTP response
     startResponse("200 OK", [])
-    let pathInfo = environ["PATH_INFO"]!
-    sendBody(Array("the path you're visiting is \(pathInfo.debugDescription)".utf8))
+    let pathInfo = environ["PATH_INFO"]! as! String
+    sendBody(Data("the path you're visiting is \(pathInfo.debugDescription)".utf8))
     // send EOF
-    sendBody([])
+    sendBody(Data())
 }
 
 // Start HTTP server to listen on the port
@@ -49,49 +50,49 @@ loop.runForever()
 Then you can visit `http://[::1]:8080/foo-bar` in the browser and see
 
 ```
-the path you're visiting is /foo-bar
+the path you're visiting is "/foo-bar"
 ```
 
 ## Async Event Loop
 
-To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoopType`. For example, you can create an SWSGI app which delays `sendBody` call like this
+To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoop`. For example, you can create an SWSGI app which delays `sendBody` call like this
 
 ```Swift
 let app = { (
-      environ: [String: Any],
-      startResponse: ((String, [(String, String)]) -> Void),
-      sendBody: ([UInt8] -> Void)
-    ) in
+    environ: [String: Any],
+    startResponse: ((String, [(String, String)]) -> Void),
+    sendBody: @escaping ((Data) -> Void)
+) in
     startResponse("200 OK", [])
 
-    let loop = environ["embassy.event_loop"] as! EventLoopType
+    let loop = environ["embassy.event_loop"] as! EventLoop
 
-    loop.callLater(1) {
-        sendBody(Array("hello ".utf8))
+    loop.call(withDelay: 1) {
+        sendBody(Data("hello ".utf8))
     }
-    loop.callLater(2) {
-        sendBody(Array("baby ".utf8))
+    loop.call(withDelay: 2) {
+        sendBody(Data("baby ".utf8))
     }
-    loop.callLater(3) {
-        sendBody(Array("fin".utf8))
-        sendBody([])
+    loop.call(withDelay: 3) {
+        sendBody(Data("fin".utf8))
+        sendBody(Data())
     }
 }
 ```
 
-Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, **you should not use [GCD](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/) for delaying any call**. Instead, there are some methods from `EventLoopType` you can use, and they are all threadsafe
+Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, **you should not use [GCD](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/) for delaying any call**. Instead, there are some methods from `EventLoop` you can use, and they are all threadsafe
 
-### callSoon(callback: (Void -> Void))
+### call(callback: (Void) -> Void)
 
 Call given callback as soon as possible in the event loop
 
-### callLater(delay: NSTimeInterval, callback: (Void -> Void))
+### call(withDelay: TimeInterval, callback: (Void) -> Void)
 
 Schedule given callback to `delay` seconds then call it in the event loop.
 
-### callAt(time: NSDate, callback: (Void -> Void))
+### call(atTime: Date, callback: (Void) -> Void)
 
-Schedule given callback to be called at `time` in the event loop. If the given time is in the past, this methods works exactly like `callSoon`.
+Schedule given callback to be called at `time` in the event loop. If the given time is in the past, this methods works exactly like `call`.
 
 ## What's SWSGI (Swift Web Server Gateway Interface)?
 
@@ -101,9 +102,9 @@ It's defined as
 
 ```Swift
 public typealias SWSGI = (
-    environ: [String: Any],
-    startResponse: ((String, [(String, String)]) -> Void),
-    sendBody: ([UInt8] -> Void)
+    [String: Any],
+    @escaping ((String, [(String, String)]) -> Void),
+    @escaping ((Data) -> Void)
 ) -> Void
 ```
 
@@ -144,7 +145,7 @@ input { data in
 }
 ```
 
-An empty bytes array will be passed into the input data handler when EOF
+An empty Data will be passed into the input data handler when EOF
 reached. Also please notice that, request body won't be read if `swsgi.input`
 is not set or set to nil. You can use `swsgi.input` as bandwidth control, set
 it to nil when you don't want to receive any data from client.
@@ -152,8 +153,8 @@ it to nil when you don't want to receive any data from client.
 Some extra Embassy server specific keys are
 
  - `embassy.connection` - `HTTPConnection` object for the request
- - `embassy.event_loop` - `EventLoopType` object
- - `embassy.version` - Version of embassy as a String, e.g. `1.1.0`
+ - `embassy.event_loop` - `EventLoop` object
+ - `embassy.version` - Version of embassy as a String, e.g. `2.0.0`
 
 ### `startResponse`
 
@@ -172,13 +173,13 @@ startResponse("200 OK", [("Set-Cookie", "foo=bar")])
 Function for sending body data to client. You need to call `startResponse` first in order to call `sendBody`. If you don't call `startResponse` first, all calls to `sendBody` will be ignored. To send data, here you can do
 
 ```Swift
-sendBody(Array("hello".utf8))
+sendBody(Data("hello".utf8))
 ```
 
-To end the response data stream simply call `sendBody` with an empty bytes array.
+To end the response data stream simply call `sendBody` with an empty Data.
 
 ```Swift
-sendBody([])
+sendBody(Data())
 ```
 
 ## Install
@@ -188,7 +189,7 @@ sendBody([])
 To install with CocoaPod, add Embassy to your Podfile:
 
 ```
-pod 'Embassy', '~> 1.0'
+pod 'Embassy', '~> 2.0'
 ```
 
 ### Carthage
