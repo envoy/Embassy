@@ -208,8 +208,6 @@ class TransportTests: XCTestCase {
             XCTAssertFalse(clientTransport.closing)
             clientTransport.write(string: bigDataChunk)
             clientTransport.close()
-            // we still have big chunk in buffer, shouldn't close until we send them all out
-            XCTAssertFalse(clientTransport.closed)
             XCTAssertTrue(clientTransport.closing)
         }
 
