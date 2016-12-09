@@ -195,4 +195,8 @@ pod 'Embassy', '~> 3.0'
 
 ### Carthage
 
-To be done
+To install with Carthage, add Embassy to your Cartfile:
+
+```
+github "envoy/Embassy" ~> 3.0
+```
