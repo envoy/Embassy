@@ -88,11 +88,11 @@ Call given callback as soon as possible in the event loop
 
 ### call(withDelay: TimeInterval, callback: (Void) -> Void)
 
-Schedule given callback to `delay` seconds then call it in the event loop.
+Schedule given callback to `withDelay` seconds then call it in the event loop.
 
 ### call(atTime: Date, callback: (Void) -> Void)
 
-Schedule given callback to be called at `time` in the event loop. If the given time is in the past, this methods works exactly like `call`.
+Schedule given callback to be called at `atTime` in the event loop. If the given time is in the past or zero, this methods works exactly like `call` with only callback parameter.
 
 ## What's SWSGI (Swift Web Server Gateway Interface)?
 
