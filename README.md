@@ -154,7 +154,7 @@ Some extra Embassy server specific keys are
 
  - `embassy.connection` - `HTTPConnection` object for the request
  - `embassy.event_loop` - `EventLoop` object
- - `embassy.version` - Version of embassy as a String, e.g. `2.0.0`
+ - `embassy.version` - Version of embassy as a String, e.g. `3.0.0`
 
 ### `startResponse`
 
@@ -189,7 +189,7 @@ sendBody(Data())
 To install with CocoaPod, add Embassy to your Podfile:
 
 ```
-pod 'Embassy', '~> 2.0'
+pod 'Embassy', '~> 3.0'
 ```
 
 ### Carthage
