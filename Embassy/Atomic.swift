@@ -66,7 +66,8 @@ final class Atomic<Value> {
     /// Atomically modifies the variable.
     ///
     /// Returns the old value.
-    func modify(@noescape action: (Value) throws -> Value) rethrows -> Value {
+    @discardableResult
+    func modify(action: (Value) throws -> Value) rethrows -> Value {
         return try withValue { value in
             _value = try action(value)
             return value
@@ -77,7 +78,7 @@ final class Atomic<Value> {
     /// variable.
     ///
     /// Returns the result of the action.
-    func withValue<Result>(@noescape action: (Value) throws -> Result) rethrows -> Result {
+    func withValue<Result>(action: (Value) throws -> Result) rethrows -> Result {
         lock()
         defer { unlock() }
 

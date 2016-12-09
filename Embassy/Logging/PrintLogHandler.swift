@@ -9,16 +9,16 @@
 import Foundation
 
 /// A log handler which prints (stdout) log records
-public struct PrintLogHandler: LogHandlerType {
-    public var formatter: LogFormatterType?
+public struct PrintLogHandler: LogHandler {
+    public var formatter: LogFormatter?
 
-    public init(formatter: LogFormatterType? = DefaultLogFormatter()) {
+    public init(formatter: LogFormatter? = DefaultLogFormatter()) {
         self.formatter = formatter
     }
 
     public func emit(record: LogRecord) {
         if let formatter = formatter {
-            print(formatter.format(record))
+            print(formatter.format(record: record))
         }
     }
 }

@@ -20,11 +20,11 @@ public final class TCPSocket {
     /// Whether is this socket in block mode or not
     var blocking: Bool {
         get {
-            return IOUtils.getBlocking(fileDescriptor)
+            return IOUtils.getBlocking(fileDescriptor: fileDescriptor)
         }
 
         set {
-            IOUtils.setBlocking(fileDescriptor, blocking: newValue)
+            IOUtils.setBlocking(fileDescriptor: fileDescriptor, blocking: newValue)
         }
     }
 
@@ -32,7 +32,7 @@ public final class TCPSocket {
     var ignoreSigPipe: Bool {
         get {
             var value: Int32 = 0
-            var size = socklen_t(sizeof(Int32))
+            var size = socklen_t(MemoryLayout<Int32>.size)
             assert(
                 getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
                 "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
@@ -43,7 +43,13 @@ public final class TCPSocket {
         set {
             var value: Int32 = newValue ? 1 : 0
             assert(
-                setsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, socklen_t(sizeof(Int32))) >= 0,
+                setsockopt(
+                    fileDescriptor,
+                    SOL_SOCKET,
+                    SO_NOSIGPIPE,
+                    &value,
+                    socklen_t(MemoryLayout<Int32>.size)
+                ) >= 0,
                 "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
             )
         }
@@ -74,22 +80,31 @@ public final class TCPSocket {
         // make address reusable
         if addressReusable {
             var reuse = Int32(1)
-            guard setsockopt(fileDescriptor, SOL_SOCKET, SO_REUSEADDR, &reuse, socklen_t(sizeof(Int32))) >= 0 else {
+            guard setsockopt(
+                fileDescriptor,
+                SOL_SOCKET,
+                SO_REUSEADDR,
+                &reuse,
+                socklen_t(MemoryLayout<Int32>.size)
+            ) >= 0 else {
                 throw OSError.lastIOError()
             }
         }
         // create IPv6 socket address
         var address = sockaddr_in6(
-            sin6_len: UInt8(strideof(sockaddr_in6)),
+            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
             sin6_family: UInt8(AF_INET6),
             sin6_port: UInt16(port).bigEndian,
             sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(interface),
+            sin6_addr: try ipAddressToStruct(address: interface),
             sin6_scope_id: 0
         )
+        let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // bind the address and port on socket
-        guard withUnsafePointer(&address, { pointer in
-            return Darwin.bind(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6))) >= 0
+        guard withUnsafePointer(to: &address, { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+                return Darwin.bind(fileDescriptor, pointer, size) >= 0
+            }
         }) else {
             throw OSError.lastIOError()
         }
@@ -106,9 +121,11 @@ public final class TCPSocket {
     /// Accept a new connection
     func accept() throws -> TCPSocket {
         var address = sockaddr_in6()
-        var size = socklen_t(sizeof(sockaddr_in6))
-        let clientFileDescriptor = withUnsafeMutablePointer(&address) { pointer in
-            return Darwin.accept(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size)
+        var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
+        let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+                return Darwin.accept(fileDescriptor, pointer, &size)
+            }
         }
         guard clientFileDescriptor >= 0 else {
             throw OSError.lastIOError()
@@ -122,16 +139,19 @@ public final class TCPSocket {
     func connect(host: String, port: Int) throws {
         // create IPv6 socket address
         var address = sockaddr_in6(
-            sin6_len: UInt8(strideof(sockaddr_in6)),
+            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
             sin6_family: UInt8(AF_INET6),
             sin6_port: UInt16(port).bigEndian,
             sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(host),
+            sin6_addr: try ipAddressToStruct(address: host),
             sin6_scope_id: 0
         )
+        let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // connect to the host and port
-        let connectResult = withUnsafePointer(&address) { pointer in
-            return Darwin.connect(fileDescriptor, UnsafePointer<sockaddr>(pointer), socklen_t(sizeof(sockaddr_in6)))
+        let connectResult = withUnsafePointer(to: &address) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+                return Darwin.connect(fileDescriptor, pointer, size)
+            }
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
             throw OSError.lastIOError()
@@ -139,10 +159,13 @@ public final class TCPSocket {
     }
 
     /// Send data to peer
-    ///  - Parameter bytes: bytes to send
+    ///  - Parameter data: data bytes to send
     ///  - Returns: bytes sent to peer
-    func send(bytes: [UInt8]) throws -> Int {
-        let bytesSent = Darwin.send(fileDescriptor, bytes, bytes.count, Int32(0))
+    @discardableResult
+    func send(data: Data) throws -> Int {
+        let bytesSent = data.withUnsafeBytes { pointer in
+            Darwin.send(fileDescriptor, pointer, data.count, Int32(0))
+        }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
         }
@@ -152,33 +175,79 @@ public final class TCPSocket {
     /// Read data from peer
     ///  - Parameter size: size of bytes to read
     ///  - Returns: bytes read from peer
-    func recv(size: Int) throws -> [UInt8] {
-        var bytes = [UInt8](count: size, repeatedValue: 0)
-        let bytesRead = bytes.withUnsafeMutableBufferPointer { pointer in
-            return Darwin.recv(fileDescriptor, pointer.baseAddress, size, Int32(0))
+    func recv(size: Int) throws -> Data {
+        var bytes = Data(count: size)
+        let bytesRead = bytes.withUnsafeMutableBytes { pointer in
+            return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
         }
-        return Array(bytes[0..<bytesRead])
+        return bytes.subdata(in: 0..<bytesRead)
     }
 
     /// Close the socket
     func close() {
-        Darwin.shutdown(fileDescriptor, SHUT_WR)
-        Darwin.close(fileDescriptor)
+        _ = Darwin.shutdown(fileDescriptor, SHUT_WR)
+        _ = Darwin.close(fileDescriptor)
     }
 
     func getPeerName() throws -> (String, Int) {
-        var address = sockaddr_in6()
-        var size = socklen_t(sizeof(sockaddr_in6))
-        let result = withUnsafeMutablePointer(&address) { pointer in
-            return Darwin.getpeername(fileDescriptor, UnsafeMutablePointer<sockaddr>(pointer), &size)
+        return try getName(function: Darwin.getpeername)
+    }
+
+    func getSockName() throws -> (String, Int) {
+        return try getName(function: Darwin.getsockname)
+    }
+
+    private func getName(
+        function: (Int32, UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) -> Int32
+    ) throws -> (String, Int) {
+        var address = sockaddr_storage()
+        var size = socklen_t(MemoryLayout<sockaddr_storage>.size)
+        return try withUnsafeMutablePointer(to: &address) { pointer in
+            let result = pointer.withMemoryRebound(
+                to: sockaddr.self,
+                capacity: Int(size)
+            ) { addressptr in
+                return function(fileDescriptor, addressptr, &size)
+            }
+            guard result >= 0 else {
+                throw OSError.lastIOError()
+            }
+            switch Int32(address.ss_family) {
+            case AF_INET:
+                return try pointer.withMemoryRebound(
+                    to: sockaddr_in.self,
+                    capacity: MemoryLayout<sockaddr_in>.size
+                ) { addressptr in
+                    return (
+                        try structToAddress(
+                            addrStruct: addressptr.pointee.sin_addr,
+                            family: AF_INET,
+                            addressLength: INET_ADDRSTRLEN
+                        ),
+                        Int(ntohs(addressptr.pointee.sin_port))
+                    )
+                }
+            case AF_INET6:
+                return try pointer.withMemoryRebound(
+                    to: sockaddr_in6.self,
+                    capacity: MemoryLayout<sockaddr_in6>.size
+                ) { addressptr in
+                    return (
+                        try structToAddress(
+                            addrStruct: addressptr.pointee.sin6_addr,
+                            family: AF_INET6,
+                            addressLength: INET6_ADDRSTRLEN
+                        ),
+                        Int(ntohs(addressptr.pointee.sin6_port))
+                    )
+                }
+            default:
+                fatalError("Unsupported address family")
+            }
         }
-        guard result >= 0 else {
-            throw OSError.lastIOError()
-        }
-        return (try structToIPAddress(address.sin6_addr), Int(ntohs(address.sin6_port)))
     }
 
     // Convert IP address to binary struct
@@ -191,27 +260,27 @@ public final class TCPSocket {
         return binary
     }
 
-    // Convert struct to IPAddress
-    private func structToIPAddress(addrStruct: in6_addr) throws -> String {
+    private func structToAddress<StructType>(
+        addrStruct: StructType,
+        family: Int32,
+        addressLength: Int32
+    ) throws -> String {
         var addrStruct = addrStruct
         // convert address struct into address string
-        var address = [UInt8](count: Int(INET6_ADDRSTRLEN), repeatedValue: 0)
-        guard address.withUnsafeMutableBufferPointer({
+        var address = Data(count: Int(addressLength))
+        guard address.withUnsafeMutableBytes({ pointer in
             inet_ntop(
-                AF_INET6,
+                family,
                 &addrStruct,
-                UnsafeMutablePointer<Int8>($0.baseAddress),
-                socklen_t(sizeof(sockaddr_in6))
+                pointer,
+                socklen_t(addressLength)
             ) != nil
         }) else {
             throw OSError.lastIOError()
         }
-        let bytes: [UInt8]
-        if let index = address.indexOf(0) {
-            bytes = Array(address.prefixUpTo(index))
-        } else {
-            bytes = address
+        if let index = address.index(of: 0) {
+            address = address.subdata(in: 0 ..< index)
         }
-        return String(bytes: bytes as [UInt8], encoding: NSUTF8StringEncoding)!
+        return String(data: address, encoding: .utf8)!
     }
 }

@@ -71,7 +71,7 @@ class HeapSortTetsts: XCTestCase {
         while !heap.isEmpty {
             resultArray.append(HeapSort.heapPop(&heap))
         }
-        XCTAssertEqual(resultArray, array.sort())
+        XCTAssertEqual(resultArray, array.sorted())
     }
 
     func testSortWithRandomNumbersWithCustomCompareFunction() {
@@ -84,6 +84,6 @@ class HeapSortTetsts: XCTestCase {
         while !heap.isEmpty {
             resultArray.append(HeapSort.heapPop(&heap, isOrderredBefore: >))
         }
-        XCTAssertEqual(resultArray, array.sort(>))
+        XCTAssertEqual(resultArray, array.sorted(by: >))
     }
 }
