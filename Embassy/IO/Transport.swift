@@ -173,14 +173,22 @@ public final class Transport {
         do {
             let sentBytes = try socket.send(data: outgoingBuffer)
             outgoingBuffer.removeFirst(sentBytes)
-        } catch OSError.ioError(let number, _) {
+        } catch let OSError.ioError(number, message) {
             switch number {
             case EAGAIN:
                 break
+
+            // Apparently on macOS EPROTOTYPE can be returned when the socket is not
+            // fully shutdown (as an EPIPE would indicate). Here we treat them
+            // essentially the same since we just tear the transport down anyway.
+            // http://erickt.github.io/blog/2014/11/19/adventures-in-debugging-a-potential-osx-kernel-bug/
+            case EPROTOTYPE:
+                fallthrough
             case EPIPE:
                 closedByPeer()
+
             default:
-                fatalError("Failed to send, errno=\(errno), message=\(lastErrorDescription())")
+                fatalError("Failed to send, errno=\(number), message=\(message)")
             }
         } catch {
             fatalError("Failed to send")
