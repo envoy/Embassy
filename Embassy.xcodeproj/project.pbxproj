@@ -130,6 +130,7 @@
 		D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultLogFormatter.swift; sourceTree = "<group>"; };
 		D87260621E0C6CFD008572ED /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D87260641E0C6D05008572ED /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D872606E1E0C9D6F008572ED /* Embassy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Embassy.h; sourceTree = "<group>"; };
 		D898DC841CF62E1B0027E17E /* Atomic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		D898DC8D1CF665010027E17E /* HeapSort.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSort.swift; sourceTree = "<group>"; };
 		D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSortTetsts.swift; sourceTree = "<group>"; };
@@ -226,6 +227,7 @@
 				D866875C1D00D67700FA53F2 /* HTTP */,
 				D86687571D00C21300FA53F2 /* Logging */,
 				D85588E41DF7E7D00077E1EB /* Supporting Files */,
+				D872606E1E0C9D6F008572ED /* Embassy.h */,
 				D85614051CEE6C0C0060CCB7 /* SWSGI.swift */,
 				D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */,
 				D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */,
