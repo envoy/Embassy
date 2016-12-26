@@ -20,6 +20,7 @@ Super lightweight async HTTP server in pure Swift.
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
  - HTTP Application based on [SWSGI](#whats-swsgi-swift-web-server-gateway-interface), super flexible
  - IPV6 ready, also supports IPV4 (dual stack)
+ - Automatic testing covered
 
 ## Example
 
