@@ -5,8 +5,8 @@ Pod::Spec.new do |spec|
   spec.homepage     = 'https://github.com/envoy/Embassy'
   spec.license      = 'MIT'
   spec.license      = { type: 'MIT', file: 'LICENSE' }
-  spec.author             = { 'Victor' => 'victor@envoy.com' }
-  spec.social_media_url   = 'http://twitter.com/victorlin'
+  spec.author             = { 'Fang-Pen Lin' => 'fang@envoy.com' }
+  spec.social_media_url   = 'http://twitter.com/fangpenlin'
   spec.ios.deployment_target = '8.0'
   spec.osx.deployment_target = '10.10'
   spec.source       = {
