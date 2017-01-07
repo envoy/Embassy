@@ -11,9 +11,28 @@ import XCTest
 
 @testable import Embassy
 
-let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
-let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
+#if os(Linux)
+    import Glibc
+    let bind = Glibc.bind
+    let NSEC_PER_SEC = 1000000000
+    let random = { () -> UInt32 in
+        return UInt32(Glibc.rand())
+    }
+    let randomUniform = { (upperBound: UInt32) -> UInt32 in
+        let num: Float = Float(random()) / Float(UInt32.max)
+        return UInt32(num * Float(upperBound))
+    }
+    typealias TestingSelector = SelectSelector
+#else
+    import Darwin
+    let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
+    let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
+    let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
+    let bind = Darwin.bind
+    let random = Darwin.arc4random
+    let randomUniform = Darwin.arc4random_uniform
+    typealias TestingSelector = KqueueSelector
+#endif
 
 /// Find an available localhost TCP port from 1024-65535 and return it.
 /// Ref: https://github.com/pytest-dev/pytest-asyncio/blob/412c63776b32229ed8320e6c7ea920d7498cd695/pytest_asyncio/plugin.py#L103-L107
@@ -23,7 +42,12 @@ func getUnusedTCPPort() throws -> Int {
         throw OSError.lastIOError()
     }
 
-    let fileDescriptor = socket(AF_INET, SOCK_STREAM, 0)
+    #if os(Linux)
+        let socketType = Int32(SOCK_STREAM.rawValue)
+    #else
+        let socketType = SOCK_STREAM
+    #endif
+    let fileDescriptor = socket(AF_INET, socketType, 0)
     guard fileDescriptor >= 0 else {
         throw OSError.lastIOError()
     }
@@ -31,13 +55,14 @@ func getUnusedTCPPort() throws -> Int {
         close(fileDescriptor)
     }
 
-    var address = sockaddr_in(
-        sin_len: UInt8(MemoryLayout<sockaddr_in>.stride),
-        sin_family: UInt8(AF_INET),
-        sin_port: htons(UInt16(0)),
-        sin_addr: interfaceAddress,
-        sin_zero: (0, 0, 0, 0, 0, 0, 0, 0)
-    )
+    var address = sockaddr_in()
+    #if !os(Linux)
+    address.sin_len = UInt8(MemoryLayout<sockaddr_in>.stride)
+    #endif
+    address.sin_family = sa_family_t(AF_INET)
+    address.sin_port = htons(UInt16(0))
+    address.sin_addr = interfaceAddress
+    address.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
     let addressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
     // given port 0, and bind, it will find us an available port
     guard withUnsafePointer(to: &address, { pointer in
@@ -45,7 +70,7 @@ func getUnusedTCPPort() throws -> Int {
             to: sockaddr.self,
             capacity: Int(addressSize)
         ) { pointer in
-            return Darwin.bind(fileDescriptor, pointer, addressSize) >= 0
+            return bind(fileDescriptor, pointer, addressSize) >= 0
         }
     }) else {
         throw OSError.lastIOError()
@@ -70,7 +95,7 @@ func makeRandomString(_ length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     var result: [String] = []
     for _ in 0..<length {
-        let randomIndex = Int(arc4random_uniform(UInt32(letters.characters.count)))
+        let randomIndex = Int(randomUniform(UInt32(letters.characters.count)))
         let char = letters.substring(
             with: letters.characters.index(letters.startIndex, offsetBy: randomIndex) ..<
                   letters.characters.index(letters.startIndex, offsetBy: randomIndex + 1)

@@ -6,7 +6,9 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Foundation
 import XCTest
+import Dispatch
 
 @testable import Embassy
 
@@ -16,7 +18,7 @@ class SelectorEventLoopTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         // set a 30 seconds timeout
         queue.asyncAfter(

@@ -9,32 +9,32 @@
 import Foundation
 
 #if os(Linux)
-import Glibc
-let socketConnect = Glibc.connect
-let socketBind = Glibc.bind
-let socketListen = Glibc.listen
-let socketAccept = Glibc.accept
-let socketSend = Glibc.send
-let recvRecv = Glibc.recv
-let shutdown = Glibc.shutdown
-let socketClose = Glibc.close
-let getpeername = Glibc.getpeername
-let getsockname = Glibc.getsockname
-#else
+    import Glibc
+    let socketConnect = Glibc.connect
+    let socketBind = Glibc.bind
+    let socketListen = Glibc.listen
+    let socketAccept = Glibc.accept
+    let socketSend = Glibc.send
+    let recvRecv = Glibc.recv
+    let shutdown = Glibc.shutdown
+    let socketClose = Glibc.close
+    let getpeername = Glibc.getpeername
+    let getsockname = Glibc.getsockname
+    #else
 import Darwin
-let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
-let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let socketConnect = Darwin.connect
-let socketBind = Darwin.bind
-let socketListen = Darwin.listen
-let socketAccept = Darwin.accept
-let socketSend = Darwin.send
-let recvRecv = Darwin.recv
-let shutdown = Darwin.shutdown
-let socketClose = Darwin.close
-let getpeername = Darwin.getpeername
-let getsockname = Darwin.getsockname
+    let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
+    let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
+    let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
+    let socketConnect = Darwin.connect
+    let socketBind = Darwin.bind
+    let socketListen = Darwin.listen
+    let socketAccept = Darwin.accept
+    let socketSend = Darwin.send
+    let recvRecv = Darwin.recv
+    let shutdown = Darwin.shutdown
+    let socketClose = Darwin.close
+    let getpeername = Darwin.getpeername
+    let getsockname = Darwin.getsockname
 #endif
 
 /// Class wrapping around TCP/IPv6 socket

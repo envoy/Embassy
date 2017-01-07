@@ -6,6 +6,7 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Foundation
 import XCTest
 
 @testable import Embassy

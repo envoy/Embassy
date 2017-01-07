@@ -6,6 +6,8 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Foundation
+import Dispatch
 import XCTest
 
 @testable import Embassy
@@ -16,7 +18,7 @@ class HTTPServerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         // set a 30 seconds timeout
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
@@ -108,9 +110,9 @@ class HTTPServerTests: XCTestCase {
         XCTAssertEqual(receivedData?.count, 0)
         XCTAssertNil(receivedError)
         XCTAssertEqual(receivedResponse?.statusCode, 451)
-        XCTAssertEqual(receivedResponse?.allHeaderFields["Content-Type"] as? String, "video/porn")
-        XCTAssertEqual(receivedResponse?.allHeaderFields["Server"] as? String, "Embassy-by-envoy")
-        XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"] as? String, "Bar")
+        XCTAssertEqual(receivedResponse?.allHeaderFields["Content-Type"], "video/porn")
+        XCTAssertEqual(receivedResponse?.allHeaderFields["Server"], "Embassy-by-envoy")
+        XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"], "Bar")
     }
 
     func testSendBody() {

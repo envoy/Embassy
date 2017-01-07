@@ -62,7 +62,7 @@ class HeapSortTetsts: XCTestCase {
     }
 
     func testSortWithRandomNumbers() {
-        let array: [UInt32] = Array(0..<100).map { _ in arc4random() }
+        let array: [UInt32] = Array(0..<100).map { _ in random() }
         var heap: [UInt32] = []
         for num in array {
             HeapSort.heapPush(&heap, item: num)
@@ -75,7 +75,7 @@ class HeapSortTetsts: XCTestCase {
     }
 
     func testSortWithRandomNumbersWithCustomCompareFunction() {
-        let array: [UInt32] = Array(0..<100).map { _ in arc4random() }
+        let array: [UInt32] = Array(0..<100).map { _ in random() }
         var heap: [UInt32] = []
         for num in array {
             HeapSort.heapPush(&heap, item: num, isOrderredBefore: >)
