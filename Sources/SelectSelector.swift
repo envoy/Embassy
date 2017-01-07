@@ -8,20 +8,42 @@
 
 import Foundation
 
+#if os(Linux)
+    import Glibc
+    let fileSelect = Glibc.select
+#else
+    import Darwin
+    let fileSelect = Darwin.select
+#endif
+
 public final class SelectSelector: Selector {
+    enum Error: Swift.Error {
+        case keyError(fileDescriptor: Int32)
+    }
+
+    private var fileDescriptorMap: [Int32: SelectorKey] = [:]
 
     public init(selectMaximumEvent: Int = 1024) throws {
         // TODO:
     }
 
     public func register(_ fileDescriptor: Int32, events: Set<IOEvent>, data: Any?) throws -> SelectorKey {
-        // TODO:
-        return SelectorKey(fileDescriptor: 0, events: [], data: nil)
+        // ensure the file descriptor doesn't exist already
+        guard fileDescriptorMap[fileDescriptor] == nil else {
+            throw Error.keyError(fileDescriptor: fileDescriptor)
+        }
+        let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
+        fileDescriptorMap[fileDescriptor] = key
+        return key
     }
 
     public func unregister(_ fileDescriptor: Int32) throws -> SelectorKey {
-        // TODO:
-        return SelectorKey(fileDescriptor: 0, events: [], data: nil)
+        // ensure the file descriptor exists
+        guard let key = fileDescriptorMap[fileDescriptor] else {
+            throw Error.keyError(fileDescriptor: fileDescriptor)
+        }
+        fileDescriptorMap.removeValue(forKey: fileDescriptor)
+        return key
     }
 
     public func close() {
