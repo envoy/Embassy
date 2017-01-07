@@ -107,6 +107,6 @@ public final class DefaultLogger: Logger {
     ///  - Parameter fileName: file name to be stripped
     ///  - Returns: stripped file name
     static func moduleNameForFileName(_ fileName: String) -> String {
-        return ((fileName as NSString).lastPathComponent as NSString).deletingPathExtension
+        return URL(fileURLWithPath: fileName).deletingPathExtension().lastPathComponent
     }
 }

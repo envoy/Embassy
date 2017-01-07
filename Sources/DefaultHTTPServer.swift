@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Dispatch
 
 public final class DefaultHTTPServer: HTTPServer {
     public let logger = DefaultLogger()

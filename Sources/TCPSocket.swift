@@ -8,9 +8,34 @@
 
 import Foundation
 
+#if os(Linux)
+import Glibc
+let socketConnect = Glibc.connect
+let socketBind = Glibc.bind
+let socketListen = Glibc.listen
+let socketAccept = Glibc.accept
+let socketSend = Glibc.send
+let recvRecv = Glibc.recv
+let shutdown = Glibc.shutdown
+let socketClose = Glibc.close
+let getpeername = Glibc.getpeername
+let getsockname = Glibc.getsockname
+#else
+import Darwin
 let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
 let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
 let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
+let socketConnect = Darwin.connect
+let socketBind = Darwin.bind
+let socketListen = Darwin.listen
+let socketAccept = Darwin.accept
+let socketSend = Darwin.send
+let recvRecv = Darwin.recv
+let shutdown = Darwin.shutdown
+let socketClose = Darwin.close
+let getpeername = Darwin.getpeername
+let getsockname = Darwin.getsockname
+#endif
 
 /// Class wrapping around TCP/IPv6 socket
 public final class TCPSocket {
@@ -31,32 +56,47 @@ public final class TCPSocket {
     /// Whether to ignore SIGPIPE signal or not
     var ignoreSigPipe: Bool {
         get {
-            var value: Int32 = 0
-            var size = socklen_t(MemoryLayout<Int32>.size)
-            assert(
-                getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
-                "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-            )
-            return value == 1
+            #if os(Linux)
+                return false
+            #else
+                var value: Int32 = 0
+                var size = socklen_t(MemoryLayout<Int32>.size)
+                assert(
+                    getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
+                    "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+                )
+                return value == 1
+            #endif
         }
 
         set {
-            var value: Int32 = newValue ? 1 : 0
-            assert(
-                setsockopt(
-                    fileDescriptor,
-                    SOL_SOCKET,
-                    SO_NOSIGPIPE,
-                    &value,
-                    socklen_t(MemoryLayout<Int32>.size)
-                ) >= 0,
-                "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-            )
+            #if os(Linux)
+                // TODO: maybe we should call signal(SIGPIPE, SIG_IGN) here? but it affects
+                // whole process
+                return
+            #else
+                var value: Int32 = newValue ? 1 : 0
+                assert(
+                    setsockopt(
+                        fileDescriptor,
+                        SOL_SOCKET,
+                        SO_NOSIGPIPE,
+                        &value,
+                        socklen_t(MemoryLayout<Int32>.size)
+                        ) >= 0,
+                    "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+                )
+            #endif
         }
     }
 
     init(blocking: Bool = false) throws {
-        fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
+        #if os(Linux)
+            let socketType = Int32(SOCK_STREAM.rawValue)
+        #else
+            let socketType = SOCK_STREAM
+        #endif
+        fileDescriptor = socket(AF_INET6, socketType, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
         }
@@ -103,7 +143,7 @@ public final class TCPSocket {
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.bind(fileDescriptor, pointer, size) >= 0
+                return socketBind(fileDescriptor, pointer, size) >= 0
             }
         }) else {
             throw OSError.lastIOError()
@@ -113,7 +153,7 @@ public final class TCPSocket {
     /// Listen incomming connections
     ///  - Parameter backlog: maximum backlog of incoming connections
     func listen(backlog: Int = Int(SOMAXCONN)) throws {
-        guard Darwin.listen(fileDescriptor, Int32(backlog)) != -1 else {
+        guard socketListen(fileDescriptor, Int32(backlog)) != -1 else {
             throw OSError.lastIOError()
         }
     }
@@ -124,7 +164,7 @@ public final class TCPSocket {
         var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.accept(fileDescriptor, pointer, &size)
+                return socketAccept(fileDescriptor, pointer, &size)
             }
         }
         guard clientFileDescriptor >= 0 else {
@@ -150,7 +190,7 @@ public final class TCPSocket {
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.connect(fileDescriptor, pointer, size)
+                return socketConnect(fileDescriptor, pointer, size)
             }
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
@@ -164,7 +204,7 @@ public final class TCPSocket {
     @discardableResult
     func send(data: Data) throws -> Int {
         let bytesSent = data.withUnsafeBytes { pointer in
-            Darwin.send(fileDescriptor, pointer, data.count, Int32(0))
+            socketSend(fileDescriptor, pointer, data.count, Int32(0))
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -178,7 +218,7 @@ public final class TCPSocket {
     func recv(size: Int) throws -> Data {
         var bytes = Data(count: size)
         let bytesRead = bytes.withUnsafeMutableBytes { pointer in
-            return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
+            return recvRecv(fileDescriptor, pointer, size, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
@@ -188,16 +228,16 @@ public final class TCPSocket {
 
     /// Close the socket
     func close() {
-        _ = Darwin.shutdown(fileDescriptor, SHUT_WR)
-        _ = Darwin.close(fileDescriptor)
+        _ = shutdown(fileDescriptor, Int32(SHUT_WR))
+        _ = socketClose(fileDescriptor)
     }
 
     func getPeerName() throws -> (String, Int) {
-        return try getName(function: Darwin.getpeername)
+        return try getName(function: getpeername)
     }
 
     func getSockName() throws -> (String, Int) {
-        return try getName(function: Darwin.getsockname)
+        return try getName(function: getsockname)
     }
 
     private func getName(

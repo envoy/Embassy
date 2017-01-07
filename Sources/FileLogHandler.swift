@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Dispatch
 
 /// A log handler which writes log records to given file handle
 public struct FileLogHandler: LogHandler {
