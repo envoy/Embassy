@@ -4,4 +4,6 @@ import XCTest
 XCTMain([
     testCase(HeapSortTetsts.allTests),
     testCase(HTTPHeaderParserTests.allTests),
+    testCase(MultiDictionaryTests.allTests),
+    testCase(TCPSocketTests.allTests),
 ])
