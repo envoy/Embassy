@@ -131,14 +131,15 @@ public final class TCPSocket {
             }
         }
         // create IPv6 socket address
-        var address = sockaddr_in6(
-            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
-            sin6_family: UInt8(AF_INET6),
-            sin6_port: UInt16(port).bigEndian,
-            sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(address: interface),
-            sin6_scope_id: 0
-        )
+        var address = sockaddr_in6()
+        #if !os(Linux)
+        address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
+        #endif
+        address.sin6_family = sa_family_t(AF_INET6)
+        address.sin6_port = UInt16(port).bigEndian
+        address.sin6_flowinfo = 0
+        address.sin6_addr = try ipAddressToStruct(address: interface)
+        address.sin6_scope_id = 0
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
@@ -178,14 +179,15 @@ public final class TCPSocket {
     ///  - Parameter port: the target host port number to connect
     func connect(host: String, port: Int) throws {
         // create IPv6 socket address
-        var address = sockaddr_in6(
-            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
-            sin6_family: UInt8(AF_INET6),
-            sin6_port: UInt16(port).bigEndian,
-            sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(address: host),
-            sin6_scope_id: 0
-        )
+        var address = sockaddr_in6()
+        #if !os(Linux)
+        address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
+        #endif
+        address.sin6_family = sa_family_t(AF_INET6)
+        address.sin6_port = UInt16(port).bigEndian
+        address.sin6_flowinfo = 0
+        address.sin6_addr = try ipAddressToStruct(address: host)
+        address.sin6_scope_id = 0
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
