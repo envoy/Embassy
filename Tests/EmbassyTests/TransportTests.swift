@@ -11,6 +11,18 @@ import XCTest
 
 @testable import Embassy
 
+#if os(Linux)
+    extension TransportTests {
+        static var allTests = [
+            ("testBigChunkReadAndWrite", testBigChunkReadAndWrite),
+            ("testReadAndWrite", testReadAndWrite),
+            ("testCloseByPeer", testCloseByPeer),
+            ("testReadingPause", testReadingPause),
+        ]
+    }
+#endif
+
+
 class TransportTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
     func testBigChunkReadAndWrite() {

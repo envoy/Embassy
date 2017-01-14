@@ -12,6 +12,20 @@ import Dispatch
 
 @testable import Embassy
 
+#if os(Linux)
+    extension SelectorEventLoopTests {
+        static var allTests = [
+            ("testStop", testStop),
+            ("testCallSoon", testCallSoon),
+            ("testCallLater", testCallLater),
+            ("testCallAtOrder", testCallAtOrder),
+            ("testSetReader", testSetReader),
+            ("testSetWriter", testSetWriter),
+            ("testRemoveReader", testRemoveReader),
+        ]
+    }
+#endif
+
 class SelectorEventLoopTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
     var loop: SelectorEventLoop!

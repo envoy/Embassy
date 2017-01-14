@@ -7,4 +7,6 @@ XCTMain([
     testCase(MultiDictionaryTests.allTests),
     testCase(TCPSocketTests.allTests),
     testCase(SelectSelectorTests.allTests),
+    testCase(SelectorEventLoopTests.allTests),
+    testCase(TransportTests.allTests),
 ])
