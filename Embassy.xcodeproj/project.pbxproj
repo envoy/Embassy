@@ -52,6 +52,8 @@
 		D83A71A21CF1542300C0C21C /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
 		D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */; };
 		D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
+		D851BD421E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */; };
+		D851BD431E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */; };
 		D85613F41CEE6B160060CCB7 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
 		D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
 		D85614081CEE6DB20060CCB7 /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
@@ -66,7 +68,6 @@
 		D866875F1D00D73F00FA53F2 /* FileLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */; };
 		D86687611D00D7E100FA53F2 /* LogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687601D00D7E100FA53F2 /* LogFormatter.swift */; };
 		D86687631D00D85B00FA53F2 /* DefaultLogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */; };
-		D87260631E0C6CFD008572ED /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D87260621E0C6CFD008572ED /* Info.plist */; };
 		D87260651E0C6D05008572ED /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D87260641E0C6D05008572ED /* Info.plist */; };
 		D898DC851CF62E1B0027E17E /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
 		D898DC8E1CF665010027E17E /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
@@ -115,6 +116,7 @@
 		D83A71A11CF1542300C0C21C /* HTTPConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerTests.swift; sourceTree = "<group>"; };
 		D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultLogger.swift; sourceTree = "<group>"; };
+		D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectSelectorTests.swift; sourceTree = "<group>"; };
 		D85613E91CEE6B160060CCB7 /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85614051CEE6C0C0060CCB7 /* SWSGI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGI.swift; sourceTree = "<group>"; };
@@ -206,7 +208,6 @@
 			children = (
 				D85613EB1CEE6B160060CCB7 /* Embassy */,
 				D85613F71CEE6B160060CCB7 /* EmbassyTests */,
-				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -221,6 +222,7 @@
 				AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */,
 			);
 			name = Products;
+			path = ../..;
 			sourceTree = "<group>";
 		};
 		D85613EB1CEE6B160060CCB7 /* Embassy */ = {
@@ -249,12 +251,14 @@
 				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
+				D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */,
 				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
 				D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */,
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
+				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
 			name = EmbassyTests;
 			path = Tests/EmbassyTests;
@@ -402,7 +406,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Fang-Pen Lin";
 				TargetAttributes = {
 					AA9242CD1DE91EA2009FE50B = {
@@ -463,7 +467,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87260651E0C6D05008572ED /* Info.plist in Resources */,
-				D87260631E0C6CFD008572ED /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -516,6 +519,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D851BD431E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */,
 				AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */,
 				AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */,
 				AA67326A1DE92431003ABD4E /* HTTPServerTests.swift in Sources */,
@@ -567,6 +571,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D851BD421E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */,
 				D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */,
 				D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */,
 				D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */,

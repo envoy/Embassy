@@ -128,3 +128,21 @@ extension XCTestCase {
         return result
     }
 }
+
+struct FileDescriptorEvent {
+    let fileDescriptor: Int32
+    let ioEvent: IOEvent
+}
+
+extension FileDescriptorEvent: Equatable {
+}
+
+func == (lhs: FileDescriptorEvent, rhs: FileDescriptorEvent) -> Bool {
+    return lhs.fileDescriptor == rhs.fileDescriptor && lhs.ioEvent == rhs.ioEvent
+}
+
+extension FileDescriptorEvent: Hashable {
+    var hashValue: Int {
+        return fileDescriptor.hashValue + ioEvent.hashValue
+    }
+}

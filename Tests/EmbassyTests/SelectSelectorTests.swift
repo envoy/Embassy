@@ -1,22 +1,22 @@
 //
-//  KqueueSelectorTests.swift
+//  SelectSelectorTests.swift
 //  Embassy
 //
-//  Created by Fang-Pen Lin on 5/20/16.
-//  Copyright © 2016 Fang-Pen Lin. All rights reserved.
+//  Created by Fang-Pen Lin on 1/13/17.
+//  Copyright © 2017 Fang-Pen Lin. All rights reserved.
 //
 
-#if !os(Linux)
-
+import Foundation
 import XCTest
+import Dispatch
 
 @testable import Embassy
 
-class KqueueSelectorTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.kqueue", attributes: [])
+class SelectSelectorTests: XCTestCase {
+    let queue = DispatchQueue(label: "com.envoy.embassy-tests.select", attributes: [])
 
     func testRegister() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
         let socket = try! TCPSocket()
 
         XCTAssertNil(selector[socket.fileDescriptor])
@@ -31,7 +31,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testUnregister() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
         let socket = try! TCPSocket()
 
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
@@ -44,7 +44,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testRegisterKeyError() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
         let socket = try! TCPSocket()
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
@@ -53,7 +53,7 @@ class KqueueSelectorTests: XCTestCase {
             events: [.read],
             data: nil
         )) { error in
-            guard let error = error as? KqueueSelector.Error else {
+            guard let error = error as? SelectSelector.Error else {
                 XCTFail()
                 return
             }
@@ -65,11 +65,11 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testUnregisterKeyError() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
         let socket = try! TCPSocket()
 
         XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
-            guard let error = error as? KqueueSelector.Error else {
+            guard let error = error as? SelectSelector.Error else {
                 XCTFail()
                 return
             }
@@ -81,7 +81,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testSelectOneSocket() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -112,7 +112,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testSelectEventFilter() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -134,7 +134,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testSelectAfterUnregister() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -154,7 +154,7 @@ class KqueueSelectorTests: XCTestCase {
             let result = toEventSet(events)
             XCTAssertEqual(result, Set([
                 FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read),
-            ]))
+                ]))
         }
 
         try! selector.unregister(listenSocket.fileDescriptor)
@@ -173,7 +173,7 @@ class KqueueSelectorTests: XCTestCase {
     }
 
     func testSelectMultipleSocket() {
-        let selector = try! KqueueSelector()
+        let selector = SelectSelector()
 
         let port = try! getUnusedTCPPort()
 
@@ -255,5 +255,3 @@ class KqueueSelectorTests: XCTestCase {
         })
     }
 }
-
-#endif
