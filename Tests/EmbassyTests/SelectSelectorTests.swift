@@ -112,6 +112,11 @@ class SelectSelectorTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
 
+        let emptyIOEvents = assertExecutingTime(1, accuracy: 1) {
+            return try! selector.select(timeout: 1.0)
+        }
+        XCTAssertEqual(emptyIOEvents.count, 0)
+
         // make a connect 1 seconds later
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             try! clientSocket.connect(host: "::1", port: port)
@@ -169,7 +174,7 @@ class SelectSelectorTests: XCTestCase {
             let result = toEventSet(events)
             XCTAssertEqual(result, Set([
                 FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read),
-                ]))
+            ]))
         }
 
         try! selector.unregister(listenSocket.fileDescriptor)

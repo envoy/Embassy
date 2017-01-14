@@ -46,7 +46,18 @@ public final class SelectorEventLoop: EventLoop {
         IOUtils.setBlocking(fileDescriptor: pipeReceiver, blocking: false)
         // subscribe to pipe receiver read-ready event, do nothing, just allow selector
         // to be interrupted
-        setReader(pipeReceiver) {}
+        setReader(pipeReceiver) {
+            // consume the pipe receiver, so that it won't keep triggering read event
+            let size = PIPE_BUF
+            var bytes = Data(count: Int(size))
+            var readSize = 1
+            while readSize > 0 {
+                readSize = bytes.withUnsafeMutableBytes { pointer in
+                    return SystemLibrary.read(self.pipeReceiver, pointer, Int(size))
+                }
+            }
+
+        }
     }
 
     deinit {
@@ -179,7 +190,7 @@ public final class SelectorEventLoop: EventLoop {
             if let firstTuple = callbacks.first {
                 // schedule timeout for the very next scheduled callback
                 let (minTime, _) = firstTuple
-                timeout = max(0, Date().timeIntervalSince(minTime))
+                timeout = max(0, minTime.timeIntervalSince(Date()))
             } else {
                 timeout = nil
             }
