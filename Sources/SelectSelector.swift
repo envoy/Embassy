@@ -217,8 +217,7 @@ public final class SelectSelector: Selector {
             return []
         // Error
         case -1:
-            // TODO:
-            break
+            throw OSError.lastIOError()
         default:
             break
         }
