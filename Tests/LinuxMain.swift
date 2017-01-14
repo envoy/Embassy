@@ -6,4 +6,5 @@ XCTMain([
     testCase(HTTPHeaderParserTests.allTests),
     testCase(MultiDictionaryTests.allTests),
     testCase(TCPSocketTests.allTests),
+    testCase(SelectSelectorTests.allTests),
 ])

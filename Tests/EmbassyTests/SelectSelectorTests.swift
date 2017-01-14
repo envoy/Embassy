@@ -12,6 +12,21 @@ import Dispatch
 
 @testable import Embassy
 
+#if os(Linux)
+    extension SelectSelectorTests {
+        static var allTests = [
+            ("testRegister", testRegister),
+            ("testUnregister", testUnregister),
+            ("testRegisterKeyError", testRegisterKeyError),
+            ("testUnregisterKeyError", testUnregisterKeyError),
+            ("testSelectOneSocket", testSelectOneSocket),
+            ("testSelectEventFilter", testSelectEventFilter),
+            ("testSelectAfterUnregister", testSelectAfterUnregister),
+            ("testSelectMultipleSocket", testSelectMultipleSocket),
+        ]
+    }
+#endif
+
 class SelectSelectorTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.select", attributes: [])
 
