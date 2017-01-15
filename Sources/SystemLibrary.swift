@@ -21,6 +21,8 @@ struct SystemLibrary {
         static let fdSetSize = FD_SETSIZE
 
         // MARK: Linux methods
+        static let pipe = Glibc.pipe
+        static let socket = Glibc.socket
         static let select = Glibc.select
         static let htons  = Glibc.htons
         static let ntohs  = Glibc.ntohs
@@ -91,6 +93,8 @@ struct SystemLibrary {
         static let fdSetSize = __DARWIN_FD_SETSIZE
         // MARK: Darwin methods
 
+        static let pipe = Darwin.pipe
+        static let socket = Darwin.socket
         static let select = Darwin.select
         static let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
         static let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }

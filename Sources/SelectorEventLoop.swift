@@ -36,7 +36,9 @@ public final class SelectorEventLoop: EventLoop {
     public init(selector: Selector) throws {
         self.selector = selector
         var pipeFds = [Int32](repeating: 0, count: 2)
-        let pipeResult = pipeFds.withUnsafeMutableBufferPointer { pipe($0.baseAddress) }
+        let pipeResult = pipeFds.withUnsafeMutableBufferPointer {
+            SystemLibrary.pipe($0.baseAddress)
+        }
         guard pipeResult >= 0 else {
             throw OSError.lastIOError()
         }
@@ -56,14 +58,13 @@ public final class SelectorEventLoop: EventLoop {
                     return SystemLibrary.read(self.pipeReceiver, pointer, Int(size))
                 }
             }
-
         }
     }
 
     deinit {
         stop()
-        close(pipeSender)
-        close(pipeReceiver)
+        let _ = SystemLibrary.close(pipeSender)
+        let _ = SystemLibrary.close(pipeReceiver)
     }
 
     public func setReader(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void) {

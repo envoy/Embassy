@@ -156,14 +156,17 @@ class SelectorEventLoopTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
 
-        loop.setWriter(clientSocket.fileDescriptor) {
-            writerCalled = true
-            self.loop.stop()
-        }
-
         // make a connect 1 seconds later
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1) { [unowned self] in
             try! clientSocket.connect(host: "::1", port: port)
+
+            // Notice: It seems we should only select on the socket after it's either connecting
+            // or listening, and that's why we put setWriter here instead of before or after
+            // ref: http://stackoverflow.com/q/41656400/25077
+            self.loop.setWriter(clientSocket.fileDescriptor) {
+                writerCalled = true
+                self.loop.stop()
+            }
         }
 
         assertExecutingTime(1.0, accuracy: 0.5) {

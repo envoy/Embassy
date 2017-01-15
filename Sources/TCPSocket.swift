@@ -67,7 +67,7 @@ public final class TCPSocket {
         #else
             let socketType = SOCK_STREAM
         #endif
-        fileDescriptor = socket(AF_INET6, socketType, 0)
+        fileDescriptor = SystemLibrary.socket(AF_INET6, socketType, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
         }

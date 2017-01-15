@@ -59,7 +59,6 @@ public final class Transport {
         self.closedCallback = closedCallback
         self.readDataCallback = readDataCallback
         eventLoop.setReader(socket.fileDescriptor, callback: handleRead)
-        eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
     }
 
     deinit {
@@ -153,6 +152,7 @@ public final class Transport {
     }
 
     private func handleWrite() {
+        eventLoop.removeWriter(socket.fileDescriptor)
         // ensure we are not closed
         guard !closed else {
             return
@@ -175,8 +175,10 @@ public final class Transport {
             outgoingBuffer.removeFirst(sentBytes)
         } catch let OSError.ioError(number, message) {
             switch number {
-            case EAGAIN:
-                break
+            case EAGAIN, EWOULDBLOCK:
+                // looks like the writing buffer is full, let's register the writer, wait for ready
+                // to write event
+                eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
 
             // Apparently on macOS EPROTOTYPE can be returned when the socket is not
             // fully shutdown (as an EPIPE would indicate). Here we treat them

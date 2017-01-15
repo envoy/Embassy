@@ -48,7 +48,11 @@ public final class SelectSelector: Selector {
         var readSet = fd_set()
         var writeSet = fd_set()
 
+        var maxFd: Int32 = 0
         for (fd, key) in fileDescriptorMap {
+            if fd > maxFd {
+                maxFd = fd
+            }
             if key.events.contains(.read) {
                 SystemLibrary.fdSet(fd: fd, set: &readSet)
             }
@@ -74,7 +78,6 @@ public final class SelectSelector: Selector {
                 timeoutVal.tv_sec * microsecondsPerSecond
             )
             #endif
-            status = SystemLibrary.select(SystemLibrary.fdSetSize, &readSet, &writeSet, nil, &timeoutVal)
         } else {
             status = SystemLibrary.select(SystemLibrary.fdSetSize, &readSet, &writeSet, nil, nil)
         }
