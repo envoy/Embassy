@@ -78,8 +78,9 @@ public final class SelectSelector: Selector {
                 timeoutVal.tv_sec * microsecondsPerSecond
             )
             #endif
+            status = SystemLibrary.select(maxFd + 1, &readSet, &writeSet, nil, &timeoutVal)
         } else {
-            status = SystemLibrary.select(SystemLibrary.fdSetSize, &readSet, &writeSet, nil, nil)
+            status = SystemLibrary.select(maxFd + 1, &readSet, &writeSet, nil, nil)
         }
         switch status {
         case 0:
