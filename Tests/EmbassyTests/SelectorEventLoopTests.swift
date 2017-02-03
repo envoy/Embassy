@@ -136,12 +136,12 @@ class SelectorEventLoopTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
 
-        // make a connect 1 seconds later
+        // make a connection 1 seconds later
         loop.call(withDelay: 1) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(1.0, accuracy: 0.5) {
+        assertExecutingTime(1.0, accuracy: 1.0) {
             self.loop.runForever()
         }
         XCTAssert(readerCalled)
