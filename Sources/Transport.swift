@@ -152,34 +152,35 @@ public final class Transport {
     }
 
     private func handleWrite() {
-        eventLoop.removeWriter(socket.fileDescriptor)
         // ensure we are not closed
         guard !closed else {
             return
         }
         // ensure we have something to write
         guard outgoingBuffer.count > 0 else {
-            if closing {
-                closed = true
-                eventLoop.removeReader(socket.fileDescriptor)
-                eventLoop.removeWriter(socket.fileDescriptor)
-                if let callback = closedCallback {
-                    callback(.byLocal)
-                }
-                socket.close()
-            }
             return
         }
         do {
             let sentBytes = try socket.send(data: outgoingBuffer)
             outgoingBuffer.removeFirst(sentBytes)
+            if outgoingBuffer.count > 0 {
+                // Not all was written; register write handler.
+                eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
+            } else {
+                eventLoop.removeWriter(socket.fileDescriptor)
+                if closing {
+                    closed = true
+                    eventLoop.removeReader(socket.fileDescriptor)
+                    if let callback = closedCallback {
+                        callback(.byLocal)
+                    }
+                    socket.close()
+                }
+            }
         } catch let OSError.ioError(number, message) {
             switch number {
-            case EAGAIN, EWOULDBLOCK:
-                // looks like the writing buffer is full, let's register the writer, wait for ready
-                // to write event
-                eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
-
+            case EAGAIN:
+                break
             // Apparently on macOS EPROTOTYPE can be returned when the socket is not
             // fully shutdown (as an EPIPE would indicate). Here we treat them
             // essentially the same since we just tear the transport down anyway.
