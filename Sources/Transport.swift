@@ -158,6 +158,15 @@ public final class Transport {
         }
         // ensure we have something to write
         guard outgoingBuffer.count > 0 else {
+            if closing {
+                closed = true
+                eventLoop.removeWriter(socket.fileDescriptor)
+                eventLoop.removeReader(socket.fileDescriptor)
+                if let callback = closedCallback {
+                    callback(.byLocal)
+                }
+                socket.close()
+            }
             return
         }
         do {
