@@ -41,7 +41,6 @@ public final class SelectSelector: Selector {
     }
 
     public func close() {
-        // TODO:
     }
 
     public func select(timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
@@ -93,7 +92,6 @@ public final class SelectSelector: Selector {
             break
         }
 
-        // TODO: somehow not really ready event triggered here
         var result: [(SelectorKey, Set<IOEvent>)] = []
         for (fd, key) in fileDescriptorMap {
             var events = Set<IOEvent>()

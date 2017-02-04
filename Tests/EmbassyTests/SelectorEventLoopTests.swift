@@ -141,7 +141,7 @@ class SelectorEventLoopTests: XCTestCase {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(1.0, accuracy: 1.0) {
+        assertExecutingTime(1.0, accuracy: 0.5) {
             self.loop.runForever()
         }
         XCTAssert(readerCalled)
