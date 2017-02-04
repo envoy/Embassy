@@ -31,7 +31,7 @@ class SelectSelectorTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.select", attributes: [])
 
     func testRegister() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
         let socket = try! TCPSocket()
 
         XCTAssertNil(selector[socket.fileDescriptor])
@@ -46,7 +46,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testUnregister() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
         let socket = try! TCPSocket()
 
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
@@ -59,7 +59,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testRegisterKeyError() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
         let socket = try! TCPSocket()
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
@@ -80,7 +80,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testUnregisterKeyError() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
         let socket = try! TCPSocket()
 
         XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
@@ -96,7 +96,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testSelectOneSocket() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -132,7 +132,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testSelectEventFilter() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -154,7 +154,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testSelectAfterUnregister() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -193,7 +193,7 @@ class SelectSelectorTests: XCTestCase {
     }
 
     func testSelectMultipleSocket() {
-        let selector = SelectSelector()
+        let selector = try! SelectSelector()
 
         let port = try! getUnusedTCPPort()
 
