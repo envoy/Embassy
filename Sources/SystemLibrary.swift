@@ -39,8 +39,9 @@ struct SystemLibrary {
         static let getsockname = Glibc.getsockname
 
         static func fdSet(fd: Int32, set: inout fd_set) {
-            // TODO: something is wrong wtih this fdSet, if the fd is bigger or equal to 16,
-            // the select just not working
+            // TODO: the number 16 we are using here could be wrong, my guess is -- it depends on
+            // different linux platform. If we use 32 here, then fd >= 16 will work. So We should
+            // calculate the value or get it somewhere.
             let intOffset = Int(fd / 16)
             let bitOffset = Int(fd % 16)
             let mask = 1 << bitOffset
