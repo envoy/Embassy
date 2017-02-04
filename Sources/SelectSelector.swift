@@ -15,6 +15,9 @@ public final class SelectSelector: Selector {
 
     private var fileDescriptorMap: [Int32: SelectorKey] = [:]
 
+    public init() throws {
+    }
+
     @discardableResult
     public func register(
         _ fileDescriptor: Int32,
