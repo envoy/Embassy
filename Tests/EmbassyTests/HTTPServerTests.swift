@@ -12,6 +12,21 @@ import XCTest
 
 @testable import Embassy
 
+#if os(Linux)
+    extension HTTPServerTests {
+        static var allTests = [
+            ("testEnviron", testEnviron),
+            ("testStartResponse", testStartResponse),
+            ("testSendBody", testSendBody),
+            ("testAsyncSendBody", testAsyncSendBody),
+            ("testPostBody", testPostBody),
+            ("testPostWithInitialBody", testPostWithInitialBody),
+            ("testAddressReuse", testAddressReuse),
+            ("testStopAndWait", testStopAndWait),
+        ]
+    }
+#endif
+
 class HTTPServerTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.http-server", attributes: [])
     var loop: SelectorEventLoop!

@@ -9,4 +9,5 @@ XCTMain([
     testCase(SelectSelectorTests.allTests),
     testCase(SelectorEventLoopTests.allTests),
     testCase(TransportTests.allTests),
+    testCase(HTTPServerTests.allTests),
 ])
