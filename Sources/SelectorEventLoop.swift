@@ -63,6 +63,7 @@ public final class SelectorEventLoop: EventLoop {
 
     deinit {
         stop()
+        removeReader(pipeReceiver)
         let _ = SystemLibrary.close(pipeSender)
         let _ = SystemLibrary.close(pipeReceiver)
     }

@@ -19,6 +19,7 @@ struct SystemLibrary {
     #if os(Linux)
         // MARK: Linux constants
         static let fdSetSize = FD_SETSIZE
+        static let nfdbits: Int32 = Int32(MemoryLayout<Int>.size) * 8
 
         // MARK: Linux methods
         static let pipe = Glibc.pipe
@@ -39,11 +40,8 @@ struct SystemLibrary {
         static let getsockname = Glibc.getsockname
 
         static func fdSet(fd: Int32, set: inout fd_set) {
-            // TODO: the number 16 we are using here could be wrong, my guess is -- it depends on
-            // different linux platform. If we use 32 here, then fd >= 16 will work. So We should
-            // calculate the value or get it somewhere.
-            let intOffset = Int(fd / 16)
-            let bitOffset = Int(fd % 16)
+            let intOffset = Int(fd / SystemLibrary.nfdbits)
+            let bitOffset = Int(fd % SystemLibrary.nfdbits)
             let mask = 1 << bitOffset
             switch intOffset {
             case 0: set.__fds_bits.0 = set.__fds_bits.0 | mask
@@ -67,10 +65,9 @@ struct SystemLibrary {
         }
 
         static func fdIsSet(fd: Int32, set: inout fd_set) -> Bool {
-            let intOffset = Int(fd / 32)
-            let bitOffset = Int(fd % 32)
+            let intOffset = Int(fd / SystemLibrary.nfdbits)
+            let bitOffset = Int(fd % SystemLibrary.nfdbits)
             let mask = Int(1 << bitOffset)
-
             switch intOffset {
             case 0: return set.__fds_bits.0 & mask != 0
             case 1: return set.__fds_bits.1 & mask != 0
