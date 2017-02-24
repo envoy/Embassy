@@ -8,6 +8,20 @@
 
 import Foundation
 
+extension String {
+    /// String without leading spaces
+    var withoutLeadingSpaces: String {
+        var firstNoneSpace: Int = characters.count
+        for (i, char) in characters.enumerated() {
+            if char != " " {
+                firstNoneSpace = i
+                break
+            }
+        }
+        return substring(from: index(startIndex, offsetBy: firstNoneSpace))
+    }
+}
+
 /// Parser for HTTP headers
 public struct HTTPHeaderParser {
     private static let CR = UInt8(13)
@@ -33,6 +47,8 @@ public struct HTTPHeaderParser {
     mutating func feed(_ data: Data) -> [Element] {
         buffer.append(data)
         var elements = [Element]()
+        let xx = String(data: data, encoding: .utf8)
+        print("##### parser \(xx.debugDescription)")
         while buffer.count > 0 {
             // pair of (0th, 1st), (1st, 2nd), (2nd, 3rd) ... chars, so that we can find <LF><CR>
             let charPairs: [(UInt8, UInt8)] = Array(zip(
@@ -62,8 +78,10 @@ public struct HTTPHeaderParser {
                     elements.append(.end(bodyPart: buffer))
                     return elements
                 }
-                let parts = string.components(separatedBy: ": ")
-                elements.append(.header(key: parts[0], value: parts[1..<parts.count].joined(separator: ": ")))
+                let parts = string.components(separatedBy: ":")
+                let key = parts[0]
+                let value = parts[1..<parts.count].joined(separator: ":").withoutLeadingSpaces
+                elements.append(.header(key: key, value: value))
             }
         }
         return elements

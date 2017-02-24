@@ -141,4 +141,33 @@ class HTTPHeaderParserTests: XCTestCase {
         ])
     }
 
+    func testNoSpaceAfterColonForHeader() {
+        let header = [
+            "GET /index.html HTTP/1.1",
+            "Host: foobar.com",
+            "X-My-Header:MyFaboriteColor: Green",
+            "Connection:close"
+            ].joined(separator: "\r\n") + "\r\n\r\n"
+        var parser = HTTPHeaderParser()
+        let elements = parser.feed(Data(header.utf8))
+        XCTAssertEqual(elements, [
+            HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1"),
+            HTTPHeaderParser.Element.header(key: "Host", value: "foobar.com"),
+            HTTPHeaderParser.Element.header(key: "X-My-Header", value: "MyFaboriteColor: Green"),
+            HTTPHeaderParser.Element.header(key: "Connection", value: "close"),
+            HTTPHeaderParser.Element.end(bodyPart: Data())
+        ])
+    }
+
+    func testStripLeadingSpaces() {
+        XCTAssertEqual("x".withoutLeadingSpaces, "x")
+        XCTAssertEqual("eggsspam".withoutLeadingSpaces, "eggsspam")
+        XCTAssertEqual("foo bar".withoutLeadingSpaces, "foo bar")
+        XCTAssertEqual("foo bar ".withoutLeadingSpaces, "foo bar ")
+        XCTAssertEqual(" foo bar ".withoutLeadingSpaces, "foo bar ")
+        XCTAssertEqual("  foo bar ".withoutLeadingSpaces, "foo bar ")
+        XCTAssertEqual("   ".withoutLeadingSpaces, "")
+        XCTAssertEqual("".withoutLeadingSpaces, "")
+    }
+
 }
