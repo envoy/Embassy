@@ -18,6 +18,8 @@ import XCTest
             ("testPartialParsing", testPartialParsing),
             ("testHeaders", testHeaders),
             ("testColonInHeader", testColonInHeader),
+            ("testNoSpaceAfterColonForHeader", testNoSpaceAfterColonForHeader),
+            ("testStripLeadingSpaces", testStripLeadingSpaces),
         ]
     }
 #endif
