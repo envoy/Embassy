@@ -144,10 +144,15 @@ public final class HTTPConnection {
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop
 
-        if let bundle = Bundle(identifier: "com.envoy.Embassy") {
-            if let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String {
-                environ["embassy.version"] = version
-            }
+        if
+            let bundle = Bundle(identifier: "com.envoy.Embassy"),
+            let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String
+        {
+            environ["embassy.version"] = version
+        } else {
+            // TODO: not sure what's the method we can use to get current package version for Linux,
+            // just put unknown here to make test pass for now
+            environ["embassy.version"] = "unknown"
         }
 
         if let contentLength = request.headers["Content-Length"], let length = Int(contentLength) {
