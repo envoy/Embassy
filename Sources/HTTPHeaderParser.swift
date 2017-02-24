@@ -48,7 +48,6 @@ public struct HTTPHeaderParser {
         buffer.append(data)
         var elements = [Element]()
         let xx = String(data: data, encoding: .utf8)
-        print("##### parser \(xx.debugDescription)")
         while buffer.count > 0 {
             // pair of (0th, 1st), (1st, 2nd), (2nd, 3rd) ... chars, so that we can find <LF><CR>
             let charPairs: [(UInt8, UInt8)] = Array(zip(

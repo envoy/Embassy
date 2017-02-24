@@ -202,11 +202,10 @@ class SelectSelectorTests: XCTestCase {
         let listenSocket = try! TCPSocket()
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
-
         try! selector.register(listenSocket.fileDescriptor, events: [.read, .write], data: nil)
-        try! selector.register(clientSocket.fileDescriptor, events: [.read, .write], data: nil)
 
         try! clientSocket.connect(host: "::1", port: port)
+        try! selector.register(clientSocket.fileDescriptor, events: [.read, .write], data: nil)
 
         sleep(1)
 

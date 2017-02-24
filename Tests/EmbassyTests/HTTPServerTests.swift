@@ -30,11 +30,14 @@ import XCTest
 class HTTPServerTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.http-server", attributes: [])
     var loop: SelectorEventLoop!
+    var session: URLSession!
 
     override func setUp() {
         super.setUp()
         loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
+        let sessionConfig = URLSessionConfiguration.default
+        session = URLSession(configuration: sessionConfig)
         // set a 30 seconds timeout
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             if self.loop.running {
@@ -64,7 +67,7 @@ class HTTPServerTests: XCTestCase {
         try! server.start()
 
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            let task = URLSession.shared.dataTask(
+            let task = self.session.dataTask(
                 with: URL(string: "http://[::1]:\(port)/path?foo=bar")!
             )
             task.resume()
@@ -111,7 +114,7 @@ class HTTPServerTests: XCTestCase {
         var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
@@ -152,7 +155,7 @@ class HTTPServerTests: XCTestCase {
         var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
@@ -200,7 +203,7 @@ class HTTPServerTests: XCTestCase {
         var receivedResponse: HTTPURLResponse?
         var receivedError: NSError?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            let task = URLSession.shared.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
                 receivedError = error as NSError?
@@ -227,7 +230,11 @@ class HTTPServerTests: XCTestCase {
                 startResponse: ((String, [(String, String)]) -> Void),
                 sendBody: @escaping ((Data) -> Void)
             ) in
-            startResponse("200 OK", [])
+            if environ["HTTP_EXPECT"] as? String == "100-continue" {
+                startResponse("100 Continue", [])
+            } else {
+                startResponse("200 OK", [])
+            }
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
                 receivedInputData.append(data)
@@ -241,7 +248,7 @@ class HTTPServerTests: XCTestCase {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) in
                 self.loop.stop()
             })
             task.resume()
@@ -268,7 +275,14 @@ class HTTPServerTests: XCTestCase {
                 startResponse: ((String, [(String, String)]) -> Void),
                 sendBody: @escaping ((Data) -> Void)
             ) in
-            startResponse("200 OK", [])
+            if environ["HTTP_EXPECT"] as? String == "100-continue" {
+                // Notice: under linux, it seems the underlying URLSession implementation (cURL in
+                // this case I guess), will send Expect: 100-continue, we need to reply
+                // 100 Continue so that it will continue sending body
+                startResponse("100 Continue", [])
+            } else {
+                startResponse("200 OK", [])
+            }
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
                 receivedInputData.append(data)
@@ -282,7 +296,7 @@ class HTTPServerTests: XCTestCase {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) in
               self.loop.stop()
             })
             task.resume()
@@ -314,7 +328,7 @@ class HTTPServerTests: XCTestCase {
         try! server2.start()
 
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            let task = URLSession.shared.dataTask(
+            let task = self.session.dataTask(
                 with: URL(string: "http://[::1]:\(port)")!
             )
             task.resume()
