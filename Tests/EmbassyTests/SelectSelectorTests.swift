@@ -236,6 +236,8 @@ class SelectSelectorTests: XCTestCase {
         }
 
         try! clientSocket.send(data: Data("hello".utf8))
+        // wait a little while so that read event will surely be triggered
+        sleep(1)
 
         let ioEvents2 = assertExecutingTime(0, accuracy: 1) {
             return try! selector.select(timeout: 10.0)
