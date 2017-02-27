@@ -8,10 +8,6 @@
 
 import Foundation
 
-let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
-let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
-
 /// Class wrapping around TCP/IPv6 socket
 public final class TCPSocket {
     /// The file descriptor number for socket
@@ -31,32 +27,47 @@ public final class TCPSocket {
     /// Whether to ignore SIGPIPE signal or not
     var ignoreSigPipe: Bool {
         get {
-            var value: Int32 = 0
-            var size = socklen_t(MemoryLayout<Int32>.size)
-            assert(
-                getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
-                "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-            )
-            return value == 1
+            #if os(Linux)
+                return false
+            #else
+                var value: Int32 = 0
+                var size = socklen_t(MemoryLayout<Int32>.size)
+                assert(
+                    getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
+                    "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+                )
+                return value == 1
+            #endif
         }
 
         set {
-            var value: Int32 = newValue ? 1 : 0
-            assert(
-                setsockopt(
-                    fileDescriptor,
-                    SOL_SOCKET,
-                    SO_NOSIGPIPE,
-                    &value,
-                    socklen_t(MemoryLayout<Int32>.size)
-                ) >= 0,
-                "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-            )
+            #if os(Linux)
+                // TODO: maybe we should call signal(SIGPIPE, SIG_IGN) here? but it affects
+                // whole process
+                return
+            #else
+                var value: Int32 = newValue ? 1 : 0
+                assert(
+                    setsockopt(
+                        fileDescriptor,
+                        SOL_SOCKET,
+                        SO_NOSIGPIPE,
+                        &value,
+                        socklen_t(MemoryLayout<Int32>.size)
+                        ) >= 0,
+                    "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+                )
+            #endif
         }
     }
 
     init(blocking: Bool = false) throws {
-        fileDescriptor = socket(AF_INET6, SOCK_STREAM, 0)
+        #if os(Linux)
+            let socketType = Int32(SOCK_STREAM.rawValue)
+        #else
+            let socketType = SOCK_STREAM
+        #endif
+        fileDescriptor = SystemLibrary.socket(AF_INET6, socketType, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
         }
@@ -91,19 +102,20 @@ public final class TCPSocket {
             }
         }
         // create IPv6 socket address
-        var address = sockaddr_in6(
-            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
-            sin6_family: UInt8(AF_INET6),
-            sin6_port: UInt16(port).bigEndian,
-            sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(address: interface),
-            sin6_scope_id: 0
-        )
+        var address = sockaddr_in6()
+        #if !os(Linux)
+        address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
+        #endif
+        address.sin6_family = sa_family_t(AF_INET6)
+        address.sin6_port = UInt16(port).bigEndian
+        address.sin6_flowinfo = 0
+        address.sin6_addr = try ipAddressToStruct(address: interface)
+        address.sin6_scope_id = 0
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.bind(fileDescriptor, pointer, size) >= 0
+                return SystemLibrary.bind(fileDescriptor, pointer, size) >= 0
             }
         }) else {
             throw OSError.lastIOError()
@@ -113,7 +125,7 @@ public final class TCPSocket {
     /// Listen incomming connections
     ///  - Parameter backlog: maximum backlog of incoming connections
     func listen(backlog: Int = Int(SOMAXCONN)) throws {
-        guard Darwin.listen(fileDescriptor, Int32(backlog)) != -1 else {
+        guard SystemLibrary.listen(fileDescriptor, Int32(backlog)) != -1 else {
             throw OSError.lastIOError()
         }
     }
@@ -124,7 +136,7 @@ public final class TCPSocket {
         var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.accept(fileDescriptor, pointer, &size)
+                return SystemLibrary.accept(fileDescriptor, pointer, &size)
             }
         }
         guard clientFileDescriptor >= 0 else {
@@ -138,19 +150,20 @@ public final class TCPSocket {
     ///  - Parameter port: the target host port number to connect
     func connect(host: String, port: Int) throws {
         // create IPv6 socket address
-        var address = sockaddr_in6(
-            sin6_len: UInt8(MemoryLayout<sockaddr_in6>.stride),
-            sin6_family: UInt8(AF_INET6),
-            sin6_port: UInt16(port).bigEndian,
-            sin6_flowinfo: 0,
-            sin6_addr: try ipAddressToStruct(address: host),
-            sin6_scope_id: 0
-        )
+        var address = sockaddr_in6()
+        #if !os(Linux)
+        address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
+        #endif
+        address.sin6_family = sa_family_t(AF_INET6)
+        address.sin6_port = UInt16(port).bigEndian
+        address.sin6_flowinfo = 0
+        address.sin6_addr = try ipAddressToStruct(address: host)
+        address.sin6_scope_id = 0
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
-                return Darwin.connect(fileDescriptor, pointer, size)
+                return SystemLibrary.connect(fileDescriptor, pointer, size)
             }
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
@@ -164,7 +177,7 @@ public final class TCPSocket {
     @discardableResult
     func send(data: Data) throws -> Int {
         let bytesSent = data.withUnsafeBytes { pointer in
-            Darwin.send(fileDescriptor, pointer, data.count, Int32(0))
+            SystemLibrary.send(fileDescriptor, pointer, data.count, Int32(0))
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -178,7 +191,7 @@ public final class TCPSocket {
     func recv(size: Int) throws -> Data {
         var bytes = Data(count: size)
         let bytesRead = bytes.withUnsafeMutableBytes { pointer in
-            return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
+            return SystemLibrary.recv(fileDescriptor, pointer, size, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
@@ -188,16 +201,16 @@ public final class TCPSocket {
 
     /// Close the socket
     func close() {
-        _ = Darwin.shutdown(fileDescriptor, SHUT_WR)
-        _ = Darwin.close(fileDescriptor)
+        _ = SystemLibrary.shutdown(fileDescriptor, Int32(SHUT_WR))
+        _ = SystemLibrary.close(fileDescriptor)
     }
 
     func getPeerName() throws -> (String, Int) {
-        return try getName(function: Darwin.getpeername)
+        return try getName(function: getpeername)
     }
 
     func getSockName() throws -> (String, Int) {
-        return try getName(function: Darwin.getsockname)
+        return try getName(function: getsockname)
     }
 
     private func getName(
@@ -227,7 +240,7 @@ public final class TCPSocket {
                             family: AF_INET,
                             addressLength: INET_ADDRSTRLEN
                         ),
-                        Int(ntohs(addressptr.pointee.sin_port))
+                        Int(SystemLibrary.ntohs(addressptr.pointee.sin_port))
                     )
                 }
             case AF_INET6:
@@ -241,7 +254,7 @@ public final class TCPSocket {
                             family: AF_INET6,
                             addressLength: INET6_ADDRSTRLEN
                         ),
-                        Int(ntohs(addressptr.pointee.sin6_port))
+                        Int(SystemLibrary.ntohs(addressptr.pointee.sin6_port))
                     )
                 }
             default:

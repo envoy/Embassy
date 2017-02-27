@@ -6,27 +6,11 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+#if !os(Linux)
+
 import XCTest
 
 @testable import Embassy
-
-struct FileDescriptorEvent {
-    let fileDescriptor: Int32
-    let ioEvent: IOEvent
-}
-
-extension FileDescriptorEvent: Equatable {
-}
-
-func == (lhs: FileDescriptorEvent, rhs: FileDescriptorEvent) -> Bool {
-    return lhs.fileDescriptor == rhs.fileDescriptor && lhs.ioEvent == rhs.ioEvent
-}
-
-extension FileDescriptorEvent: Hashable {
-    var hashValue: Int {
-        return fileDescriptor.hashValue + ioEvent.hashValue
-    }
-}
 
 class KqueueSelectorTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.kqueue", attributes: [])
@@ -271,3 +255,5 @@ class KqueueSelectorTests: XCTestCase {
         })
     }
 }
+
+#endif

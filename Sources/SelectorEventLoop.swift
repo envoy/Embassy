@@ -36,7 +36,9 @@ public final class SelectorEventLoop: EventLoop {
     public init(selector: Selector) throws {
         self.selector = selector
         var pipeFds = [Int32](repeating: 0, count: 2)
-        let pipeResult = pipeFds.withUnsafeMutableBufferPointer { pipe($0.baseAddress) }
+        let pipeResult = pipeFds.withUnsafeMutableBufferPointer {
+            SystemLibrary.pipe($0.baseAddress)
+        }
         guard pipeResult >= 0 else {
             throw OSError.lastIOError()
         }
@@ -46,13 +48,24 @@ public final class SelectorEventLoop: EventLoop {
         IOUtils.setBlocking(fileDescriptor: pipeReceiver, blocking: false)
         // subscribe to pipe receiver read-ready event, do nothing, just allow selector
         // to be interrupted
-        setReader(pipeReceiver) {}
+        setReader(pipeReceiver) {
+            // consume the pipe receiver, so that it won't keep triggering read event
+            let size = PIPE_BUF
+            var bytes = Data(count: Int(size))
+            var readSize = 1
+            while readSize > 0 {
+                readSize = bytes.withUnsafeMutableBytes { pointer in
+                    return SystemLibrary.read(self.pipeReceiver, pointer, Int(size))
+                }
+            }
+        }
     }
 
     deinit {
         stop()
-        close(pipeSender)
-        close(pipeReceiver)
+        removeReader(pipeReceiver)
+        let _ = SystemLibrary.close(pipeSender)
+        let _ = SystemLibrary.close(pipeReceiver)
     }
 
     public func setReader(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void) {
@@ -179,7 +192,7 @@ public final class SelectorEventLoop: EventLoop {
             if let firstTuple = callbacks.first {
                 // schedule timeout for the very next scheduled callback
                 let (minTime, _) = firstTuple
-                timeout = max(0, Date().timeIntervalSince(minTime))
+                timeout = max(0, minTime.timeIntervalSince(Date()))
             } else {
                 timeout = nil
             }

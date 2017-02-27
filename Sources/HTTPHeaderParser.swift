@@ -8,6 +8,20 @@
 
 import Foundation
 
+extension String {
+    /// String without leading spaces
+    var withoutLeadingSpaces: String {
+        var firstNoneSpace: Int = characters.count
+        for (i, char) in characters.enumerated() {
+            if char != " " {
+                firstNoneSpace = i
+                break
+            }
+        }
+        return substring(from: index(startIndex, offsetBy: firstNoneSpace))
+    }
+}
+
 /// Parser for HTTP headers
 public struct HTTPHeaderParser {
     private static let CR = UInt8(13)
@@ -62,8 +76,10 @@ public struct HTTPHeaderParser {
                     elements.append(.end(bodyPart: buffer))
                     return elements
                 }
-                let parts = string.components(separatedBy: ": ")
-                elements.append(.header(key: parts[0], value: parts[1..<parts.count].joined(separator: ": ")))
+                let parts = string.components(separatedBy: ":")
+                let key = parts[0]
+                let value = parts[1..<parts.count].joined(separator: ":").withoutLeadingSpaces
+                elements.append(.header(key: key, value: value))
             }
         }
         return elements

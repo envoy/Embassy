@@ -10,6 +10,15 @@ import XCTest
 
 @testable import Embassy
 
+#if os(Linux)
+    extension MultiDictionaryTests {
+        static var allTests = [
+            ("testCaseInsenstiveMultiDictionary", testCaseInsenstiveMultiDictionary),
+            ("testCaseSenstiveMultiDictionary", testCaseSenstiveMultiDictionary),
+        ]
+    }
+#endif
+
 class MultiDictionaryTests: XCTestCase {
     func testCaseInsenstiveMultiDictionary() {
         let dict = MultiDictionary<String, String, LowercaseKeyTransform>(items: [

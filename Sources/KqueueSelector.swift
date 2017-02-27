@@ -8,6 +8,8 @@
 
 import Foundation
 
+#if !os(Linux)
+
 public final class KqueueSelector: Selector {
     enum Error: Swift.Error {
         case keyError(fileDescriptor: Int32)
@@ -174,3 +176,5 @@ public final class KqueueSelector: Selector {
         }
     }
 }
+
+#endif

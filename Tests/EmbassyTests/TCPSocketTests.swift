@@ -6,9 +6,22 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Foundation
+import Dispatch
 import XCTest
 
 @testable import Embassy
+
+#if os(Linux)
+    extension TCPSocketTests {
+        static var allTests = [
+            ("testAccept", testAccept),
+            ("testReadAndWrite", testReadAndWrite),
+            ("testGetPeerName", testGetPeerName),
+            ("testGetSockName", testGetSockName),
+        ]
+    }
+#endif
 
 class TCPSocketTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.tcp-sockets", attributes: [])

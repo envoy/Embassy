@@ -52,6 +52,10 @@
 		D83A71A21CF1542300C0C21C /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
 		D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */; };
 		D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
+		D851BD421E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */; };
+		D851BD431E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */; };
+		D851BD451E2AD9E100537B6A /* SystemLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD441E2AD9E100537B6A /* SystemLibrary.swift */; };
+		D851BD461E2AD9E300537B6A /* SystemLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD441E2AD9E100537B6A /* SystemLibrary.swift */; };
 		D85613F41CEE6B160060CCB7 /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
 		D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
 		D85614081CEE6DB20060CCB7 /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
@@ -66,11 +70,12 @@
 		D866875F1D00D73F00FA53F2 /* FileLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */; };
 		D86687611D00D7E100FA53F2 /* LogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687601D00D7E100FA53F2 /* LogFormatter.swift */; };
 		D86687631D00D85B00FA53F2 /* DefaultLogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */; };
-		D87260631E0C6CFD008572ED /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D87260621E0C6CFD008572ED /* Info.plist */; };
 		D87260651E0C6D05008572ED /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D87260641E0C6D05008572ED /* Info.plist */; };
 		D898DC851CF62E1B0027E17E /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
 		D898DC8E1CF665010027E17E /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
 		D898DC901CF66CBD0027E17E /* HeapSortTetsts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */; };
+		D8AF23D21E207CC40097D951 /* SelectSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8AF23D11E207CC40097D951 /* SelectSelector.swift */; };
+		D8AF23D31E207CC40097D951 /* SelectSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8AF23D11E207CC40097D951 /* SelectSelector.swift */; };
 		D8B5F2361CF387E40093EF94 /* MultiDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */; };
 		D8B5F2381CF38C170093EF94 /* SWSGIUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */; };
 		D8B5F23A1CF3C91E0093EF94 /* EventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */; };
@@ -113,6 +118,8 @@
 		D83A71A11CF1542300C0C21C /* HTTPConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerTests.swift; sourceTree = "<group>"; };
 		D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultLogger.swift; sourceTree = "<group>"; };
+		D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectSelectorTests.swift; sourceTree = "<group>"; };
+		D851BD441E2AD9E100537B6A /* SystemLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemLibrary.swift; sourceTree = "<group>"; };
 		D85613E91CEE6B160060CCB7 /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85614051CEE6C0C0060CCB7 /* SWSGI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGI.swift; sourceTree = "<group>"; };
@@ -134,6 +141,7 @@
 		D898DC841CF62E1B0027E17E /* Atomic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
 		D898DC8D1CF665010027E17E /* HeapSort.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSort.swift; sourceTree = "<group>"; };
 		D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapSortTetsts.swift; sourceTree = "<group>"; };
+		D8AF23D11E207CC40097D951 /* SelectSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectSelector.swift; sourceTree = "<group>"; };
 		D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiDictionaryTests.swift; sourceTree = "<group>"; };
 		D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SWSGIUtils.swift; sourceTree = "<group>"; };
 		D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoop.swift; sourceTree = "<group>"; };
@@ -203,7 +211,6 @@
 			children = (
 				D85613EB1CEE6B160060CCB7 /* Embassy */,
 				D85613F71CEE6B160060CCB7 /* EmbassyTests */,
-				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -218,6 +225,7 @@
 				AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */,
 			);
 			name = Products;
+			path = ../..;
 			sourceTree = "<group>";
 		};
 		D85613EB1CEE6B160060CCB7 /* Embassy */ = {
@@ -234,8 +242,10 @@
 				D898DC8D1CF665010027E17E /* HeapSort.swift */,
 				D8F3D3981CF0F24500342389 /* Errors.swift */,
 				D898DC841CF62E1B0027E17E /* Atomic.swift */,
+				D851BD441E2AD9E100537B6A /* SystemLibrary.swift */,
 			);
-			path = Embassy;
+			name = Embassy;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		D85613F71CEE6B160060CCB7 /* EmbassyTests */ = {
@@ -245,14 +255,17 @@
 				D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */,
 				D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */,
 				D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */,
+				D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */,
 				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
 				D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */,
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
 				D8F3D3901CEFB1AA00342389 /* TestingHelpers.swift */,
+				D85613EA1CEE6B160060CCB7 /* Products */,
 			);
-			path = EmbassyTests;
+			name = EmbassyTests;
+			path = Tests/EmbassyTests;
 			sourceTree = "<group>";
 		};
 		D86687571D00C21300FA53F2 /* Logging */ = {
@@ -268,7 +281,7 @@
 				D866875A1D00C70400FA53F2 /* PrintLogHandler.swift */,
 				D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */,
 			);
-			path = Logging;
+			name = Logging;
 			sourceTree = "<group>";
 		};
 		D866875C1D00D67700FA53F2 /* HTTP */ = {
@@ -280,7 +293,7 @@
 				D83A719F1CF152F300C0C21C /* HTTPRequest.swift */,
 				D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */,
 			);
-			path = HTTP;
+			name = HTTP;
 			sourceTree = "<group>";
 		};
 		D866875D1D00D69900FA53F2 /* IO */ = {
@@ -289,12 +302,13 @@
 				D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */,
 				D8F3D38C1CEF9B9700342389 /* Selector.swift */,
 				D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */,
+				D8AF23D11E207CC40097D951 /* SelectSelector.swift */,
 				D8F3D3921CEFD79100342389 /* KqueueSelector.swift */,
 				D83A719B1CF1230E00C0C21C /* Transport.swift */,
 				D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */,
 				D83A71951CF119D200C0C21C /* IOUtils.swift */,
 			);
-			path = IO;
+			name = IO;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -396,7 +410,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Fang-Pen Lin";
 				TargetAttributes = {
 					AA9242CD1DE91EA2009FE50B = {
@@ -457,7 +471,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87260651E0C6D05008572ED /* Info.plist in Resources */,
-				D87260631E0C6CFD008572ED /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,6 +495,7 @@
 				AA6732701DE92533003ABD4E /* Errors.swift in Sources */,
 				AA6732851DE92542003ABD4E /* TCPSocket.swift in Sources */,
 				AA67327B1DE9253D003ABD4E /* HTTPServer.swift in Sources */,
+				D851BD461E2AD9E300537B6A /* SystemLibrary.swift in Sources */,
 				AA67326E1DE92533003ABD4E /* MultiDictionary.swift in Sources */,
 				AA67327A1DE92538003ABD4E /* FileLogHandler.swift in Sources */,
 				AA6732741DE92538003ABD4E /* LogHandler.swift in Sources */,
@@ -499,6 +513,7 @@
 				AA6732781DE92538003ABD4E /* PropagateLogHandler.swift in Sources */,
 				AA67327E1DE9253D003ABD4E /* HTTPRequest.swift in Sources */,
 				AA6732711DE92533003ABD4E /* Atomic.swift in Sources */,
+				D8AF23D31E207CC40097D951 /* SelectSelector.swift in Sources */,
 				AA67326F1DE92533003ABD4E /* HeapSort.swift in Sources */,
 				AA6732801DE92542003ABD4E /* Selector.swift in Sources */,
 				AA6732831DE92542003ABD4E /* SelectorEventLoop.swift in Sources */,
@@ -509,6 +524,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D851BD431E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */,
 				AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */,
 				AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */,
 				AA67326A1DE92431003ABD4E /* HTTPServerTests.swift in Sources */,
@@ -532,6 +548,7 @@
 				D85614081CEE6DB20060CCB7 /* HTTPServer.swift in Sources */,
 				D85614061CEE6C0C0060CCB7 /* SWSGI.swift in Sources */,
 				D898DC851CF62E1B0027E17E /* Atomic.swift in Sources */,
+				D851BD451E2AD9E100537B6A /* SystemLibrary.swift in Sources */,
 				D8F3D38D1CEF9B9700342389 /* Selector.swift in Sources */,
 				D86687611D00D7E100FA53F2 /* LogFormatter.swift in Sources */,
 				D86687541D00C07F00FA53F2 /* Logger.swift in Sources */,
@@ -549,6 +566,7 @@
 				D8B5F23A1CF3C91E0093EF94 /* EventLoop.swift in Sources */,
 				D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */,
 				D866875B1D00C70400FA53F2 /* PrintLogHandler.swift in Sources */,
+				D8AF23D21E207CC40097D951 /* SelectSelector.swift in Sources */,
 				D8F3D3991CF0F24500342389 /* Errors.swift in Sources */,
 				D866875F1D00D73F00FA53F2 /* FileLogHandler.swift in Sources */,
 				D856140E1CEE70D70060CCB7 /* HTTPHeaderParser.swift in Sources */,
@@ -559,6 +577,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D851BD421E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */,
 				D8F3D3951CF0223600342389 /* KqueueSelectorTests.swift in Sources */,
 				D83A719A1CF11AF600C0C21C /* SelectorEventLoopTests.swift in Sources */,
 				D83A71A41CF15BCA00C0C21C /* HTTPServerTests.swift in Sources */,
@@ -599,7 +618,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -624,7 +643,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -644,7 +663,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = Tests/EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
@@ -663,7 +682,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = Tests/EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-macOSTests";
@@ -778,7 +797,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
@@ -798,7 +817,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Embassy/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
@@ -811,7 +830,7 @@
 		D85614011CEE6B160060CCB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = Tests/EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -822,7 +841,7 @@
 		D85614021CEE6B160060CCB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = EmbassyTests/Info.plist;
+				INFOPLIST_FILE = Tests/EmbassyTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.envoy.Embassy-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";

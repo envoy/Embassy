@@ -59,7 +59,6 @@ public final class Transport {
         self.closedCallback = closedCallback
         self.readDataCallback = readDataCallback
         eventLoop.setReader(socket.fileDescriptor, callback: handleRead)
-        eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
     }
 
     deinit {
@@ -161,8 +160,8 @@ public final class Transport {
         guard outgoingBuffer.count > 0 else {
             if closing {
                 closed = true
-                eventLoop.removeReader(socket.fileDescriptor)
                 eventLoop.removeWriter(socket.fileDescriptor)
+                eventLoop.removeReader(socket.fileDescriptor)
                 if let callback = closedCallback {
                     callback(.byLocal)
                 }
@@ -173,11 +172,24 @@ public final class Transport {
         do {
             let sentBytes = try socket.send(data: outgoingBuffer)
             outgoingBuffer.removeFirst(sentBytes)
+            if outgoingBuffer.count > 0 {
+                // Not all was written; register write handler.
+                eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
+            } else {
+                eventLoop.removeWriter(socket.fileDescriptor)
+                if closing {
+                    closed = true
+                    eventLoop.removeReader(socket.fileDescriptor)
+                    if let callback = closedCallback {
+                        callback(.byLocal)
+                    }
+                    socket.close()
+                }
+            }
         } catch let OSError.ioError(number, message) {
             switch number {
             case EAGAIN:
                 break
-
             // Apparently on macOS EPROTOTYPE can be returned when the socket is not
             // fully shutdown (as an EPIPE would indicate). Here we treat them
             // essentially the same since we just tear the transport down anyway.

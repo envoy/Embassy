@@ -6,9 +6,25 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Foundation
 import XCTest
+import Dispatch
 
 @testable import Embassy
+
+#if os(Linux)
+    extension SelectorEventLoopTests {
+        static var allTests = [
+            ("testStop", testStop),
+            ("testCallSoon", testCallSoon),
+            ("testCallLater", testCallLater),
+            ("testCallAtOrder", testCallAtOrder),
+            ("testSetReader", testSetReader),
+            ("testSetWriter", testSetWriter),
+            ("testRemoveReader", testRemoveReader),
+        ]
+    }
+#endif
 
 class SelectorEventLoopTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
@@ -16,7 +32,7 @@ class SelectorEventLoopTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         // set a 30 seconds timeout
         queue.asyncAfter(
@@ -120,7 +136,7 @@ class SelectorEventLoopTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
 
-        // make a connect 1 seconds later
+        // make a connection 1 seconds later
         loop.call(withDelay: 1) {
             try! clientSocket.connect(host: "::1", port: port)
         }
@@ -140,14 +156,17 @@ class SelectorEventLoopTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
 
-        loop.setWriter(clientSocket.fileDescriptor) {
-            writerCalled = true
-            self.loop.stop()
-        }
-
         // make a connect 1 seconds later
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1) { [unowned self] in
             try! clientSocket.connect(host: "::1", port: port)
+
+            // Notice: It seems we should only select on the socket after it's either connecting
+            // or listening, and that's why we put setWriter here instead of before or after
+            // ref: http://stackoverflow.com/q/41656400/25077
+            self.loop.setWriter(clientSocket.fileDescriptor) {
+                writerCalled = true
+                self.loop.stop()
+            }
         }
 
         assertExecutingTime(1.0, accuracy: 0.5) {

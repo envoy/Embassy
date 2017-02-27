@@ -6,14 +6,27 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
+import Dispatch
 import XCTest
 
 @testable import Embassy
 
+#if os(Linux)
+    extension TransportTests {
+        static var allTests = [
+            ("testBigChunkReadAndWrite", testBigChunkReadAndWrite),
+            ("testReadAndWrite", testReadAndWrite),
+            ("testCloseByPeer", testCloseByPeer),
+            ("testReadingPause", testReadingPause),
+        ]
+    }
+#endif
+
+
 class TransportTests: XCTestCase {
     let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
     func testBigChunkReadAndWrite() {
-        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -101,7 +114,7 @@ class TransportTests: XCTestCase {
     }
 
     func testReadAndWrite() {
-        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -163,7 +176,7 @@ class TransportTests: XCTestCase {
     }
 
     func testCloseByPeer() {
-        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
@@ -227,7 +240,7 @@ class TransportTests: XCTestCase {
     }
 
     func testReadingPause() {
-        let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
+        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
         let listenSocket = try! TCPSocket()
