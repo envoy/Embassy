@@ -191,7 +191,7 @@ sendBody(Data())
 To install with CocoaPod, add Embassy to your Podfile:
 
 ```
-pod 'Embassy', '~> 3.0'
+pod 'Embassy', '~> 3.1'
 ```
 
 ### Carthage
@@ -199,5 +199,5 @@ pod 'Embassy', '~> 3.0'
 To install with Carthage, add Embassy to your Cartfile:
 
 ```
-github "envoy/Embassy" ~> 3.0
+github "envoy/Embassy" ~> 3.1
 ```
