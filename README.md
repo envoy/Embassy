@@ -14,7 +14,8 @@ Super lightweight async HTTP server in pure Swift.
 
 ## Features
 
- - Supports Swift 3
+ - Swift 3
+ - iOS / Mac / Linux
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
