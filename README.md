@@ -218,3 +218,5 @@ let package = Package(
     ]
 )
 ```
+
+You can read this [example project](https://github.com/envoy/example-embassy) here.
