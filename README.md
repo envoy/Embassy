@@ -202,3 +202,19 @@ To install with Carthage, add Embassy to your Cartfile:
 ```
 github "envoy/Embassy" ~> 3.1
 ```
+
+### Package Manager
+
+Add it this Embassy repo in `Package.swift`, like this
+
+```swift
+import PackageDescription
+
+let package = Package(
+    name: "EmbassyExample",
+    dependencies: [
+        .Package(url: "https://github.com/envoy/Embassy.git",
+                 majorVersion: 3),
+    ]
+)
+```
