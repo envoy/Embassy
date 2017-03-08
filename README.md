@@ -1,9 +1,11 @@
 # Embassy
 
 [![Build Status](https://travis-ci.org/envoy/Embassy.svg?branch=master)](https://travis-ci.org/envoy/Embassy)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-brightgreen.svg)](https://github.com/Carthage/Carthage)
+[![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 [![CocoaPods](https://img.shields.io/cocoapods/v/Embassy.svg)]()
-[![Code Climate](https://codeclimate.com/github/envoy/Embassy/badges/gpa.svg)](https://codeclimate.com/github/envoy/Embassy)
-[![Issue Count](https://codeclimate.com/github/envoy/Embassy/badges/issue_count.svg)](https://codeclimate.com/github/envoy/Embassy)
+[![Swift Version](https://img.shields.io/badge/Swift-3.0-orange.svg)
+[![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|Linux-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
 Super lightweight async HTTP server in pure Swift.
