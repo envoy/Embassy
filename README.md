@@ -4,8 +4,8 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-brightgreen.svg)](https://github.com/Carthage/Carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 [![CocoaPods](https://img.shields.io/cocoapods/v/Embassy.svg)]()
-[![Swift Version](https://img.shields.io/badge/Swift-3.0-orange.svg)
-[![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|Linux-lightgrey.svg)
+![Swift Version](https://img.shields.io/badge/Swift-3.0-orange.svg)
+![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|Linux-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
 Super lightweight async HTTP server in pure Swift.
