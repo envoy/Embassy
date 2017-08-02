@@ -60,7 +60,7 @@ public struct HTTPHeaderParser {
             }
             let bytes = Array(buffer[0..<index])
             let string = String(bytes: bytes, encoding: String.Encoding.utf8)!
-            buffer.removeFirst(index + 2)
+            buffer = buffer.subdata(in: (index + 2)..<buffer.count)
 
             // TODO: the initial usage of this HTTP server is for iOS API server mocking only,
             // we don't usually see malform requests, but if it's necessary, like if we want to put
