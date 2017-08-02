@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA4D52211F3285C900BD682B /* Embassy.podspec in Resources */ = {isa = PBXBuildFile; fileRef = AA4D52201F3285C900BD682B /* Embassy.podspec */; };
 		AA6732641DE92431003ABD4E /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		AA6732651DE92431003ABD4E /* TCPSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */; };
 		AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
@@ -108,6 +109,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AA4D521F1F32848A00BD682B /* .swift-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".swift-version"; sourceTree = "<group>"; };
+		AA4D52201F3285C900BD682B /* Embassy.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Embassy.podspec; sourceTree = "<group>"; };
 		AA9242CE1DE91EA2009FE50B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D83A71951CF119D200C0C21C /* IOUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IOUtils.swift; sourceTree = "<group>"; };
@@ -209,6 +212,8 @@
 		D85613DF1CEE6B160060CCB7 = {
 			isa = PBXGroup;
 			children = (
+				AA4D52201F3285C900BD682B /* Embassy.podspec */,
+				AA4D521F1F32848A00BD682B /* .swift-version */,
 				D85613EB1CEE6B160060CCB7 /* Embassy */,
 				D85613F71CEE6B160060CCB7 /* EmbassyTests */,
 			);
@@ -471,6 +476,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87260651E0C6D05008572ED /* Info.plist in Resources */,
+				AA4D52211F3285C900BD682B /* Embassy.podspec in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
