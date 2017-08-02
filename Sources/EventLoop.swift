@@ -17,7 +17,7 @@ public protocol EventLoop {
     /// Set a read-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be read
-    func setReader(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void)
+    func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void)
 
     /// Remove reader callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
@@ -26,7 +26,7 @@ public protocol EventLoop {
     /// Set a write-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be written
-    func setWriter(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void)
+    func setWriter(_ fileDescriptor: Int32, callback: @escaping () -> Void)
 
     /// Remove writer callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
@@ -34,17 +34,17 @@ public protocol EventLoop {
 
     /// Call given callback as soon as possible (the next event loop iteration)
     ///  - Parameter callback: the callback function to be called
-    func call(callback: @escaping (Void) -> Void)
+    func call(callback: @escaping () -> Void)
 
     /// Call given callback `withDelay` seconds later
     ///  - Parameter withDelay: delaying in seconds
     ///  - Parameter callback: the callback function to be called
-    func call(withDelay: TimeInterval, callback: @escaping (Void) -> Void)
+    func call(withDelay: TimeInterval, callback: @escaping () -> Void)
 
     /// Call given callback at specific time
     ///  - Parameter atTime: time the callback to be called
     ///  - Parameter callback: the callback function to be called
-    func call(atTime: Date, callback: @escaping (Void) -> Void)
+    func call(atTime: Date, callback: @escaping () -> Void)
 
     /// Stop the event loop
     func stop()

@@ -27,7 +27,7 @@ public final class HTTPConnection {
     public let serverName: String
     public let serverPort: Int
     /// Callback to be called when this connection closed
-    var closedCallback: ((Void) -> Void)?
+    var closedCallback: (() -> Void)?
 
     private(set) var requestState: RequestState = .parsingHeader
     private(set) var responseState: ResponseState = .sendingHeader
@@ -49,7 +49,7 @@ public final class HTTPConnection {
         transport: Transport,
         eventLoop: EventLoop,
         logger: Logger,
-        closedCallback: ((Void) -> Void)? = nil
+        closedCallback: (() -> Void)? = nil
     ) {
         self.app = app
         self.serverName = serverName

@@ -49,7 +49,7 @@ class TransportTests: XCTestCase {
             dataChunk4,
             dataChunk5,
             dataChunk6
-        ].reduce(0) { $0.0 + $0.1.characters.count }
+        ].reduce(0) { $0 + $1.characters.count }
 
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in

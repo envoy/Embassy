@@ -72,7 +72,7 @@ public final class KqueueSelector: Selector {
         // (you can read the offical document)
         let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -113,7 +113,7 @@ public final class KqueueSelector: Selector {
         // (you can read the offical document)
         let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -142,7 +142,7 @@ public final class KqueueSelector: Selector {
 
         var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
         let eventCount = kevents.withUnsafeMutableBufferPointer { pointer in
-             return Darwin.kevent(
+             return kevent(
                 kqueue,
                 nil,
                 0,

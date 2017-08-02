@@ -39,8 +39,8 @@ public struct MultiDictionary<
     KeyTransform: KeyTransformer>
     where KeyTransform.Key == Key
  {
-    typealias ArrayType = Array<(Key, Value)>
-    typealias DictionaryType = Dictionary<Key, Array<Value>>
+    public typealias ArrayType = Array<(Key, Value)>
+    public typealias DictionaryType = Dictionary<Key, Array<Value>>
 
     // Items in this multi dictionary
     fileprivate let items: ArrayType

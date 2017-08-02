@@ -112,12 +112,12 @@ extension XCTestCase {
         accuracy: TimeInterval,
         file: StaticString = #file,
         line: UInt = #line,
-        closure: (Void) -> T
+        closure: () -> T
     ) -> T {
         let begin = Date()
         let result = closure()
         let elapsed = Date().timeIntervalSince(begin)
-        XCTAssertEqualWithAccuracy(
+        XCTAssertEqual(
             elapsed,
             time,
             accuracy: accuracy,

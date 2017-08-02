@@ -30,7 +30,7 @@ public final class DefaultLogger: Logger {
     }
 
     public func debug(
-        _ message: @autoclosure (Void) -> String,
+        _ message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line
@@ -39,7 +39,7 @@ public final class DefaultLogger: Logger {
     }
 
     public func info(
-        _ message: @autoclosure (Void) -> String,
+        _ message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line
@@ -48,7 +48,7 @@ public final class DefaultLogger: Logger {
     }
 
     public func warning(
-        _ message: @autoclosure (Void) -> String,
+        _ message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line
@@ -57,7 +57,7 @@ public final class DefaultLogger: Logger {
     }
 
     public func error(
-        _ message: @autoclosure (Void) -> String,
+        _ message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line
@@ -66,7 +66,7 @@ public final class DefaultLogger: Logger {
     }
 
     public func critical(
-        _ message: @autoclosure (Void) -> String,
+        _ message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line
@@ -76,7 +76,7 @@ public final class DefaultLogger: Logger {
 
     func log(
         level: LogLevel,
-        message: @autoclosure (Void) -> String,
+        message: @autoclosure () -> String,
         caller: String = #function,
         file: String = #file,
         line: Int = #line

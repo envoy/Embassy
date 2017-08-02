@@ -10,9 +10,9 @@ import Foundation
 
 
 private class CallbackHandle {
-    let reader: ((Void) -> Void)?
-    let writer: ((Void) -> Void)?
-    init(reader: ((Void) -> Void)? = nil, writer: ((Void) -> Void)? = nil) {
+    let reader: (() -> Void)?
+    let writer: (() -> Void)?
+    init(reader: (() -> Void)? = nil, writer: (() -> Void)? = nil) {
         self.reader = reader
         self.writer = writer
     }
@@ -29,9 +29,9 @@ public final class SelectorEventLoop: EventLoop {
     private let pipeSender: Int32
     private let pipeReceiver: Int32
     // callbacks ready to be called at the next iteration
-    private var readyCallbacks = Atomic<[((Void) -> Void)]>([])
+    private var readyCallbacks = Atomic<[(() -> Void)]>([])
     // callbacks scheduled to be called later
-    private var scheduledCallbacks = Atomic<[(Date, ((Void) -> Void))]>([])
+    private var scheduledCallbacks = Atomic<[(Date, (() -> Void))]>([])
 
     public init(selector: Selector) throws {
         self.selector = selector
@@ -68,7 +68,7 @@ public final class SelectorEventLoop: EventLoop {
         let _ = SystemLibrary.close(pipeReceiver)
     }
 
-    public func setReader(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void) {
+    public func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -103,7 +103,7 @@ public final class SelectorEventLoop: EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
 
-    public func setWriter(_ fileDescriptor: Int32, callback: @escaping (Void) -> Void) {
+    public func setWriter(_ fileDescriptor: Int32, callback: @escaping () -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -138,7 +138,7 @@ public final class SelectorEventLoop: EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
 
-    public func call(callback: @escaping (Void) -> Void) {
+    public func call(callback: @escaping () -> Void) {
         readyCallbacks.modify { callbacks in
             var callbacks = callbacks
             callbacks.append(callback)
@@ -147,15 +147,15 @@ public final class SelectorEventLoop: EventLoop {
         interruptSelector()
     }
 
-    public func call(withDelay delay: TimeInterval, callback: @escaping (Void) -> Void) {
+    public func call(withDelay delay: TimeInterval, callback: @escaping () -> Void) {
         call(atTime: Date().addingTimeInterval(delay), callback: callback)
     }
 
-    public func call(atTime time: Date, callback: @escaping (Void) -> Void) {
+    public func call(atTime time: Date, callback: @escaping () -> Void) {
         scheduledCallbacks.modify { callbacks in
             var callbacks = callbacks
             HeapSort.heapPush(&callbacks, item: (time, callback)) {
-                $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970
+                $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
             }
             return callbacks
         }
@@ -227,7 +227,7 @@ public final class SelectorEventLoop: EventLoop {
 
         // Call scheduled callbacks
         let now = Date()
-        var readyScheduledCallbacks: [((Void) -> Void)] = []
+        var readyScheduledCallbacks: [(() -> Void)] = []
         scheduledCallbacks.modify { callbacks in
             var notExpiredCallbacks = callbacks
             // keep poping expired callbacks
@@ -238,7 +238,7 @@ public final class SelectorEventLoop: EventLoop {
             ) {
                 // pop the expired callbacks from heap queue and add them to ready callback list
                 let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) {
-                    $0.0.0.timeIntervalSince1970 < $0.1.0.timeIntervalSince1970
+                    $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
                 }
                 readyScheduledCallbacks.append(callback)
             }
