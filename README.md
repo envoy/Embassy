@@ -4,7 +4,7 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-brightgreen.svg)](https://github.com/Carthage/Carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 [![CocoaPods](https://img.shields.io/cocoapods/v/Embassy.svg)]()
-![Swift Version](https://img.shields.io/badge/Swift-3.0-orange.svg)
+![Swift Version](https://img.shields.io/badge/Swift-4.0-orange.svg)
 ![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|Linux-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
@@ -16,7 +16,7 @@ Super lightweight async HTTP server in pure Swift.
 
 ## Features
 
- - Swift 3
+ - Swift 4
  - iOS / MacOS / Linux
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
@@ -194,7 +194,7 @@ sendBody(Data())
 To install with CocoaPod, add Embassy to your Podfile:
 
 ```
-pod 'Embassy', '~> 3.1'
+pod 'Embassy', '~> 4.0'
 ```
 
 ### Carthage
@@ -202,7 +202,7 @@ pod 'Embassy', '~> 3.1'
 To install with Carthage, add Embassy to your Cartfile:
 
 ```
-github "envoy/Embassy" ~> 3.1
+github "envoy/Embassy" ~> 4.0
 ```
 
 ### Package Manager
@@ -216,7 +216,7 @@ let package = Package(
     name: "EmbassyExample",
     dependencies: [
         .Package(url: "https://github.com/envoy/Embassy.git",
-                 majorVersion: 3),
+                 majorVersion: 4),
     ]
 )
 ```
