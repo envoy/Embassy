@@ -19,9 +19,9 @@ public struct FileLogHandler: LogHandler {
         attributes: []
     )
 
-    public init(fileHandle: FileHandle, formatter: LogFormatter? = DefaultLogFormatter()) {
+    public init(fileHandle: FileHandle, formatter: LogFormatter? = nil) {
         self.fileHandle = fileHandle
-        self.formatter = formatter
+        self.formatter = formatter ?? DefaultLogFormatter()
     }
 
     public func emit(record: LogRecord) {

@@ -218,6 +218,8 @@ class KqueueSelectorTests: XCTestCase {
 
         try! clientSocket.send(data: Data("hello".utf8))
 
+        sleep(1)
+
         let ioEvents2 = assertExecutingTime(0, accuracy: 1) {
             return try! selector.select(timeout: 10.0)
         }

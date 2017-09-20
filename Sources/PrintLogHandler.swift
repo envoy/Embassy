@@ -12,8 +12,8 @@ import Foundation
 public struct PrintLogHandler: LogHandler {
     public var formatter: LogFormatter?
 
-    public init(formatter: LogFormatter? = DefaultLogFormatter()) {
-        self.formatter = formatter
+    public init(formatter: LogFormatter? = nil) {
+        self.formatter = formatter ?? DefaultLogFormatter()
     }
 
     public func emit(record: LogRecord) {
