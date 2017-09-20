@@ -18,7 +18,7 @@ extension String {
                 break
             }
         }
-        return String(suffix(firstNoneSpace))
+        return String(suffix(from: index(startIndex, offsetBy: firstNoneSpace)))
     }
 }
 
