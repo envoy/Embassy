@@ -8,7 +8,7 @@ env:
     - IOS_FRAMEWORK_SCHEME="Embassy-iOS"
     - IOS_SDK=iphonesimulator11.0
     - MACOS_FRAMEWORK_SCHEME="Embassy-macOS"
-    - MACOS_SDK=macosx10.12
+    - MACOS_SDK=macosx10.13
   matrix:
     - DESTINATION="OS=11.0,name=iPhone 6S"     SCHEME="$IOS_FRAMEWORK_SCHEME"     SDK="$IOS_SDK"
     - DESTINATION="arch=x86_64"                SCHEME="$MACOS_FRAMEWORK_SCHEME"   SDK="$MACOS_SDK"
