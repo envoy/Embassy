@@ -112,12 +112,12 @@ class HTTPServerTests: XCTestCase {
 
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
-        var receivedError: NSError?
+        var receivedError: Error?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
-                receivedError = error as NSError?
+                receivedError = error
                 self.loop.stop()
             })
             task.resume()
@@ -153,12 +153,12 @@ class HTTPServerTests: XCTestCase {
 
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
-        var receivedError: NSError?
+        var receivedError: Error?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
-                receivedError = error as NSError?
+                receivedError = error
                 self.loop.stop()
             })
             task.resume()
@@ -201,12 +201,12 @@ class HTTPServerTests: XCTestCase {
 
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
-        var receivedError: NSError?
+        var receivedError: Error?
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
-                receivedError = error as NSError?
+                receivedError = error
                 self.loop.stop()
             })
             task.resume()
