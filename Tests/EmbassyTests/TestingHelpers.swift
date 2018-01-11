@@ -95,10 +95,10 @@ func makeRandomString(_ length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     var result: [String] = []
     for _ in 0..<length {
-        let randomIndex = Int(randomUniform(UInt32(letters.characters.count)))
+        let randomIndex = Int(randomUniform(UInt32(letters.count)))
         let char = letters.substring(
-            with: letters.characters.index(letters.startIndex, offsetBy: randomIndex) ..<
-                  letters.characters.index(letters.startIndex, offsetBy: randomIndex + 1)
+            with: letters.index(letters.startIndex, offsetBy: randomIndex) ..<
+                  letters.index(letters.startIndex, offsetBy: randomIndex + 1)
         )
         result.append(char)
     }
