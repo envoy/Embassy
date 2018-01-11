@@ -93,16 +93,11 @@ func getUnusedTCPPort() throws -> Int {
 
 func makeRandomString(_ length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    var result: [String] = []
-    for _ in 0..<length {
-        let randomIndex = Int(randomUniform(UInt32(letters.count)))
-        let char = letters.substring(
-            with: letters.index(letters.startIndex, offsetBy: randomIndex) ..<
-                  letters.index(letters.startIndex, offsetBy: randomIndex + 1)
-        )
-        result.append(char)
-    }
-    return result.joined(separator: "")
+    let endIndex = UInt32(letters.count - 1)
+    let result: [Any?] = Array(repeating: nil, count: length)
+    return String(result.map({ _ in
+        letters[String.Index(encodedOffset: Int(arc4random_uniform(endIndex)))]
+    }))
 }
 
 extension XCTestCase {
