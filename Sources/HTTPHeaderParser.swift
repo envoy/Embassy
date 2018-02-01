@@ -11,8 +11,8 @@ import Foundation
 extension String {
     /// String without leading spaces
     var withoutLeadingSpaces: String {
-        var firstNoneSpace: Int = characters.count
-        for (i, char) in characters.enumerated() {
+        var firstNoneSpace: Int = count
+        for (i, char) in enumerated() {
             if char != " " {
                 firstNoneSpace = i
                 break
