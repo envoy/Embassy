@@ -49,12 +49,12 @@ class TransportTests: XCTestCase {
             dataChunk4,
             dataChunk5,
             dataChunk6
-        ].reduce(0) { $0.0 + $0.1.characters.count }
+        ].reduce(0) { $0 + $1.count }
 
         let clientSocket = try! TCPSocket()
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            totalReceivedSize += clientReceivedData.last!.characters.count
+            totalReceivedSize += clientReceivedData.last!.count
             if totalReceivedSize >= totalDataSize {
                 loop.stop()
             }
@@ -66,7 +66,7 @@ class TransportTests: XCTestCase {
             acceptedSocket = try! listenSocket.accept()
             serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
                 serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-                totalReceivedSize += serverReceivedData.last!.characters.count
+                totalReceivedSize += serverReceivedData.last!.count
                 if totalReceivedSize >= totalDataSize {
                     loop.stop()
                 }
@@ -234,8 +234,8 @@ class TransportTests: XCTestCase {
         XCTAssert(clientTransport.closed)
         XCTAssert(serverTransport.closed)
         XCTAssertEqual(
-            serverReceivedData.joined(separator: "").characters.count,
-            "hello".characters.count + bigDataChunk.characters.count
+            serverReceivedData.joined(separator: "").count,
+            "hello".count + bigDataChunk.count
         )
     }
 
