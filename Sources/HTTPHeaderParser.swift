@@ -11,14 +11,14 @@ import Foundation
 extension String {
     /// String without leading spaces
     var withoutLeadingSpaces: String {
-        var firstNoneSpace: Int = characters.count
-        for (i, char) in characters.enumerated() {
+        var firstNoneSpace: Int = count
+        for (i, char) in enumerated() {
             if char != " " {
                 firstNoneSpace = i
                 break
             }
         }
-        return substring(from: index(startIndex, offsetBy: firstNoneSpace))
+        return String(suffix(from: index(startIndex, offsetBy: firstNoneSpace)))
     }
 }
 
@@ -60,7 +60,7 @@ public struct HTTPHeaderParser {
             }
             let bytes = Array(buffer[0..<index])
             let string = String(bytes: bytes, encoding: String.Encoding.utf8)!
-            buffer.removeFirst(index + 2)
+            buffer = buffer.subdata(in: (index + 2)..<buffer.count)
 
             // TODO: the initial usage of this HTTP server is for iOS API server mocking only,
             // we don't usually see malform requests, but if it's necessary, like if we want to put

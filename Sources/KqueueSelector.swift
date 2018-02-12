@@ -72,7 +72,19 @@ public final class KqueueSelector: Selector {
         // (you can read the offical document)
         let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            // Notice: there is a kind of werid bug in Swift 3.2, Darwin.kevent
+            // cannot be used, somehow the compiler thinks it is the
+            // struct kevent instead of function kevent. So you cannot use
+            // Darwin prefix here
+            // ref: https://stackoverflow.com/a/46292782/25077
+            kevent(
+                Int32(kqueue),
+                pointer.baseAddress,
+                Int32(keventCount),
+                nil,
+                Int32(0),
+                nil
+            ) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -113,7 +125,14 @@ public final class KqueueSelector: Selector {
         // (you can read the offical document)
         let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            Darwin.kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(
+                Int32(kqueue),
+                pointer.baseAddress,
+                Int32(keventCount),
+                nil,
+                Int32(0),
+                nil
+            ) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -142,8 +161,8 @@ public final class KqueueSelector: Selector {
 
         var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
         let eventCount = kevents.withUnsafeMutableBufferPointer { pointer in
-             return Darwin.kevent(
-                kqueue,
+             return kevent(
+                Int32(kqueue),
                 nil,
                 0,
                 pointer.baseAddress,
