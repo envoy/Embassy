@@ -216,9 +216,10 @@ public final class TCPSocket {
     private func getName(
         function: (Int32, UnsafeMutablePointer<sockaddr>, UnsafeMutablePointer<socklen_t>) -> Int32
     ) throws -> (String, Int) {
-        var address = sockaddr_storage()
+        let address = sockaddr_storage()
+        var addressMutable = address
         var size = socklen_t(MemoryLayout<sockaddr_storage>.size)
-        return try withUnsafeMutablePointer(to: &address) { pointer in
+        return try withUnsafeMutablePointer(to: &addressMutable) { pointer in
             let result = pointer.withMemoryRebound(
                 to: sockaddr.self,
                 capacity: Int(size)
