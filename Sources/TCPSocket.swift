@@ -228,7 +228,7 @@ public final class TCPSocket {
             guard result >= 0 else {
                 throw OSError.lastIOError()
             }
-            switch Int32(address.ss_family) {
+            switch Int32(pointer.pointee.ss_family) {
             case AF_INET:
                 return try pointer.withMemoryRebound(
                     to: sockaddr_in.self,
