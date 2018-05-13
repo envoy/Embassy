@@ -177,8 +177,9 @@ public final class SelectorEventLoop: EventLoop {
     // interrupt the selector
     private func interruptSelector() {
         let byte = [UInt8](repeating: 0, count: 1)
+        let rc = write(pipeSender, byte, byte.count)
         assert(
-            write(pipeSender, byte, byte.count) >= 0,
+            rc >= 0,
             "Failed to interrupt selector, errno=\(errno), message=\(lastErrorDescription())"
         )
     }
