@@ -116,7 +116,7 @@ public final class HTTPConnection {
             }
         }
         logger.info(
-            "Header parsed, method=\(method), path=\(path.debugDescription), " +
+            "Header parsed, method=\(method!), path=\(path.debugDescription), " +
             "version=\(version.debugDescription), headers=\(headers)"
         )
         request = HTTPRequest(
