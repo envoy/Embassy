@@ -218,4 +218,12 @@ class SelectorEventLoopTests: XCTestCase {
         }
         XCTAssertEqual(readData, ["hello", "baby"])
     }
+    
+    func testEventLoopReferenceCycle() {
+        // Notice: we had a reference cycle from the setReader callback to the
+        // selector loop object before, we ensure that when loop is not hold
+        // by anybody, it should be released here
+        weak var loop = try! SelectorEventLoop(selector: try! TestingSelector())
+        XCTAssertNil(loop)
+    }
 }
