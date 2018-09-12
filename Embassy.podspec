@@ -8,6 +8,7 @@ Pod::Spec.new do |spec|
   spec.author             = { 'Fang-Pen Lin' => 'fang@envoy.com' }
   spec.social_media_url   = 'https://twitter.com/fangpenlin'
   spec.ios.deployment_target = '8.0'
+  spec.tvos.deployment_target = '11.0'
   spec.osx.deployment_target = '10.10'
   spec.source       = {
     git: 'https://github.com/envoy/Embassy.git',
