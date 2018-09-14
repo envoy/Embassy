@@ -154,7 +154,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		39C9F54E2148B8D10081EF8B /* Embassy-tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Embassy-tvOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		39C9F54E2148B8D10081EF8B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		39C9F54F2148B8D20081EF8B /* Embassy-iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOS copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		39C9F5642148B8D50081EF8B /* Embassy-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		39C9F5652148B8D50081EF8B /* Embassy-iOSTests copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOSTests copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOSTests copy-Info.plist"; sourceTree = "<absolute>"; };
@@ -294,7 +294,7 @@
 				D85613F31CEE6B160060CCB7 /* Embassy-iOSTests.xctest */,
 				AA9242CE1DE91EA2009FE50B /* Embassy.framework */,
 				AA9242D61DE91EA2009FE50B /* Embassy-macOSTests.xctest */,
-				39C9F54E2148B8D10081EF8B /* Embassy-tvOS.framework */,
+				39C9F54E2148B8D10081EF8B /* Embassy.framework */,
 				39C9F5642148B8D50081EF8B /* Embassy-tvOSTests.xctest */,
 			);
 			name = Products;
@@ -426,7 +426,7 @@
 			);
 			name = "Embassy-tvOS";
 			productName = Embassy;
-			productReference = 39C9F54E2148B8D10081EF8B /* Embassy-tvOS.framework */;
+			productReference = 39C9F54E2148B8D10081EF8B /* Embassy.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		39C9F5502148B8D50081EF8B /* Embassy-tvOSTests */ = {
@@ -808,7 +808,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Embassy;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -829,7 +829,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Embassy;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
