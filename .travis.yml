@@ -6,11 +6,11 @@ env:
     - LANG=en_US.UTF-8
     - WORKSPACE=Embassy.xcworkspace
     - IOS_FRAMEWORK_SCHEME="Embassy-iOS"
-    - IOS_SDK=iphonesimulator11.2
+    - IOS_SDK=iphonesimulator12.1
     - MACOS_FRAMEWORK_SCHEME="Embassy-macOS"
-    - MACOS_SDK=macosx10.13
+    - MACOS_SDK=macosx10.14
   matrix:
-    - DESTINATION="OS=11.2,name=iPhone 6S"     SCHEME="$IOS_FRAMEWORK_SCHEME"     SDK="$IOS_SDK"
+    - DESTINATION="OS=12.1,name=iPhone 6S"     SCHEME="$IOS_FRAMEWORK_SCHEME"     SDK="$IOS_SDK"
     - DESTINATION="arch=x86_64"                SCHEME="$MACOS_FRAMEWORK_SCHEME"   SDK="$MACOS_SDK"
 
 script:
