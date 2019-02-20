@@ -137,7 +137,8 @@ func == (lhs: FileDescriptorEvent, rhs: FileDescriptorEvent) -> Bool {
 }
 
 extension FileDescriptorEvent: Hashable {
-    var hashValue: Int {
-        return fileDescriptor.hashValue + ioEvent.hashValue
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(fileDescriptor)
+        hasher.combine(ioEvent)
     }
 }
