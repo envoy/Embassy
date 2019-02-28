@@ -263,6 +263,6 @@ public func == (lhs: HTTPConnection, rhs: HTTPConnection) -> Bool {
 
 extension HTTPConnection: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(uuid.hashValue)
+        hasher.combine(uuid)
     }
 }
