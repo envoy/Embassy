@@ -19,5 +19,5 @@ public enum OSError: Error {
 
 /// Return description for last error
 func lastErrorDescription() -> String {
-    return String(cString: UnsafePointer(strerror(errno)))
+    return String(cString: strerror(errno))
 }
