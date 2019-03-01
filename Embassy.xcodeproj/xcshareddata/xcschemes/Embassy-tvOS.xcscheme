@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "39C9F5292148B8D10081EF8B"
-               BuildableName = "Embassy-tvOS.framework"
+               BuildableName = "Embassy.framework"
                BlueprintName = "Embassy-tvOS"
                ReferencedContainer = "container:Embassy.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "39C9F5292148B8D10081EF8B"
-            BuildableName = "Embassy-tvOS.framework"
+            BuildableName = "Embassy.framework"
             BlueprintName = "Embassy-tvOS"
             ReferencedContainer = "container:Embassy.xcodeproj">
          </BuildableReference>
@@ -64,7 +64,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "39C9F5292148B8D10081EF8B"
-            BuildableName = "Embassy-tvOS.framework"
+            BuildableName = "Embassy.framework"
             BlueprintName = "Embassy-tvOS"
             ReferencedContainer = "container:Embassy.xcodeproj">
          </BuildableReference>
