@@ -176,7 +176,7 @@ public final class TCPSocket {
     ///  - Returns: bytes sent to peer
     @discardableResult
     func send(data: Data) throws -> Int {
-        let bytesSent = data.withUnsafeBytes { pointer in
+        let bytesSent: Int = data.withUnsafeBytes { pointer in
             SystemLibrary.send(fileDescriptor, pointer, data.count, Int32(0))
         }
         guard bytesSent >= 0 else {
@@ -291,7 +291,7 @@ public final class TCPSocket {
         }) else {
             throw OSError.lastIOError()
         }
-        if let index = address.index(of: 0) {
+        if let index = address.firstIndex(of: 0) {
             address = address.subdata(in: 0 ..< index)
         }
         return String(data: address, encoding: .utf8)!
