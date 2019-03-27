@@ -291,7 +291,7 @@ public final class TCPSocket {
         }) else {
             throw OSError.lastIOError()
         }
-        if let index = address.index(of: 0) {
+        if let index = address.firstIndex(of: 0) {
             address = address.subdata(in: 0 ..< index)
         }
         return String(data: address, encoding: .utf8)!
