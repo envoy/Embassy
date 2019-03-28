@@ -35,7 +35,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(level: .debug, message: message, caller: caller, file: file, line: line)
+        log(level: .debug, message: message(), caller: caller, file: file, line: line)
     }
 
     public func info(
@@ -44,7 +44,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(level: .info, message: message, caller: caller, file: file, line: line)
+        log(level: .info, message: message(), caller: caller, file: file, line: line)
     }
 
     public func warning(
@@ -53,7 +53,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(level: .warning, message: message, caller: caller, file: file, line: line)
+        log(level: .warning, message: message(), caller: caller, file: file, line: line)
     }
 
     public func error(
@@ -62,7 +62,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(level: .error, message: message, caller: caller, file: file, line: line)
+        log(level: .error, message: message(), caller: caller, file: file, line: line)
     }
 
     public func critical(
@@ -71,7 +71,7 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
-        log(level: .critical, message: message, caller: caller, file: file, line: line)
+        log(level: .critical, message: message(), caller: caller, file: file, line: line)
     }
 
     func log(

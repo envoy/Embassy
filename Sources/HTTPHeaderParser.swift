@@ -54,7 +54,7 @@ public struct HTTPHeaderParser {
                 buffer[1..<buffer.count]
             ))
             // ensure we have <CR><LF> in current buffer
-            guard let index = (charPairs).index(where: { $0 == HTTPHeaderParser.NEWLINE }) else {
+            guard let index = (charPairs).firstIndex(where: { $0 == HTTPHeaderParser.NEWLINE }) else {
                 // no <CR><LF> found, just return the current elements
                 return elements
             }
