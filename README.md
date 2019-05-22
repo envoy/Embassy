@@ -58,6 +58,12 @@ Then you can visit `http://[::1]:8080/foo-bar` in the browser and see
 the path you're visiting is "/foo-bar"
 ```
 
+By default, the server will be bound only to the localhost interface (::1) for security reasons. If you want to access your server over an external network, you'll need to change the bind interface to all addresses:
+
+```Swift
+let server = DefaultHTTPServer(eventLoop: loop, interface: "::", port: 8080)
+```
+
 ## Async Event Loop
 
 To use the async event loop, you can get it via key `embassy.event_loop` in `environ` dictionary and cast it to `EventLoop`. For example, you can create an SWSGI app which delays `sendBody` call like this
