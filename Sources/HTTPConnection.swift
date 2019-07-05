@@ -129,6 +129,7 @@ public final class HTTPConnection {
         environ["SERVER_NAME"] = serverName
         environ["SERVER_PORT"] = String(serverPort)
         environ["SERVER_PROTOCOL"] = "HTTP/1.1"
+        environ["REQUEST_HEADERS"] = headers
 
         // set SWSGI keys
         environ["swsgi.version"] = "0.1"
