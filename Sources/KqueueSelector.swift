@@ -167,7 +167,9 @@ public final class KqueueSelector: Selector {
             }
             fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }
-        return Array(fileDescriptorIOEvents.map { (fileDescriptorMap[$0.0]!, $0.1) })
+        return Array(fileDescriptorIOEvents.compactMap { event in
+            fileDescriptorMap[event.0].map { ($0, event.1) } ?? nil
+        })
     }
 
     public subscript(fileDescriptor: Int32) -> SelectorKey? {
