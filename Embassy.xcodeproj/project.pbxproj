@@ -47,6 +47,7 @@
 		39C9F55C2148B8D50081EF8B /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		39C9F55D2148B8D50081EF8B /* HeapSortTetsts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */; };
 		39C9F55F2148B8D50081EF8B /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
+		6ACA2E7B235D8D5D0001E7BD /* TransportProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */; };
 		AA6732641DE92431003ABD4E /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		AA6732651DE92431003ABD4E /* TCPSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */; };
 		AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
@@ -158,6 +159,7 @@
 		39C9F54F2148B8D20081EF8B /* Embassy-iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOS copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		39C9F5642148B8D50081EF8B /* Embassy-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		39C9F5652148B8D50081EF8B /* Embassy-iOSTests copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOSTests copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOSTests copy-Info.plist"; sourceTree = "<absolute>"; };
+		6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportProxy.swift; sourceTree = "<group>"; };
 		AA4D521F1F32848A00BD682B /* .swift-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".swift-version"; sourceTree = "<group>"; };
 		AA4D52201F3285C900BD682B /* Embassy.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Embassy.podspec; sourceTree = "<group>"; };
 		AA9242CE1DE91EA2009FE50B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -331,6 +333,7 @@
 				D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */,
 				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
+				6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */,
 				D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */,
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
@@ -748,6 +751,7 @@
 				D8F3D3931CEFD79100342389 /* KqueueSelector.swift in Sources */,
 				D83A71A01CF152F300C0C21C /* HTTPRequest.swift in Sources */,
 				D8B5F2381CF38C170093EF94 /* SWSGIUtils.swift in Sources */,
+				6ACA2E7B235D8D5D0001E7BD /* TransportProxy.swift in Sources */,
 				D8B5F23A1CF3C91E0093EF94 /* EventLoop.swift in Sources */,
 				D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */,
 				D866875B1D00C70400FA53F2 /* PrintLogHandler.swift in Sources */,
