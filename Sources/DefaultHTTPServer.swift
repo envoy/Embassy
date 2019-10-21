@@ -9,7 +9,7 @@
 import Foundation
 import Dispatch
 
-public final class DefaultHTTPServer: HTTPServer {
+public final class DefaultHTTPServer: HTTPServer,HTTPConnectionDelegate {
     public let logger = DefaultLogger()
     public var app: SWSGI
 
@@ -95,16 +95,18 @@ public final class DefaultHTTPServer: HTTPServer {
             logger: logger
         )
         connections.insert(connection)
-        connection.closedCallback = { [unowned self] in
-            self.connections.remove(connection)
-        }
+        connection.delegate = self
         logger.info("New connection \(connection.uuid) from [\(address)]:\(port)")
     }
-
+    
+    public func closedCallback(_ connection:HTTPConnection) {
+        connections.remove(connection)
+    }
+    
     private func appForConnection(
         _ environ: [String: Any],
-        startResponse: @escaping ((String, [(String, String)]) -> Void),
-        sendBody: @escaping ((Data) -> Void)
+        startResponse: @escaping ((String, [(String, String)]) throws-> Void),
+        sendBody: @escaping ((Data) throws-> Void)
     ) {
         app(environ, startResponse, sendBody)
     }
