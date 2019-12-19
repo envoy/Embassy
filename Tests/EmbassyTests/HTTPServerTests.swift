@@ -57,8 +57,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws-> Void),
+                sendBody: ((Data) throws -> Void)
             ) in
             receivedEnviron = environ
             self.loop.stop()
@@ -97,15 +97,15 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws -> Void),
+                sendBody: ((Data) throws-> Void)
             ) in
-            startResponse("451 Big brother doesn't like this", [
+            try! startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
                 ("X-Foo", "Bar"),
             ])
-            sendBody(Data())
+            try! sendBody(Data())
         }
 
         try! server.start()
@@ -141,12 +141,12 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws -> Void),
+                sendBody: ((Data) throws -> Void)
             ) in
-            startResponse("200 OK", [])
-            sendBody(bigDataChunk)
-            sendBody(Data())
+            try! startResponse("200 OK", [])
+            try! sendBody(bigDataChunk)
+            try! sendBody(Data())
         }
 
         try! server.start()
@@ -178,22 +178,22 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: @escaping ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: @escaping ((String, [(String, String)]) throws-> Void),
+                sendBody: @escaping ((Data) throws -> Void)
             ) in
-            startResponse("200 OK", [])
+            try! startResponse("200 OK", [])
 
             let loop = environ["embassy.event_loop"] as! EventLoop
 
             loop.call(withDelay: 1) {
-                sendBody(Data("hello ".utf8))
+                try! sendBody(Data("hello ".utf8))
             }
             loop.call(withDelay: 2) {
-                sendBody(Data("baby ".utf8))
+                try! sendBody(Data("baby ".utf8))
             }
             loop.call(withDelay: 3) {
-                sendBody(Data("fin".utf8))
-                sendBody(Data())
+                try! sendBody(Data("fin".utf8))
+                try! sendBody(Data())
             }
         }
 
@@ -227,18 +227,18 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws-> Void),
+                sendBody: @escaping ((Data) throws-> Void)
             ) in
             if environ["HTTP_EXPECT"] as? String == "100-continue" {
-                startResponse("100 Continue", [])
+                try! startResponse("100 Continue", [])
             } else {
-                startResponse("200 OK", [])
+                try! startResponse("200 OK", [])
             }
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
                 receivedInputData.append(data)
-                sendBody(data)
+                try! sendBody(data)
             }
         }
 
@@ -272,21 +272,21 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws-> Void),
+                sendBody: @escaping ((Data) throws-> Void)
             ) in
             if environ["HTTP_EXPECT"] as? String == "100-continue" {
                 // Notice: under linux, it seems the underlying URLSession implementation (cURL in
                 // this case I guess), will send Expect: 100-continue, we need to reply
                 // 100 Continue so that it will continue sending body
-                startResponse("100 Continue", [])
+                try! startResponse("100 Continue", [])
             } else {
-                startResponse("200 OK", [])
+                try! startResponse("200 OK", [])
             }
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
                 receivedInputData.append(data)
-                sendBody(data)
+                try! sendBody(data)
             }
         }
 
@@ -314,9 +314,9 @@ class HTTPServerTests: XCTestCase {
     func testAddressReuse() {
         var called: Bool = false
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ((Data) -> Void)) in
-            startResponse("200 OK", [])
-            sendBody(Data())
+        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) throws -> Void), sendBody: ((Data) throws-> Void)) in
+            try! startResponse("200 OK", [])
+            try! sendBody(Data())
             self.loop.stop()
             called = true
         }
@@ -343,11 +343,11 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: ((String, [(String, String)]) throws-> Void),
+                sendBody: ((Data) throws-> Void)
             ) in
-            startResponse("200 OK", [])
-            sendBody(Data())
+            try! startResponse("200 OK", [])
+            try! sendBody(Data())
         }
         try! server.start()
 

@@ -47,6 +47,69 @@
 		39C9F55C2148B8D50081EF8B /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		39C9F55D2148B8D50081EF8B /* HeapSortTetsts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */; };
 		39C9F55F2148B8D50081EF8B /* Embassy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D85613E91CEE6B160060CCB7 /* Embassy.framework */; };
+		6ACA2E7B235D8D5D0001E7BD /* TransportProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */; };
+		6ACA2E7C235D9D3F0001E7BD /* TransportProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */; };
+		6ACA2E7D235D9D860001E7BD /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
+		6ACA2E7E235D9DA60001E7BD /* EventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */; };
+		6ACA2E7F235D9DA60001E7BD /* Selector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38C1CEF9B9700342389 /* Selector.swift */; };
+		6ACA2E80235D9DA60001E7BD /* SelectorEventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */; };
+		6ACA2E81235D9DA60001E7BD /* SelectSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8AF23D11E207CC40097D951 /* SelectSelector.swift */; };
+		6ACA2E82235D9DA60001E7BD /* KqueueSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3921CEFD79100342389 /* KqueueSelector.swift */; };
+		6ACA2E83235D9DA60001E7BD /* TCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */; };
+		6ACA2E84235D9DA60001E7BD /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
+		6ACA2E85235D9DAE0001E7BD /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
+		6ACA2E86235D9DAE0001E7BD /* DefaultHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140B1CEE6FE60060CCB7 /* DefaultHTTPServer.swift */; };
+		6ACA2E87235D9DAE0001E7BD /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
+		6ACA2E88235D9DAE0001E7BD /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719F1CF152F300C0C21C /* HTTPRequest.swift */; };
+		6ACA2E89235D9DAE0001E7BD /* HTTPHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */; };
+		6ACA2E8A235D9DB60001E7BD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687531D00C07F00FA53F2 /* Logger.swift */; };
+		6ACA2E8B235D9DB60001E7BD /* LogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687601D00D7E100FA53F2 /* LogFormatter.swift */; };
+		6ACA2E8C235D9DB60001E7BD /* LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687511D00BC1100FA53F2 /* LogHandler.swift */; };
+		6ACA2E8D235D9DB60001E7BD /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
+		6ACA2E8E235D9DB60001E7BD /* DefaultLogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */; };
+		6ACA2E8F235D9DB60001E7BD /* TransformLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687551D00C20C00FA53F2 /* TransformLogHandler.swift */; };
+		6ACA2E90235D9DB60001E7BD /* PropagateLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687581D00C47D00FA53F2 /* PropagateLogHandler.swift */; };
+		6ACA2E91235D9DB60001E7BD /* PrintLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875A1D00C70400FA53F2 /* PrintLogHandler.swift */; };
+		6ACA2E92235D9DB60001E7BD /* FileLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */; };
+		6ACA2E93235D9DCA0001E7BD /* Embassy.h in Sources */ = {isa = PBXBuildFile; fileRef = D872606E1E0C9D6F008572ED /* Embassy.h */; };
+		6ACA2E94235D9DCA0001E7BD /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
+		6ACA2E95235D9DCA0001E7BD /* SWSGIUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */; };
+		6ACA2E96235D9DCA0001E7BD /* MultiDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */; };
+		6ACA2E97235D9DCA0001E7BD /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
+		6ACA2E98235D9DCA0001E7BD /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3981CF0F24500342389 /* Errors.swift */; };
+		6ACA2E99235D9DCA0001E7BD /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
+		6ACA2E9A235D9DCA0001E7BD /* SystemLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD441E2AD9E100537B6A /* SystemLibrary.swift */; };
+		6ACA2E9B235D9E8F0001E7BD /* EventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2391CF3C91E0093EF94 /* EventLoop.swift */; };
+		6ACA2E9C235D9E8F0001E7BD /* Selector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38C1CEF9B9700342389 /* Selector.swift */; };
+		6ACA2E9D235D9E8F0001E7BD /* SelectorEventLoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3961CF03DF500342389 /* SelectorEventLoop.swift */; };
+		6ACA2E9E235D9E8F0001E7BD /* SelectSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8AF23D11E207CC40097D951 /* SelectSelector.swift */; };
+		6ACA2E9F235D9E8F0001E7BD /* KqueueSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3921CEFD79100342389 /* KqueueSelector.swift */; };
+		6ACA2EA0235D9E8F0001E7BD /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719B1CF1230E00C0C21C /* Transport.swift */; };
+		6ACA2EA1235D9E8F0001E7BD /* TCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38A1CEF8AC800342389 /* TCPSocket.swift */; };
+		6ACA2EA2235D9E8F0001E7BD /* IOUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71951CF119D200C0C21C /* IOUtils.swift */; };
+		6ACA2EA3235D9E970001E7BD /* HTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614071CEE6DB20060CCB7 /* HTTPServer.swift */; };
+		6ACA2EA4235D9E970001E7BD /* DefaultHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140B1CEE6FE60060CCB7 /* DefaultHTTPServer.swift */; };
+		6ACA2EA5235D9E970001E7BD /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A11CF1542300C0C21C /* HTTPConnection.swift */; };
+		6ACA2EA6235D9E970001E7BD /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A719F1CF152F300C0C21C /* HTTPRequest.swift */; };
+		6ACA2EA7235D9E970001E7BD /* HTTPHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140D1CEE70D70060CCB7 /* HTTPHeaderParser.swift */; };
+		6ACA2EA8235D9E9F0001E7BD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687531D00C07F00FA53F2 /* Logger.swift */; };
+		6ACA2EA9235D9E9F0001E7BD /* LogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687601D00D7E100FA53F2 /* LogFormatter.swift */; };
+		6ACA2EAA235D9E9F0001E7BD /* LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687511D00BC1100FA53F2 /* LogHandler.swift */; };
+		6ACA2EAB235D9E9F0001E7BD /* DefaultLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83A71A51CF1788B00C0C21C /* DefaultLogger.swift */; };
+		6ACA2EAC235D9E9F0001E7BD /* DefaultLogFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687621D00D85B00FA53F2 /* DefaultLogFormatter.swift */; };
+		6ACA2EAD235D9E9F0001E7BD /* TransformLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687551D00C20C00FA53F2 /* TransformLogHandler.swift */; };
+		6ACA2EAE235D9E9F0001E7BD /* PropagateLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86687581D00C47D00FA53F2 /* PropagateLogHandler.swift */; };
+		6ACA2EAF235D9E9F0001E7BD /* PrintLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875A1D00C70400FA53F2 /* PrintLogHandler.swift */; };
+		6ACA2EB0235D9E9F0001E7BD /* FileLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D866875E1D00D73F00FA53F2 /* FileLogHandler.swift */; };
+		6ACA2EB1235D9EA70001E7BD /* Embassy.h in Sources */ = {isa = PBXBuildFile; fileRef = D872606E1E0C9D6F008572ED /* Embassy.h */; };
+		6ACA2EB2235D9EA70001E7BD /* SWSGI.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85614051CEE6C0C0060CCB7 /* SWSGI.swift */; };
+		6ACA2EB3235D9EA70001E7BD /* SWSGIUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B5F2371CF38C170093EF94 /* SWSGIUtils.swift */; };
+		6ACA2EB4235D9EA70001E7BD /* MultiDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8FBA9531CFF69C300743A54 /* MultiDictionary.swift */; };
+		6ACA2EB5235D9EA70001E7BD /* HeapSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC8D1CF665010027E17E /* HeapSort.swift */; };
+		6ACA2EB6235D9EA70001E7BD /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3981CF0F24500342389 /* Errors.swift */; };
+		6ACA2EB7235D9EA70001E7BD /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898DC841CF62E1B0027E17E /* Atomic.swift */; };
+		6ACA2EB8235D9EA70001E7BD /* SystemLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D851BD441E2AD9E100537B6A /* SystemLibrary.swift */; };
+		6ACA2EB9235D9EBB0001E7BD /* TransportProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */; };
 		AA6732641DE92431003ABD4E /* HTTPHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D856140F1CEE72A10060CCB7 /* HTTPHeaderParserTests.swift */; };
 		AA6732651DE92431003ABD4E /* TCPSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D38E1CEFA09B00342389 /* TCPSocketTests.swift */; };
 		AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F3D3941CF0223600342389 /* KqueueSelectorTests.swift */; };
@@ -158,6 +221,7 @@
 		39C9F54F2148B8D20081EF8B /* Embassy-iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOS copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		39C9F5642148B8D50081EF8B /* Embassy-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Embassy-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		39C9F5652148B8D50081EF8B /* Embassy-iOSTests copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Embassy-iOSTests copy-Info.plist"; path = "/Users/jakjonnalagadda/Desktop/Charter/Code/OpenSource/Embassy/Embassy-iOSTests copy-Info.plist"; sourceTree = "<absolute>"; };
+		6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportProxy.swift; sourceTree = "<group>"; };
 		AA4D521F1F32848A00BD682B /* .swift-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".swift-version"; sourceTree = "<group>"; };
 		AA4D52201F3285C900BD682B /* Embassy.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Embassy.podspec; sourceTree = "<group>"; };
 		AA9242CE1DE91EA2009FE50B /* Embassy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Embassy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -331,6 +395,7 @@
 				D851BD411E29A5CA00537B6A /* SelectSelectorTests.swift */,
 				D83A71991CF11AF600C0C21C /* SelectorEventLoopTests.swift */,
 				D83A719D1CF1275A00C0C21C /* TransportTests.swift */,
+				6ACA2E7A235D8D5D0001E7BD /* TransportProxy.swift */,
 				D8B5F2351CF387E40093EF94 /* MultiDictionaryTests.swift */,
 				D83A71A31CF15BCA00C0C21C /* HTTPServerTests.swift */,
 				D898DC8F1CF66CBD0027E17E /* HeapSortTetsts.swift */,
@@ -552,6 +617,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = D85613DF1CEE6B160060CCB7;
@@ -655,6 +721,37 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6ACA2EB9235D9EBB0001E7BD /* TransportProxy.swift in Sources */,
+				6ACA2EB1235D9EA70001E7BD /* Embassy.h in Sources */,
+				6ACA2EB2235D9EA70001E7BD /* SWSGI.swift in Sources */,
+				6ACA2EB3235D9EA70001E7BD /* SWSGIUtils.swift in Sources */,
+				6ACA2EB4235D9EA70001E7BD /* MultiDictionary.swift in Sources */,
+				6ACA2EB5235D9EA70001E7BD /* HeapSort.swift in Sources */,
+				6ACA2EB6235D9EA70001E7BD /* Errors.swift in Sources */,
+				6ACA2EB7235D9EA70001E7BD /* Atomic.swift in Sources */,
+				6ACA2EB8235D9EA70001E7BD /* SystemLibrary.swift in Sources */,
+				6ACA2EA8235D9E9F0001E7BD /* Logger.swift in Sources */,
+				6ACA2EA9235D9E9F0001E7BD /* LogFormatter.swift in Sources */,
+				6ACA2EAA235D9E9F0001E7BD /* LogHandler.swift in Sources */,
+				6ACA2EAB235D9E9F0001E7BD /* DefaultLogger.swift in Sources */,
+				6ACA2EAC235D9E9F0001E7BD /* DefaultLogFormatter.swift in Sources */,
+				6ACA2EAD235D9E9F0001E7BD /* TransformLogHandler.swift in Sources */,
+				6ACA2EAE235D9E9F0001E7BD /* PropagateLogHandler.swift in Sources */,
+				6ACA2EAF235D9E9F0001E7BD /* PrintLogHandler.swift in Sources */,
+				6ACA2EB0235D9E9F0001E7BD /* FileLogHandler.swift in Sources */,
+				6ACA2EA3235D9E970001E7BD /* HTTPServer.swift in Sources */,
+				6ACA2EA4235D9E970001E7BD /* DefaultHTTPServer.swift in Sources */,
+				6ACA2EA5235D9E970001E7BD /* HTTPConnection.swift in Sources */,
+				6ACA2EA6235D9E970001E7BD /* HTTPRequest.swift in Sources */,
+				6ACA2EA7235D9E970001E7BD /* HTTPHeaderParser.swift in Sources */,
+				6ACA2E9B235D9E8F0001E7BD /* EventLoop.swift in Sources */,
+				6ACA2E9C235D9E8F0001E7BD /* Selector.swift in Sources */,
+				6ACA2E9D235D9E8F0001E7BD /* SelectorEventLoop.swift in Sources */,
+				6ACA2E9E235D9E8F0001E7BD /* SelectSelector.swift in Sources */,
+				6ACA2E9F235D9E8F0001E7BD /* KqueueSelector.swift in Sources */,
+				6ACA2EA0235D9E8F0001E7BD /* Transport.swift in Sources */,
+				6ACA2EA1235D9E8F0001E7BD /* TCPSocket.swift in Sources */,
+				6ACA2EA2235D9E8F0001E7BD /* IOUtils.swift in Sources */,
 				39C9F5542148B8D50081EF8B /* SelectSelectorTests.swift in Sources */,
 				39C9F5552148B8D50081EF8B /* KqueueSelectorTests.swift in Sources */,
 				39C9F5562148B8D50081EF8B /* SelectorEventLoopTests.swift in Sources */,
@@ -708,6 +805,37 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6ACA2E93235D9DCA0001E7BD /* Embassy.h in Sources */,
+				6ACA2E94235D9DCA0001E7BD /* SWSGI.swift in Sources */,
+				6ACA2E95235D9DCA0001E7BD /* SWSGIUtils.swift in Sources */,
+				6ACA2E96235D9DCA0001E7BD /* MultiDictionary.swift in Sources */,
+				6ACA2E97235D9DCA0001E7BD /* HeapSort.swift in Sources */,
+				6ACA2E98235D9DCA0001E7BD /* Errors.swift in Sources */,
+				6ACA2E99235D9DCA0001E7BD /* Atomic.swift in Sources */,
+				6ACA2E9A235D9DCA0001E7BD /* SystemLibrary.swift in Sources */,
+				6ACA2E8A235D9DB60001E7BD /* Logger.swift in Sources */,
+				6ACA2E8B235D9DB60001E7BD /* LogFormatter.swift in Sources */,
+				6ACA2E8C235D9DB60001E7BD /* LogHandler.swift in Sources */,
+				6ACA2E8D235D9DB60001E7BD /* DefaultLogger.swift in Sources */,
+				6ACA2E8E235D9DB60001E7BD /* DefaultLogFormatter.swift in Sources */,
+				6ACA2E8F235D9DB60001E7BD /* TransformLogHandler.swift in Sources */,
+				6ACA2E90235D9DB60001E7BD /* PropagateLogHandler.swift in Sources */,
+				6ACA2E91235D9DB60001E7BD /* PrintLogHandler.swift in Sources */,
+				6ACA2E92235D9DB60001E7BD /* FileLogHandler.swift in Sources */,
+				6ACA2E85235D9DAE0001E7BD /* HTTPServer.swift in Sources */,
+				6ACA2E86235D9DAE0001E7BD /* DefaultHTTPServer.swift in Sources */,
+				6ACA2E87235D9DAE0001E7BD /* HTTPConnection.swift in Sources */,
+				6ACA2E88235D9DAE0001E7BD /* HTTPRequest.swift in Sources */,
+				6ACA2E89235D9DAE0001E7BD /* HTTPHeaderParser.swift in Sources */,
+				6ACA2E7E235D9DA60001E7BD /* EventLoop.swift in Sources */,
+				6ACA2E7F235D9DA60001E7BD /* Selector.swift in Sources */,
+				6ACA2E80235D9DA60001E7BD /* SelectorEventLoop.swift in Sources */,
+				6ACA2E81235D9DA60001E7BD /* SelectSelector.swift in Sources */,
+				6ACA2E82235D9DA60001E7BD /* KqueueSelector.swift in Sources */,
+				6ACA2E83235D9DA60001E7BD /* TCPSocket.swift in Sources */,
+				6ACA2E84235D9DA60001E7BD /* IOUtils.swift in Sources */,
+				6ACA2E7D235D9D860001E7BD /* Transport.swift in Sources */,
+				6ACA2E7C235D9D3F0001E7BD /* TransportProxy.swift in Sources */,
 				D851BD431E29A5CA00537B6A /* SelectSelectorTests.swift in Sources */,
 				AA6732661DE92431003ABD4E /* KqueueSelectorTests.swift in Sources */,
 				AA6732871DE9257A003ABD4E /* TestingHelpers.swift in Sources */,
@@ -747,6 +875,7 @@
 				D8F3D3931CEFD79100342389 /* KqueueSelector.swift in Sources */,
 				D83A71A01CF152F300C0C21C /* HTTPRequest.swift in Sources */,
 				D8B5F2381CF38C170093EF94 /* SWSGIUtils.swift in Sources */,
+				6ACA2E7B235D8D5D0001E7BD /* TransportProxy.swift in Sources */,
 				D8B5F23A1CF3C91E0093EF94 /* EventLoop.swift in Sources */,
 				D83A71A61CF1788B00C0C21C /* DefaultLogger.swift in Sources */,
 				D866875B1D00C70400FA53F2 /* PrintLogHandler.swift in Sources */,
@@ -1061,6 +1190,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1068,6 +1198,7 @@
 				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MARKETING_VERSION = 3.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
 				PRODUCT_NAME = Embassy;
 				SKIP_INSTALL = YES;
@@ -1081,6 +1212,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1088,6 +1220,7 @@
 				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MARKETING_VERSION = 3.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.envoy.Embassy;
 				PRODUCT_NAME = Embassy;
 				SKIP_INSTALL = YES;

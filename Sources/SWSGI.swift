@@ -24,8 +24,8 @@ import Foundation
 */
 public typealias SWSGI = (
     [String: Any],
-    @escaping ((String, [(String, String)]) -> Void),
-    @escaping ((Data) -> Void)
+    @escaping ((String, [(String, String)]) throws -> Void),
+    @escaping ((Data) throws -> Void)
 ) -> Void
 
 /**

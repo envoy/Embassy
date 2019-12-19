@@ -8,27 +8,31 @@
 
 import Foundation
 
+public protocol HTTPConnectionDelegate:class {
+    /// Callback to be called when this connection closed
+    func closedCallback(_ connection: HTTPConnection) -> Void
+}
+
 /// HTTPConnection represents an active HTTP connection
-public final class HTTPConnection {
+public final class HTTPConnection:TransportDelegate {
     enum RequestState {
         case parsingHeader
         case readingBody
     }
-
+    
     enum ResponseState {
         case sendingHeader
         case sendingBody
     }
-
+    
     public let logger = DefaultLogger()
     public let uuid: String = UUID().uuidString
     public let transport: Transport
     public let app: SWSGI
     public let serverName: String
     public let serverPort: Int
-    /// Callback to be called when this connection closed
-    var closedCallback: (() -> Void)?
-
+    weak var delegate:HTTPConnectionDelegate?
+    
     private(set) var requestState: RequestState = .parsingHeader
     private(set) var responseState: ResponseState = .sendingHeader
     private(set) public var eventLoop: EventLoop!
@@ -36,12 +40,12 @@ public final class HTTPConnection {
     private var headerElements: [HTTPHeaderParser.Element] = []
     private var request: HTTPRequest!
     private var initialBody: Data?
-    private var inputHandler: ((Data) -> Void)?
+    private  var inputHandler: ((Data) -> Void)?
     // total content length to read
     private var contentLength: Int?
     // total data bytes we've already read
     private var readDataLength: Int = 0
-
+    
     public init(
         app: @escaping SWSGI,
         serverName: String,
@@ -49,18 +53,16 @@ public final class HTTPConnection {
         transport: Transport,
         eventLoop: EventLoop,
         logger: Logger,
-        closedCallback: (() -> Void)? = nil
+        delegate:HTTPConnectionDelegate? = nil
     ) {
         self.app = app
         self.serverName = serverName
         self.serverPort = serverPort
         self.transport = transport
         self.eventLoop = eventLoop
-        self.closedCallback = closedCallback
-
-        transport.readDataCallback = handleDataReceived
-        transport.closedCallback = handleConnectionClosed
-
+        self.delegate = delegate
+        transport.delegate = self
+        
         let propagateHandler = PropagateLogHandler(logger: logger)
         let contextHandler = TransformLogHandler(
             handler: propagateHandler
@@ -69,13 +71,13 @@ public final class HTTPConnection {
         }
         self.logger.add(handler: contextHandler)
     }
-
+    
     public func close() {
         transport.close()
     }
-
+    
     // called to handle data received
-    private func handleDataReceived(_ data: Data) {
+    func readDataCallback(_ data: Data) {
         switch requestState {
         case .parsingHeader:
             handleHeaderData(data)
@@ -83,7 +85,7 @@ public final class HTTPConnection {
             handleBodyData(data)
         }
     }
-
+    
     // called to handle header data
     private func handleHeaderData(_ data: Data) {
         if headerParser == nil {
@@ -98,7 +100,7 @@ public final class HTTPConnection {
         guard case .end = lastElement else {
             return
         }
-
+        
         var method: String!
         var path: String!
         var version: String!
@@ -129,7 +131,7 @@ public final class HTTPConnection {
         environ["SERVER_NAME"] = serverName
         environ["SERVER_PORT"] = String(serverPort)
         environ["SERVER_PROTOCOL"] = "HTTP/1.1"
-
+        
         // set SWSGI keys
         environ["swsgi.version"] = "0.1"
         environ["swsgi.url_scheme"] = "http"
@@ -139,11 +141,11 @@ public final class HTTPConnection {
         environ["swsgi.multithread"] = false
         environ["swsgi.multiprocess"] = false
         environ["swsgi.run_once"] = false
-
+        
         // set embassy specific keys
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop
-
+        
         if
             let bundle = Bundle(identifier: "com.envoy.Embassy"),
             let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -154,19 +156,19 @@ public final class HTTPConnection {
             // just put unknown here to make test pass for now
             environ["embassy.version"] = "unknown"
         }
-
+        
         if let contentLength = request.headers["Content-Length"], let length = Int(contentLength) {
             self.contentLength = length
         }
-
+        
         // change state for incoming request to
         requestState = .readingBody
         // pause the reading for now, let `swsgi.input` called and resume it later
         transport.resume(reading: false)
-
+        
         app(environ, startResponse, sendBody)
     }
-
+    
     private func swsgiInput(_ handler: ((Data) -> Void)?) {
         inputHandler = handler
         // reading handler provided
@@ -179,13 +181,13 @@ public final class HTTPConnection {
             }
             transport.resume(reading: true)
             logger.info("Resume reading")
-        // if the input handler is set to nil, it means pause reading
+            // if the input handler is set to nil, it means pause reading
         } else {
             logger.info("Pause reading")
             transport.resume(reading: false)
         }
     }
-
+    
     private func handleBodyData(_ data: Data) {
         guard let handler = inputHandler else {
             fatalError("Not suppose to read body data when input handler is not provided")
@@ -198,8 +200,8 @@ public final class HTTPConnection {
             inputHandler = nil
         }
     }
-
-    private func startResponse(_ status: String, headers: [(String, String)]) {
+    
+    private func startResponse(_ status: String, headers: [(String, String)]) throws{
         guard case .sendingHeader = responseState else {
             logger.error("Response is not ready for sending header")
             return
@@ -222,11 +224,11 @@ public final class HTTPConnection {
             headersPart,
             "\r\n"
         ]
-        transport.write(string: parts.joined(separator: "\r\n"))
+        try transport.write(string: parts.joined(separator: "\r\n"))
         responseState = .sendingBody
     }
-
-    private func sendBody(_ data: Data) {
+    
+    private func sendBody(_ data: Data) throws{
         guard case .sendingBody = responseState else {
             logger.error("Response is not ready for sending body")
             return
@@ -237,20 +239,18 @@ public final class HTTPConnection {
             transport.close()
             return
         }
-        transport.write(data: data)
+        try transport.write(data: data)
     }
-
+    
     // called to handle connection closed
-    private func handleConnectionClosed(_ reason: Transport.CloseReason) {
+    func closedCallback(_ reason: Transport.CloseReason) {
         logger.info("Connection closed, reason=\(reason)")
         close()
         if let handler = inputHandler {
             handler(Data())
             inputHandler = nil
         }
-        if let callback = closedCallback {
-            callback()
-        }
+        self.delegate?.closedCallback(self)
     }
 }
 
