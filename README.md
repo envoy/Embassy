@@ -216,7 +216,7 @@ let package = Package(
     name: "EmbassyExample",
     dependencies: [
         .package(url: "https://github.com/envoy/Embassy.git",
-                 from: "4.1.0"),
+                 from: "4.1.1"),
     ]
 )
 ```
