@@ -194,8 +194,8 @@ public final class HTTPConnection {
         readDataLength += data.count
         // we finish reading all the content, send EOF to input handler
         if let length = contentLength, readDataLength >= length {
-            handler(Data())
             inputHandler = nil
+            handler(Data())
         }
     }
 
@@ -245,8 +245,8 @@ public final class HTTPConnection {
         logger.info("Connection closed, reason=\(reason)")
         close()
         if let handler = inputHandler {
-            handler(Data())
             inputHandler = nil
+            handler(Data())
         }
         if let callback = closedCallback {
             callback()
