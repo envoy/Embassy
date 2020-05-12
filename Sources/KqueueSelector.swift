@@ -66,13 +66,8 @@ public final class KqueueSelector: Selector {
         }
 
         // register events to kqueue
-
-        // Notice: we need to get the event count before we go into
-        // `withUnsafeMutableBufferPointer`, as we cannot rely on it inside the closure
-        // (you can read the offical document)
-        let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -107,13 +102,8 @@ public final class KqueueSelector: Selector {
         }
 
         // unregister events from kqueue
-
-        // Notice: we need to get the event count before we go into
-        // `withUnsafeMutableBufferPointer`, as we cannot rely on it inside the closure
-        // (you can read the offical document)
-        let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
