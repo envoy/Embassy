@@ -143,6 +143,7 @@ public final class HTTPConnection {
         // set embassy specific keys
         environ["embassy.connection"] = self
         environ["embassy.event_loop"] = eventLoop
+        environ["embassy.headers"] = headers
 
         if
             let bundle = Bundle(identifier: "com.envoy.Embassy"),
