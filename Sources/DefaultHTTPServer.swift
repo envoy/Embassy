@@ -95,7 +95,7 @@ public final class DefaultHTTPServer: HTTPServer {
             logger: logger
         )
         connections.insert(connection)
-        connection.closedCallback = { [unowned self] in
+        connection.closedCallback = { [unowned self, unowned connection] in
             self.connections.remove(connection)
         }
         logger.info("New connection \(connection.uuid) from [\(address)]:\(port)")

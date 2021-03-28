@@ -58,14 +58,18 @@ public final class HTTPConnection {
         self.eventLoop = eventLoop
         self.closedCallback = closedCallback
 
-        transport.readDataCallback = handleDataReceived
-        transport.closedCallback = handleConnectionClosed
+        transport.readDataCallback = { [unowned self] data in
+            self.handleDataReceived(data)
+        }
+        transport.closedCallback = { [unowned self] reason in
+            self.handleConnectionClosed(reason)
+        }
 
         let propagateHandler = PropagateLogHandler(logger: logger)
         let contextHandler = TransformLogHandler(
             handler: propagateHandler
         ) { [unowned self] record in
-            return record.overwriteMessage { [unowned self] in"[\(self.uuid)] \($0.message)" }
+            return record.overwriteMessage { [unowned self] in "[\(self.uuid)] \($0.message)" }
         }
         self.logger.add(handler: contextHandler)
     }
@@ -133,7 +137,9 @@ public final class HTTPConnection {
         // set SWSGI keys
         environ["swsgi.version"] = "0.1"
         environ["swsgi.url_scheme"] = "http"
-        environ["swsgi.input"] = swsgiInput
+        environ["swsgi.input"] = { [unowned self] (handler: ((Data) -> Void)?) in
+            self.swsgiInput(handler)
+        }
         // TODO: add output file for error
         environ["swsgi.error"] = ""
         environ["swsgi.multithread"] = false
