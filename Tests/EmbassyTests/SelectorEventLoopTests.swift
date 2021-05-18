@@ -124,7 +124,7 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testSetReader() {
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
         var readerCalled = false
@@ -134,7 +134,7 @@ class SelectorEventLoopTests: XCTestCase {
             self.loop.stop()
         }
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
 
         // make a connection 1 seconds later
         loop.call(withDelay: 1) {
@@ -149,12 +149,12 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testSetWriter() {
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
         var writerCalled = false
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
 
         // make a connect 1 seconds later
         loop.call(withDelay: 1) { [unowned self] in
@@ -177,11 +177,11 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testRemoveReader() {
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         var acceptedSocket: TCPSocket!
 
         var readData = [String]()

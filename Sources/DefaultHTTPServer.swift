@@ -49,8 +49,7 @@ public final class DefaultHTTPServer: HTTPServer {
             return
         }
         logger.info("Starting HTTP server on [\(interface)]:\(port) ...")
-        acceptSocket = try TCPSocket()
-        try acceptSocket.bind(port: port, interface: interface)
+        acceptSocket = try TCPSocket(boundToPort: port, onInterface: interface)
         try acceptSocket.listen()
         eventLoop.setReader(acceptSocket.fileDescriptor) { [unowned self] in
             self.handleNewConnection()

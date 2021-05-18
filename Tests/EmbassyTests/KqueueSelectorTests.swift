@@ -17,7 +17,7 @@ class KqueueSelectorTests: XCTestCase {
 
     func testRegister() {
         let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+        let socket = try! TCPSocket(family: .v6)
 
         XCTAssertNil(selector[socket.fileDescriptor])
 
@@ -32,7 +32,7 @@ class KqueueSelectorTests: XCTestCase {
 
     func testUnregister() {
         let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+        let socket = try! TCPSocket(family: .v6)
 
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
@@ -45,7 +45,7 @@ class KqueueSelectorTests: XCTestCase {
 
     func testRegisterKeyError() {
         let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+        let socket = try! TCPSocket(family: .v6)
         try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
         XCTAssertThrowsError(try selector.register(
@@ -66,7 +66,7 @@ class KqueueSelectorTests: XCTestCase {
 
     func testUnregisterKeyError() {
         let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+        let socket = try! TCPSocket(family: .v6)
 
         XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
             guard let error = error as? KqueueSelector.Error else {
@@ -84,7 +84,7 @@ class KqueueSelectorTests: XCTestCase {
         let selector = try! KqueueSelector()
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
@@ -95,7 +95,7 @@ class KqueueSelectorTests: XCTestCase {
             XCTAssertEqual(try! selector.select(timeout: 2.0).count, 0)
         }
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
 
         // make a connect 1 seconds later
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
@@ -115,7 +115,7 @@ class KqueueSelectorTests: XCTestCase {
         let selector = try! KqueueSelector()
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
@@ -123,7 +123,7 @@ class KqueueSelectorTests: XCTestCase {
 
         XCTAssertEqual(try! selector.select(timeout: 1.0).count, 0)
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         // make a connect 1 seconds later
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             try! clientSocket.connect(host: "::1", port: port)
@@ -137,13 +137,13 @@ class KqueueSelectorTests: XCTestCase {
         let selector = try! KqueueSelector()
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         try! selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         // make a connect 1 seconds later
         queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
             try! clientSocket.connect(host: "::1", port: port)
@@ -159,7 +159,7 @@ class KqueueSelectorTests: XCTestCase {
 
         try! selector.unregister(listenSocket.fileDescriptor)
 
-        let clientSocket2 = try! TCPSocket()
+        let clientSocket2 = try! TCPSocket(family: .v6)
         // make a connect 1 seconds later
         queue.asyncAfter(
             deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
@@ -177,9 +177,9 @@ class KqueueSelectorTests: XCTestCase {
 
         let port = try! getUnusedTCPPort()
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
 
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
