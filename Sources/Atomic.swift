@@ -69,8 +69,9 @@ final class Atomic<Value> {
     @discardableResult
     func modify(action: (Value) throws -> Value) rethrows -> Value {
         return try withValue { value in
+            let oldValue = value
             _value = try action(value)
-            return value
+            return oldValue
         }
     }
 
