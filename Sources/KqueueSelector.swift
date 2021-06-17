@@ -66,13 +66,8 @@ public final class KqueueSelector: Selector {
         }
 
         // register events to kqueue
-
-        // Notice: we need to get the event count before we go into
-        // `withUnsafeMutableBufferPointer`, as we cannot rely on it inside the closure
-        // (you can read the offical document)
-        let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -107,13 +102,8 @@ public final class KqueueSelector: Selector {
         }
 
         // unregister events from kqueue
-
-        // Notice: we need to get the event count before we go into
-        // `withUnsafeMutableBufferPointer`, as we cannot rely on it inside the closure
-        // (you can read the offical document)
-        let keventCount = kevents.count
         guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(keventCount), nil, Int32(0), nil) >= 0
+            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
         }) else {
             throw OSError.lastIOError()
         }
@@ -126,7 +116,6 @@ public final class KqueueSelector: Selector {
 
     public func select(timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
         var timeSpec: timespec?
-        let timeSpecPointer: UnsafePointer<timespec>?
         if let timeout = timeout {
             if timeout > 0 {
                 var integer = 0.0
@@ -135,21 +124,20 @@ public final class KqueueSelector: Selector {
             } else {
                 timeSpec = timespec()
             }
-            timeSpecPointer = withUnsafePointer(to: &timeSpec!) { $0 }
-        } else {
-            timeSpecPointer = nil
         }
 
         var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
-        let eventCount = kevents.withUnsafeMutableBufferPointer { pointer in
-             return kevent(
-                kqueue,
-                nil,
-                0,
-                pointer.baseAddress,
-                Int32(selectMaximumEvent),
-                timeSpecPointer
-            )
+        let eventCount:Int32 = kevents.withUnsafeMutableBufferPointer { pointer in
+            return withUnsafeOptionalPointer(to: &timeSpec) { timeSpecPointer in
+                return kevent(
+                    kqueue,
+                    nil,
+                    0,
+                    pointer.baseAddress,
+                    Int32(selectMaximumEvent),
+                    timeSpecPointer
+                )
+            }
         }
         guard eventCount >= 0 else {
             throw OSError.lastIOError()
@@ -167,7 +155,10 @@ public final class KqueueSelector: Selector {
             }
             fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }
-        return Array(fileDescriptorIOEvents.map { (fileDescriptorMap[$0.0]!, $0.1) })
+        let fdMap = fileDescriptorMap
+        return fileDescriptorIOEvents.compactMap { [weak self] event in
+            fdMap[event.0].map { ($0, event.1) } ?? nil
+        }
     }
 
     public subscript(fileDescriptor: Int32) -> SelectorKey? {
@@ -175,6 +166,15 @@ public final class KqueueSelector: Selector {
             return fileDescriptorMap[fileDescriptor]
         }
     }
+
+    private func withUnsafeOptionalPointer<T, Result>(to: inout T?, body: (UnsafePointer<T>?) throws -> Result) rethrows -> Result {
+        if to != nil {
+            return try withUnsafePointer(to: &to!) { try body($0) }
+        } else {
+            return try body(nil)
+        }
+    }
+
 }
 
 #endif
