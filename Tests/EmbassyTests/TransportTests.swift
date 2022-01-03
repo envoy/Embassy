@@ -29,7 +29,7 @@ class TransportTests: XCTestCase {
         let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
@@ -51,7 +51,7 @@ class TransportTests: XCTestCase {
             dataChunk6
         ].reduce(0) { $0 + $1.count }
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             totalReceivedSize += clientReceivedData.last!.count
@@ -117,14 +117,14 @@ class TransportTests: XCTestCase {
         let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         var clientReceivedData: [String] = []
         var serverReceivedData: [String] = []
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
@@ -179,11 +179,11 @@ class TransportTests: XCTestCase {
         let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { _ in
 
         }
@@ -243,14 +243,14 @@ class TransportTests: XCTestCase {
         let loop = try! SelectorEventLoop(selector: try! TestingSelector())
 
         let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
+        let listenSocket = try! TCPSocket(family: .v6)
         try! listenSocket.bind(port: port)
         try! listenSocket.listen()
 
         var clientReceivedData: [String] = []
         var serverReceivedData: [String] = []
 
-        let clientSocket = try! TCPSocket()
+        let clientSocket = try! TCPSocket(family: .v6)
         let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
             clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
             if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
