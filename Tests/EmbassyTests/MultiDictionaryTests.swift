@@ -10,7 +10,7 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
     extension MultiDictionaryTests {
         static var allTests = [
             ("testCaseInsenstiveMultiDictionary", testCaseInsenstiveMultiDictionary),

@@ -6,7 +6,7 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
-#if !os(Linux)
+#if !os(Linux) && !os(Android)
 
 import XCTest
 

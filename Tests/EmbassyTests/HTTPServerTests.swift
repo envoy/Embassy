@@ -12,7 +12,8 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
+    import FoundationNetworking
     extension HTTPServerTests {
         static var allTests = [
             ("testEnviron", testEnviron),

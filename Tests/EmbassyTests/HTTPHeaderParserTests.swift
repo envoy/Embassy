@@ -11,7 +11,7 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
     extension HTTPHeaderParserTests {
         static var allTests = [
             ("testSimpleParsing", testSimpleParsing),

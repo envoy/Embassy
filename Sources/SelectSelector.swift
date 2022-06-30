@@ -66,7 +66,7 @@ public final class SelectSelector: Selector {
         let microsecondsPerSecond = 1000000
         if let timeout = timeout {
             var timeoutVal = timeval()
-            #if os(Linux)
+            #if os(Linux) || os(Android)
             timeoutVal.tv_sec = Int(timeout)
             timeoutVal.tv_usec = Int(
                 Int(timeout * Double(microsecondsPerSecond)) -

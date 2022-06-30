@@ -11,17 +11,21 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
     import Glibc
     let bind = Glibc.bind
     let NSEC_PER_SEC = 1000000000
     let random = { () -> UInt32 in
         return UInt32(Glibc.rand())
     }
+  #if os(Linux)
     let randomUniform = { (upperBound: UInt32) -> UInt32 in
         let num: Float = Float(random()) / Float(UInt32.max)
         return UInt32(num * Float(upperBound))
     }
+  #else
+    let randomUniform = arc4random_uniform
+  #endif
     typealias TestingSelector = SelectSelector
 #else
     import Darwin
@@ -56,13 +60,15 @@ func getUnusedTCPPort() throws -> Int {
     }
 
     var address = sockaddr_in()
-    #if !os(Linux)
+    #if !os(Linux) && !os(Android)
     address.sin_len = UInt8(MemoryLayout<sockaddr_in>.stride)
     #endif
     address.sin_family = sa_family_t(AF_INET)
     address.sin_port = htons(UInt16(0))
     address.sin_addr = interfaceAddress
+    #if !os(Android)
     address.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
+    #endif
     let addressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
     // given port 0, and bind, it will find us an available port
     guard withUnsafePointer(to: &address, { pointer in
@@ -96,7 +102,7 @@ func makeRandomString(_ length: Int) -> String {
     let endIndex = UInt32(letters.count - 1)
     let result: [Any?] = Array(repeating: nil, count: length)
     return String(result.map({ _ in
-        letters[String.Index(encodedOffset: Int(arc4random_uniform(endIndex)))]
+        letters[String.Index(encodedOffset: Int(randomUniform(endIndex)))]
     }))
 }
 

@@ -12,7 +12,7 @@ import Dispatch
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
     extension SelectorEventLoopTests {
         static var allTests = [
             ("testStop", testStop),

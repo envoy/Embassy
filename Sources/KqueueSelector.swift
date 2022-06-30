@@ -8,7 +8,7 @@
 
 import Foundation
 
-#if !os(Linux)
+#if !os(Linux) && !os(Android)
 
 public final class KqueueSelector: Selector {
     enum Error: Swift.Error {

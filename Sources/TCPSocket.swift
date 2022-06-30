@@ -27,7 +27,7 @@ public final class TCPSocket {
     /// Whether to ignore SIGPIPE signal or not
     var ignoreSigPipe: Bool {
         get {
-            #if os(Linux)
+            #if os(Linux) || os(Android)
                 return false
             #else
                 var value: Int32 = 0
@@ -41,7 +41,7 @@ public final class TCPSocket {
         }
 
         set {
-            #if os(Linux)
+            #if os(Linux) || os(Android)
                 // TODO: maybe we should call signal(SIGPIPE, SIG_IGN) here? but it affects
                 // whole process
                 return
@@ -103,7 +103,7 @@ public final class TCPSocket {
         }
         // create IPv6 socket address
         var address = sockaddr_in6()
-        #if !os(Linux)
+        #if !os(Linux) && !os(Android)
         address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
         #endif
         address.sin6_family = sa_family_t(AF_INET6)
@@ -151,7 +151,7 @@ public final class TCPSocket {
     func connect(host: String, port: Int) throws {
         // create IPv6 socket address
         var address = sockaddr_in6()
-        #if !os(Linux)
+        #if !os(Linux) && !os(Android)
         address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
         #endif
         address.sin6_family = sa_family_t(AF_INET6)

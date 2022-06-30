@@ -12,7 +12,7 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
+#if os(Linux) || os(Android)
     extension TCPSocketTests {
         static var allTests = [
             ("testAccept", testAccept),
