@@ -59,7 +59,11 @@ public final class SelectorEventLoop: EventLoop {
             var readSize = 1
             while readSize > 0 {
                 readSize = bytes.withUnsafeMutableBytes { pointer in
-                    return SystemLibrary.read(localPipeReceiver, pointer, Int(size))
+                    SystemLibrary.read(
+                        localPipeReceiver,
+                        pointer.bindMemory(to: Int8.self).baseAddress,
+                        Int(size)
+                    )
                 }
             }
         }

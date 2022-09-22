@@ -177,7 +177,12 @@ public final class TCPSocket {
     @discardableResult
     func send(data: Data) throws -> Int {
         let bytesSent = data.withUnsafeBytes { pointer in
-            SystemLibrary.send(fileDescriptor, pointer, data.count, Int32(0))
+            SystemLibrary.send(
+                fileDescriptor,
+                pointer.bindMemory(to: Int8.self).baseAddress,
+                data.count,
+                Int32(0)
+            )
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -191,7 +196,12 @@ public final class TCPSocket {
     func recv(size: Int) throws -> Data {
         var bytes = Data(count: size)
         let bytesRead = bytes.withUnsafeMutableBytes { pointer in
-            return SystemLibrary.recv(fileDescriptor, pointer, size, Int32(0))
+            return SystemLibrary.recv(
+                fileDescriptor,
+                pointer.bindMemory(to: Int8.self).baseAddress,
+                size,
+                Int32(0)
+            )
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
@@ -285,11 +295,12 @@ public final class TCPSocket {
         var addrStruct = addrStruct
         // convert address struct into address string
         var address = Data(count: Int(addressLength))
+
         guard address.withUnsafeMutableBytes({ pointer in
             inet_ntop(
                 family,
                 &addrStruct,
-                pointer,
+                pointer.bindMemory(to: CChar.self).baseAddress,
                 socklen_t(addressLength)
             ) != nil
         }) else {
