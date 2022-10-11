@@ -114,7 +114,7 @@ public final class TCPSocket {
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
-            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
                 return SystemLibrary.bind(fileDescriptor, pointer, size) >= 0
             }
         }) else {
@@ -135,7 +135,7 @@ public final class TCPSocket {
         var address = sockaddr_in6()
         var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
-            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
                 return SystemLibrary.accept(fileDescriptor, pointer, &size)
             }
         }
@@ -162,7 +162,7 @@ public final class TCPSocket {
         let size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
-            return pointer.withMemoryRebound(to: sockaddr.self, capacity: Int(size)) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
                 return SystemLibrary.connect(fileDescriptor, pointer, size)
             }
         }
@@ -221,7 +221,7 @@ public final class TCPSocket {
         return try withUnsafeMutablePointer(to: &address) { pointer in
             let result = pointer.withMemoryRebound(
                 to: sockaddr.self,
-                capacity: Int(size)
+                capacity: 1
             ) { addressptr in
                 return function(fileDescriptor, addressptr, &size)
             }
@@ -232,7 +232,7 @@ public final class TCPSocket {
             case AF_INET:
                 return try pointer.withMemoryRebound(
                     to: sockaddr_in.self,
-                    capacity: MemoryLayout<sockaddr_in>.size
+                    capacity: 1
                 ) { addressptr in
                     return (
                         try structToAddress(
@@ -246,7 +246,7 @@ public final class TCPSocket {
             case AF_INET6:
                 return try pointer.withMemoryRebound(
                     to: sockaddr_in6.self,
-                    capacity: MemoryLayout<sockaddr_in6>.size
+                    capacity: 1
                 ) { addressptr in
                     return (
                         try structToAddress(

@@ -68,7 +68,7 @@ func getUnusedTCPPort() throws -> Int {
     guard withUnsafePointer(to: &address, { pointer in
         return pointer.withMemoryRebound(
             to: sockaddr.self,
-            capacity: Int(addressSize)
+            capacity: 1
         ) { pointer in
             return bind(fileDescriptor, pointer, addressSize) >= 0
         }
@@ -81,7 +81,7 @@ func getUnusedTCPPort() throws -> Int {
     guard withUnsafeMutablePointer(to: &socketAddress, { pointer in
         return pointer.withMemoryRebound(
             to: sockaddr.self,
-            capacity: Int(socketAddressSize)
+            capacity: 1
         ) { pointer in
             return getsockname(fileDescriptor, pointer, &socketAddressSize) >= 0
         }
