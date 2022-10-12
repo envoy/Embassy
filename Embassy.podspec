@@ -15,4 +15,5 @@ Pod::Spec.new do |spec|
     tag: "v#{spec.version}"
   }
   spec.source_files = 'Sources/**.swift', 'Sources/**/*.swift'
+  spec.swift_versions = ['4.0']
 end
