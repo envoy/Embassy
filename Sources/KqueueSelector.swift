@@ -156,7 +156,7 @@ public final class KqueueSelector: Selector {
             fileDescriptorIOEvents[fileDescriptor] = ioEvents
         }
         let fdMap = fileDescriptorMap
-        return fileDescriptorIOEvents.compactMap { [weak self] event in
+        return fileDescriptorIOEvents.compactMap { event in
             fdMap[event.0].map { ($0, event.1) } ?? nil
         }
     }

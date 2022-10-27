@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = 'Embassy'
-  spec.version      = '4.1.1'
+  spec.version      = '4.1.4'
   spec.summary      = 'Lightweight async HTTP server in pure Swift for iOS/macOS UI Automatic testing data mocking'
   spec.homepage     = 'https://github.com/envoy/Embassy'
   spec.license      = 'MIT'
@@ -15,4 +15,5 @@ Pod::Spec.new do |spec|
     tag: "v#{spec.version}"
   }
   spec.source_files = 'Sources/**.swift', 'Sources/**/*.swift'
+  spec.swift_versions = ['4.0']
 end
