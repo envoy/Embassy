@@ -201,8 +201,12 @@ public final class TCPSocket {
 
     /// Close the socket
     func close() {
+        guard fileDescriptor != -1 else {
+            return
+        }
         _ = SystemLibrary.shutdown(fileDescriptor, Int32(SHUT_WR))
         _ = SystemLibrary.close(fileDescriptor)
+        fileDescriptor = -1
     }
 
     func getPeerName() throws -> (String, Int) {
