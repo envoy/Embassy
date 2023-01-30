@@ -11,7 +11,7 @@ import Foundation
 /// Class wrapping around TCP/IPv6 socket
 public final class TCPSocket {
     /// The file descriptor number for socket
-    let fileDescriptor: Int32
+    var fileDescriptor: Int32
 
     /// Whether is this socket in block mode or not
     var blocking: Bool {
