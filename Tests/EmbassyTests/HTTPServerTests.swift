@@ -262,6 +262,48 @@ class HTTPServerTests: XCTestCase {
         let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
         XCTAssertEqual(receivedString, postBodyString)
     }
+    
+    func testPostEmptyBody() {
+        let port = try! getUnusedTCPPort()
+
+        var receivedInputData: [Data] = []
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
+            (
+            environ: [String: Any],
+            startResponse: ((String, [(String, String)]) -> Void),
+            sendBody: @escaping ((Data) -> Void)
+            ) in
+            if environ["HTTP_EXPECT"] as? String == "100-continue" {
+                startResponse("100 Continue", [])
+            } else {
+                startResponse("200 OK", [])
+            }
+            let input = environ["swsgi.input"] as! SWSGIInput
+            input { data in
+                receivedInputData.append(data)
+                sendBody(data)
+            }
+        }
+
+        try! server.start()
+
+        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+            var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
+            request.httpMethod = "POST"
+            let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) in
+                self.loop.stop()
+            })
+            task.resume()
+        }
+
+        loop.runForever()
+
+        // ensure EOF is passed
+        XCTAssertEqual(receivedInputData.last?.count, 0)
+
+        let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
+        XCTAssertEqual(receivedString, "")
+    }
 
     func testPostWithInitialBody() {
         let port = try! getUnusedTCPPort()
