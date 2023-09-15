@@ -198,6 +198,8 @@ public final class Transport {
                 fallthrough
             case EPIPE:
                 closedByPeer()
+           case ECONNRESET:
+                closedByPeer()
 
             default:
                 fatalError("Failed to send, errno=\(number), message=\(message)")
