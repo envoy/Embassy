@@ -24,8 +24,8 @@ import XCTest
     }
 #endif
 
-extension HTTPHeaderParser.Element: Equatable {
-}
+extension HTTPHeaderParser.Element: @retroactive Equatable {}
+
 public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
     switch lhs {
     case .head(let lhsMethod, let lhsPath, let lhsVersion):

@@ -52,25 +52,25 @@ class TransportTests: XCTestCase {
         ].reduce(0) { $0 + $1.count }
 
         let clientSocket = try! TCPSocket()
-        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            totalReceivedSize += clientReceivedData.last!.count
-            if totalReceivedSize >= totalDataSize {
-                loop.stop()
-            }
+      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback:  { data in
+        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+        totalReceivedSize += clientReceivedData.last!.count
+        if totalReceivedSize >= totalDataSize {
+          loop.stop()
         }
+      })
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
 
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
-            serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-                totalReceivedSize += serverReceivedData.last!.count
-                if totalReceivedSize >= totalDataSize {
-                    loop.stop()
-                }
+          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback:  { data in
+            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+            totalReceivedSize += serverReceivedData.last!.count
+            if totalReceivedSize >= totalDataSize {
+              loop.stop()
             }
+          })
         }
 
         try! clientSocket.connect(host: "::1", port: port)
@@ -125,23 +125,23 @@ class TransportTests: XCTestCase {
         var serverReceivedData: [String] = []
 
         let clientSocket = try! TCPSocket()
-        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-                loop.stop()
-            }
+      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback:  { data in
+        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+        if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+          loop.stop()
         }
+      })
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
 
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
-            serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-                if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-                    loop.stop()
-                }
+          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback:  { data in
+            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+              loop.stop()
             }
+          })
         }
 
         try! clientSocket.connect(host: "::1", port: port)
@@ -184,9 +184,9 @@ class TransportTests: XCTestCase {
         try! listenSocket.listen()
 
         let clientSocket = try! TCPSocket()
-        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { _ in
-
-        }
+      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback:  { _ in
+        
+      })
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
         var serverReceivedData: [String] = []
@@ -251,23 +251,23 @@ class TransportTests: XCTestCase {
         var serverReceivedData: [String] = []
 
         let clientSocket = try! TCPSocket()
-        let clientTransport = Transport(socket: clientSocket, eventLoop: loop) { data in
-            clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-                loop.stop()
-            }
+      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback:  { data in
+        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+        if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+          loop.stop()
         }
+      })
         var acceptedSocket: TCPSocket!
         var serverTransport: Transport!
 
         loop.setReader(listenSocket.fileDescriptor) {
             acceptedSocket = try! listenSocket.accept()
-            serverTransport = Transport(socket: acceptedSocket, eventLoop: loop) { data in
-                serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-                if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-                    loop.stop()
-                }
+          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback:  { data in
+            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
+            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
+              loop.stop()
             }
+          })
         }
 
         try! clientSocket.connect(host: "::1", port: port)
