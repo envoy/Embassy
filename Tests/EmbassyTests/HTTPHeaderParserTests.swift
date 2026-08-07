@@ -19,7 +19,7 @@ import XCTest
             ("testHeaders", testHeaders),
             ("testColonInHeader", testColonInHeader),
             ("testNoSpaceAfterColonForHeader", testNoSpaceAfterColonForHeader),
-            ("testStripLeadingSpaces", testStripLeadingSpaces),
+            ("testStripLeadingSpaces", testStripLeadingSpaces)
         ]
     }
 #endif
@@ -81,7 +81,7 @@ class HTTPHeaderParserTests: XCTestCase {
         XCTAssertEqual(parser.feed(Data(line2Part1.utf8)), [])
         XCTAssertEqual(parser.feed(Data(line2Part2.utf8)), [])
         XCTAssertEqual(parser.feed(Data(line2Part3.utf8)), [
-            HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com"),
+            HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com")
         ])
 
         // try to feed empty array

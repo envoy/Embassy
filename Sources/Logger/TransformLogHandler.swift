@@ -11,7 +11,7 @@ import Foundation
 /// A log handler transforms record and relays it to another handler
 public struct TransformLogHandler: LogHandler {
     public let handler: LogHandler
-    public var formatter: LogFormatter? = nil
+    public var formatter: LogFormatter?
     public let transform: (LogRecord) -> LogRecord
 
     public init(handler: LogHandler, transform: @escaping (LogRecord) -> LogRecord) {

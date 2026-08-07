@@ -28,7 +28,7 @@ struct IOUtils {
         } else {
             newFlags = flags | O_NONBLOCK
         }
-        let _ = fcntl(fileDescriptor, F_SETFL, newFlags)
+        _ = fcntl(fileDescriptor, F_SETFL, newFlags)
     }
 
 }
