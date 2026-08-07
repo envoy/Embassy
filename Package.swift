@@ -3,16 +3,21 @@ import PackageDescription
 
 let package = Package(
     name: "Embassy",
-    platforms: [
-        .iOS(.v12),
-        .tvOS(.v12),
-        .macOS(.v10_13)
-    ],
     products: [
-        .library(name: "Embassy", targets: ["Embassy"])
+        .library(
+            name: "Embassy",
+            targets: ["Embassy"])
     ],
     targets: [
-        .target(name: "Embassy", path: "./Sources"),
-        .testTarget(name: "EmbassyTests", dependencies: ["Embassy"], path: "./Tests/EmbassyTests")
+        .target(
+            name: "Embassy",
+            path: "./Sources",
+            exclude: ["Info.plist"]
+        ),
+        .testTarget(
+            name: "EmbassyTests",
+            dependencies: ["Embassy"],
+            exclude: ["Info.plist"]
+        )
     ]
 )
