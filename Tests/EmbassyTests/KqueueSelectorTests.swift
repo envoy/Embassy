@@ -6,8 +6,6 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
-#if !os(Linux)
-
 import XCTest
 
 @testable import Embassy
@@ -258,4 +256,3 @@ class KqueueSelectorTests: XCTestCase {
     }
 }
 
-#endif
