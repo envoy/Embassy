@@ -39,7 +39,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
     @discardableResult
     public func register(
         _ fileDescriptor: Int32,
-        events: Set<IOEvent>,
+        events: IOEvent,
         data: Any?
     ) throws -> SelectorKey {
         // ensure the file descriptor doesn't exist already
@@ -50,13 +50,15 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
         fileDescriptorMap[fileDescriptor] = key
 
         var kevents: [Darwin.kevent] = []
-        for event in events {
+        for event in events.elements {
             let filter: Int16
             switch event {
             case .read:
                 filter = Int16(EVFILT_READ)
             case .write:
                 filter = Int16(EVFILT_WRITE)
+            default:
+                continue
             }
             let kevent = Darwin.kevent(
                 ident: UInt(fileDescriptor),
@@ -86,13 +88,15 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
         }
         fileDescriptorMap.removeValue(forKey: fileDescriptor)
         var kevents: [Darwin.kevent] = []
-        for event in key.events {
+        for event in key.events.elements {
             let filter: Int16
             switch event {
             case .read:
                 filter = Int16(EVFILT_READ)
             case .write:
                 filter = Int16(EVFILT_WRITE)
+            default:
+                continue
             }
             let kevent = Darwin.kevent(
                 ident: UInt(fileDescriptor),
@@ -118,7 +122,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
         _ = Darwin.close(kqueue)
     }
 
-    public func select(timeout: TimeInterval?) throws -> [(SelectorKey, Set<IOEvent>)] {
+    public func select(timeout: TimeInterval?) throws -> [(SelectorKey, IOEvent)] {
         var timeSpec: timespec?
         if let timeout = timeout {
             if timeout > 0 {
@@ -148,7 +152,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
 
         // kqueue reports read and write readiness as separate events; merge them
         // per file descriptor so each key appears once in the result
-        var result: [(SelectorKey, Set<IOEvent>)] = []
+        var result: [(SelectorKey, IOEvent)] = []
         result.reserveCapacity(Int(eventCount))
         var indexByFileDescriptor: [Int32: Int] = [:]
         for index in 0..<Int(eventCount) {
@@ -167,7 +171,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
                 result[existing].1.insert(ioEvent)
             } else if let key = fileDescriptorMap[fileDescriptor] {
                 indexByFileDescriptor[fileDescriptor] = result.count
-                result.append((key, [ioEvent]))
+                result.append((key, ioEvent))
             }
         }
         return result

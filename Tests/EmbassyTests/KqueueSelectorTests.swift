@@ -259,9 +259,9 @@ class KqueueSelectorTests: XCTestCase {
         ]))
     }
 
-    fileprivate func toEventSet(_ events: [(SelectorKey, Set<IOEvent>)]) -> Set<FileDescriptorEvent> {
+    fileprivate func toEventSet(_ events: [(SelectorKey, IOEvent)]) -> Set<FileDescriptorEvent> {
         return Set(events.flatMap { (key, ioEvents) in
-            return ioEvents.map { FileDescriptorEvent(fileDescriptor: key.fileDescriptor, ioEvent: $0) }
+            return ioEvents.elements.map { FileDescriptorEvent(fileDescriptor: key.fileDescriptor, ioEvent: $0) }
         })
     }
 }

@@ -216,7 +216,7 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
             callbacks.first.map { SelectorEventLoop.seconds(until: $0.0) }
         }
 
-        var events: [(SelectorKey, Set<IOEvent>)] = []
+        var events: [(SelectorKey, IOEvent)] = []
         // Poll IO events
         do {
             events = try selector.select(timeout: timeout)
@@ -229,17 +229,11 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
             guard let handle = key.data as? CallbackHandle else {
                 continue
             }
-            for ioEvent in ioEvents {
-                switch ioEvent {
-                case .read:
-                    if let callback = handle.reader {
-                        callback()
-                    }
-                case .write:
-                    if let callback = handle.writer {
-                        callback()
-                    }
-                }
+            if ioEvents.contains(.read), let callback = handle.reader {
+                callback()
+            }
+            if ioEvents.contains(.write), let callback = handle.writer {
+                callback()
             }
         }
 
