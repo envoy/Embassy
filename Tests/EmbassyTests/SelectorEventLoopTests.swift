@@ -33,7 +33,7 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testStop() {
         queue.asyncAfter(
-            deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
+            deadline: .inTicks(1)
         ) {
             XCTAssert(self.loop.running)
             self.loop.stop()
@@ -41,7 +41,7 @@ class SelectorEventLoopTests: XCTestCase {
         }
 
         XCTAssertFalse(loop.running)
-        assertExecutingTime(1.0, accuracy: 0.5) {
+        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssertFalse(loop.running)
@@ -53,7 +53,7 @@ class SelectorEventLoopTests: XCTestCase {
             called = true
             self.loop.stop()
         }
-        assertExecutingTime(0, accuracy: 0.5) {
+        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssert(called)
@@ -61,19 +61,19 @@ class SelectorEventLoopTests: XCTestCase {
 
     func testCallLater() {
         var events: [Int] = []
-        loop.call(withDelay: 0) {
+        loop.call(withDelay: 0 * tick) {
             events.append(0)
         }
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             events.append(1)
         }
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             self.loop.stop()
         }
-        loop.call(withDelay: 3) {
+        loop.call(withDelay: 3 * tick) {
             events.append(3)
         }
-        assertExecutingTime(2, accuracy: 0.5) {
+        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssertEqual(events, [0, 1])
@@ -98,7 +98,7 @@ class SelectorEventLoopTests: XCTestCase {
         loop.call(atTime: now.addingTimeInterval(0.000003)) {
             events.append(3)
         }
-        assertExecutingTime(0, accuracy: 0.5) {
+        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssertEqual(events, [0, 1, 2, 3, 4])
@@ -119,11 +119,11 @@ class SelectorEventLoopTests: XCTestCase {
         let clientSocket = try! TCPSocket()
 
         // make a connection 1 seconds later
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(1.0, accuracy: 0.5) {
+        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssert(readerCalled)
@@ -139,7 +139,7 @@ class SelectorEventLoopTests: XCTestCase {
         let clientSocket = try! TCPSocket()
 
         // make a connect 1 seconds later
-        loop.call(withDelay: 1) { [unowned self] in
+        loop.call(withDelay: 1 * tick) { [unowned self] in
             try! clientSocket.connect(host: "::1", port: port)
 
             // Notice: It seems we should only select on the socket after it's either connecting
@@ -151,7 +151,7 @@ class SelectorEventLoopTests: XCTestCase {
             }
         }
 
-        assertExecutingTime(1.0, accuracy: 0.5) {
+        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssert(writerCalled)
@@ -182,20 +182,20 @@ class SelectorEventLoopTests: XCTestCase {
 
         try! clientSocket.connect(host: "::1", port: port)
 
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             try! clientSocket.send(data: Data("hello".utf8))
         }
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             try! clientSocket.send(data: Data("baby".utf8))
         }
-        loop.call(withDelay: 3) {
+        loop.call(withDelay: 3 * tick) {
             try! clientSocket.send(data: Data("fin".utf8))
         }
-        loop.call(withDelay: 4) {
+        loop.call(withDelay: 4 * tick) {
             self.loop.stop()
         }
 
-        assertExecutingTime(4.0, accuracy: 0.5) {
+        assertExecutingTime(4.0 * tick, accuracy: tickAccuracy) {
             self.loop.runForever()
         }
         XCTAssertEqual(readData, ["hello", "baby"])
