@@ -45,8 +45,15 @@ public final class Transport: @unchecked Sendable {
 
     private let socket: TCPSocket
     private let eventLoop: EventLoop
-    // buffer for sending data out
+    // buffer for sending data out. Bytes before `outgoingOffset` have already been sent;
+    // advancing the offset instead of removing from the front avoids a memmove of the
+    // remaining body on every partial write under backpressure
     private var outgoingBuffer = Data()
+    private var outgoingOffset = 0
+    // once the consumed prefix passes this many bytes, drop it on the next append
+    private static let compactionThreshold = 64 * 1024
+    // whether our write callback is currently registered with the event loop
+    private var writerRegistered = false
     // is reading enabled or not
     private var reading: Bool = true
 
@@ -77,7 +84,10 @@ public final class Transport: @unchecked Sendable {
             // TODO: or raise error?
             return
         }
-        // TODO: more efficient way to handle the outgoing buffer?
+        if outgoingOffset >= Transport.compactionThreshold {
+            outgoingBuffer.removeSubrange(..<outgoingOffset)
+            outgoingOffset = 0
+        }
         outgoingBuffer.append(data)
         handleWrite()
     }
@@ -111,11 +121,22 @@ public final class Transport: @unchecked Sendable {
     }
 
     private func closedByPeer() {
+        tearDown(reason: .byPeer)
+    }
+
+    private func closeByLocal() {
+        tearDown(reason: .byLocal)
+    }
+
+    private func tearDown(reason: CloseReason) {
         closed = true
         eventLoop.removeReader(socket.fileDescriptor)
         eventLoop.removeWriter(socket.fileDescriptor)
+        writerRegistered = false
+        outgoingBuffer.removeAll()
+        outgoingOffset = 0
         if let callback = closedCallback {
-            callback(.byPeer)
+            callback(reason)
         }
         socket.close()
     }
@@ -160,33 +181,33 @@ public final class Transport: @unchecked Sendable {
             return
         }
         // ensure we have something to write
-        guard outgoingBuffer.count > 0 else {
+        guard outgoingOffset < outgoingBuffer.count else {
             if closing {
-                closed = true
-                eventLoop.removeWriter(socket.fileDescriptor)
-                eventLoop.removeReader(socket.fileDescriptor)
-                if let callback = closedCallback {
-                    callback(.byLocal)
-                }
-                socket.close()
+                closeByLocal()
             }
             return
         }
         do {
-            let sentBytes = try socket.send(data: outgoingBuffer)
-            outgoingBuffer.removeFirst(sentBytes)
-            if outgoingBuffer.count > 0 {
-                // Not all was written; register write handler.
-                eventLoop.setWriter(socket.fileDescriptor) { self.handleWrite() }
+            let sentBytes = try socket.send(data: outgoingBuffer[outgoingOffset...])
+            outgoingOffset += sentBytes
+            if outgoingOffset < outgoingBuffer.count {
+                // Not all was written; wait for the socket to become writable again.
+                // The registration is kept across partial writes rather than redone
+                // on each one (each set/remove is two kevent syscalls).
+                if !writerRegistered {
+                    writerRegistered = true
+                    eventLoop.setWriter(socket.fileDescriptor) { self.handleWrite() }
+                }
             } else {
-                eventLoop.removeWriter(socket.fileDescriptor)
+                // fully drained: release the consumed bytes but keep the capacity
+                outgoingBuffer.removeAll(keepingCapacity: true)
+                outgoingOffset = 0
+                if writerRegistered {
+                    writerRegistered = false
+                    eventLoop.removeWriter(socket.fileDescriptor)
+                }
                 if closing {
-                    closed = true
-                    eventLoop.removeReader(socket.fileDescriptor)
-                    if let callback = closedCallback {
-                        callback(.byLocal)
-                    }
-                    socket.close()
+                    closeByLocal()
                 }
             }
         } catch let OSError.ioError(number, message) {
