@@ -14,7 +14,7 @@ swift test
 swift test --filter <TestCaseName>/<testMethodName>   # single test
 ```
 
-There's no Xcode scheme-based test story documented beyond SwiftPM — `Embassy.xcodeproj`/`.xcworkspace` exist but SwiftPM is the source of truth.
+SwiftPM is the only build system; the old `Embassy.xcodeproj`/`.xcworkspace` and CocoaPods/Carthage manifests were removed. Open `Package.swift` directly in Xcode. Deployment floor is iOS 15 / macOS 12 / tvOS 15.
 
 Test sources live at `Tests/EmbassyTests/`. Timing-sensitive tests sequence events with the shared `tick` constant in `TestingHelpers.swift` (100 ms) instead of whole seconds; keep new tests on that scale.
 
