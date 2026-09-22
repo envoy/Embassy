@@ -107,8 +107,8 @@ public final class DefaultHTTPServer: HTTPServer {
 
     private func appForConnection(
         _ environ: [String: Any],
-        startResponse: @escaping ((String, [(String, String)]) -> Void),
-        sendBody: @escaping ((Data) -> Void)
+        startResponse: @escaping SWSGIStartResponse,
+        sendBody: @escaping SWSGISendBody
     ) {
         app(environ, startResponse, sendBody)
     }

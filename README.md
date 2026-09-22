@@ -31,8 +31,8 @@ let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 let server = DefaultHTTPServer(eventLoop: loop, port: 8080) {
     (
         environ: [String: Any],
-        startResponse: ((String, [(String, String)]) -> Void),
-        sendBody: ((Data) -> Void)
+        startResponse: SWSGIStartResponse,
+        sendBody: SWSGISendBody
     ) in
     // Start HTTP response
     startResponse("200 OK", [])
@@ -68,8 +68,8 @@ To use the async event loop, you can get it via key `embassy.event_loop` in `env
 ```Swift
 let app = { (
     environ: [String: Any],
-    startResponse: ((String, [(String, String)]) -> Void),
-    sendBody: @escaping ((Data) -> Void)
+    startResponse: SWSGIStartResponse,
+    sendBody: SWSGISendBody
 ) in
     startResponse("200 OK", [])
 
@@ -111,10 +111,15 @@ It's defined as
 ```Swift
 public typealias SWSGI = (
     [String: Any],
-    @escaping ((String, [(String, String)]) -> Void),
-    @escaping ((Data) -> Void)
+    @escaping SWSGIStartResponse,
+    @escaping SWSGISendBody
 ) -> Void
+
+public typealias SWSGIStartResponse = @Sendable (String, [(String, String)]) -> Void
+public typealias SWSGISendBody = @Sendable (Data) -> Void
 ```
+
+`startResponse` and `sendBody` are `@Sendable` so they can be captured by callbacks passed to `EventLoop.call`. They must still only be invoked on the event loop thread.
 
 ### `environ`
 

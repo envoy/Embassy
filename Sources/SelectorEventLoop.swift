@@ -9,9 +9,9 @@
 import Foundation
 
 private class CallbackHandle {
-    let reader: (() -> Void)?
-    let writer: (() -> Void)?
-    init(reader: (() -> Void)? = nil, writer: (() -> Void)? = nil) {
+    let reader: (@Sendable () -> Void)?
+    let writer: (@Sendable () -> Void)?
+    init(reader: (@Sendable () -> Void)? = nil, writer: (@Sendable () -> Void)? = nil) {
         self.reader = reader
         self.writer = writer
     }
@@ -28,9 +28,9 @@ public final class SelectorEventLoop: EventLoop {
     private let pipeSender: Int32
     private let pipeReceiver: Int32
     // callbacks ready to be called at the next iteration
-    private var readyCallbacks = Atomic<[(() -> Void)]>([])
+    private var readyCallbacks = Atomic<[@Sendable () -> Void]>([])
     // callbacks scheduled to be called later
-    private var scheduledCallbacks = Atomic<[(Date, (() -> Void))]>([])
+    private var scheduledCallbacks = Atomic<[(Date, @Sendable () -> Void)]>([])
 
     public init(selector: Selector) throws {
         self.selector = selector
@@ -71,7 +71,7 @@ public final class SelectorEventLoop: EventLoop {
         _ = Darwin.close(pipeReceiver)
     }
 
-    public func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void) {
+    public func setReader(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -106,7 +106,7 @@ public final class SelectorEventLoop: EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
 
-    public func setWriter(_ fileDescriptor: Int32, callback: @escaping () -> Void) {
+    public func setWriter(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void) {
         // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
             let oldHandle = key.data as! CallbackHandle
@@ -141,18 +141,18 @@ public final class SelectorEventLoop: EventLoop {
         try! selector.register(fileDescriptor, events: newEvents, data: handle)
     }
 
-    public func call(callback: @escaping () -> Void) {
+    public func call(callback: @escaping @Sendable () -> Void) {
         readyCallbacks.withLock { callbacks in
             callbacks.append(callback)
         }
         interruptSelector()
     }
 
-    public func call(withDelay delay: TimeInterval, callback: @escaping () -> Void) {
+    public func call(withDelay delay: TimeInterval, callback: @escaping @Sendable () -> Void) {
         call(atTime: Date().addingTimeInterval(delay), callback: callback)
     }
 
-    public func call(atTime time: Date, callback: @escaping () -> Void) {
+    public func call(atTime time: Date, callback: @escaping @Sendable () -> Void) {
         scheduledCallbacks.withLock { callbacks in
             HeapSort.heapPush(&callbacks, item: (time, callback)) {
                 $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
@@ -227,7 +227,7 @@ public final class SelectorEventLoop: EventLoop {
 
         // Call scheduled callbacks
         let now = Date()
-        var readyScheduledCallbacks: [(() -> Void)] = []
+        var readyScheduledCallbacks: [@Sendable () -> Void] = []
         scheduledCallbacks.withLock { callbacks in
             // keep poping expired callbacks
             let timestamp = now.timeIntervalSince1970

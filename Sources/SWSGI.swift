@@ -20,12 +20,20 @@ import Foundation
      - Parameter sendBody: function to call to send the HTTP body to client, to end the stream, simply send an UInt8
                            with zero length
 
+    `startResponse` and `sendBody` are `@Sendable` so they can be captured by callbacks handed to
+    `EventLoop.call`. They must still only be invoked on the event loop thread.
 */
 public typealias SWSGI = (
     [String: Any],
-    @escaping ((String, [(String, String)]) -> Void),
-    @escaping ((Data) -> Void)
+    @escaping SWSGIStartResponse,
+    @escaping SWSGISendBody
 ) -> Void
+
+/// Start the HTTP response with a status line and headers
+public typealias SWSGIStartResponse = @Sendable (String, [(String, String)]) -> Void
+
+/// Send a chunk of HTTP body; send empty `Data` to finish the response
+public typealias SWSGISendBody = @Sendable (Data) -> Void
 
 /**
     SWSGI Input interface for receiving incoming data from request.
