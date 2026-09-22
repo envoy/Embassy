@@ -159,4 +159,31 @@ class HTTPHeaderParserTests: XCTestCase {
         XCTAssertEqual("".withoutLeadingSpaces, "")
     }
 
+    func testManyHeadersFedByteByByte() {
+        // A large header block delivered one byte at a time exercises the
+        // buffer-compaction path on every feed; it must still yield the same
+        // elements as a single feed would.
+        var header = "GET /index.html HTTP/1.1\r\n"
+        var expected: [HTTPHeaderParser.Element] = [
+            .head(method: "GET", path: "/index.html", version: "HTTP/1.1")
+        ]
+        for i in 0..<200 {
+            let value = String(repeating: "v", count: 64)
+            header += "X-Header-\(i): \(value)\r\n"
+            expected.append(.header(key: "X-Header-\(i)", value: value))
+        }
+        // Fed one byte at a time, the end-of-headers marker arrives before any
+        // body bytes, so the trailing body part is empty (HTTPConnection stops
+        // feeding the parser once it sees `.end`).
+        header += "\r\n"
+        expected.append(.end(bodyPart: Data()))
+
+        var parser = HTTPHeaderParser()
+        var elements: [HTTPHeaderParser.Element] = []
+        for byte in header.utf8 {
+            elements += parser.feed(Data([byte]))
+        }
+        XCTAssertEqual(elements, expected)
+    }
+
 }
