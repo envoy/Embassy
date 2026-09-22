@@ -158,8 +158,8 @@ public final class TCPSocket {
     ///  - Returns: bytes sent to peer
     @discardableResult
     func send(data: Data) throws -> Int {
-        let bytesSent = data.withUnsafeBytes { pointer in
-            Darwin.send(fileDescriptor, pointer, data.count, Int32(0))
+        let bytesSent = data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
+            Darwin.send(fileDescriptor, buffer.baseAddress, buffer.count, Int32(0))
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -172,13 +172,15 @@ public final class TCPSocket {
     ///  - Returns: bytes read from peer
     func recv(size: Int) throws -> Data {
         var bytes = Data(count: size)
-        let bytesRead = bytes.withUnsafeMutableBytes { pointer in
-            return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
+        let bytesRead = bytes.withUnsafeMutableBytes { (buffer: UnsafeMutableRawBufferPointer) in
+            Darwin.recv(fileDescriptor, buffer.baseAddress, buffer.count, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
         }
-        return bytes.subdata(in: 0..<bytesRead)
+        // shrinking keeps the existing storage; no second allocation or copy
+        bytes.count = bytesRead
+        return bytes
     }
 
     /// Close the socket
@@ -265,21 +267,14 @@ public final class TCPSocket {
         addressLength: Int32
     ) throws -> String {
         var addrStruct = addrStruct
-        // convert address struct into address string
-        var address = Data(count: Int(addressLength))
-        guard address.withUnsafeMutableBytes({ pointer in
-            inet_ntop(
-                family,
-                &addrStruct,
-                pointer,
-                socklen_t(addressLength)
-            ) != nil
-        }) else {
+        // convert address struct into a NUL-terminated address string
+        var address = [CChar](repeating: 0, count: Int(addressLength))
+        let converted = withUnsafePointer(to: &addrStruct) { structPointer in
+            inet_ntop(family, structPointer, &address, socklen_t(addressLength)) != nil
+        }
+        guard converted else {
             throw OSError.lastIOError()
         }
-        if let index = address.firstIndex(of: 0) {
-            address = address.subdata(in: 0 ..< index)
-        }
-        return String(data: address, encoding: .utf8)!
+        return String(cString: address)
     }
 }

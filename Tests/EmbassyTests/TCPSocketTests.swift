@@ -67,6 +67,9 @@ class TCPSocketTests: XCTestCase {
         XCTAssertEqual(sentBytes, bytesToSend.count)
 
         queue.async {
+            // accept() hands back a non-blocking socket; block here so the read
+            // waits for the bytes instead of racing the send with EAGAIN
+            acceptedSocket.blocking = true
             receivedData = try! acceptedSocket.recv(size: 1024)
             exp1.fulfill()
         }

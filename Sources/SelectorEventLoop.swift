@@ -64,8 +64,8 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
             var bytes = Data(count: Int(size))
             var readSize = 1
             while readSize > 0 {
-                readSize = bytes.withUnsafeMutableBytes { pointer in
-                    return Darwin.read(localPipeReceiver, pointer, Int(size))
+                readSize = bytes.withUnsafeMutableBytes { (buffer: UnsafeMutableRawBufferPointer) in
+                    Darwin.read(localPipeReceiver, buffer.baseAddress, buffer.count)
                 }
             }
         }
