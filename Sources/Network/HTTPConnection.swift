@@ -34,10 +34,9 @@ public final class HTTPConnection: @unchecked Sendable {
 
     private(set) var requestState: RequestState = .parsingHeader
     private(set) var responseState: ResponseState = .sendingHeader
-    private(set) public var eventLoop: EventLoop!
-    private var headerParser: HTTPHeaderParser!
+    public let eventLoop: EventLoop
+    private lazy var headerParser = HTTPHeaderParser()
     private var headerElements: [HTTPHeaderParser.Element] = []
-    private var request: HTTPRequest!
     private var initialBody: Data?
     private var inputHandler: ((Data) -> Void)?
     // total content length to read
@@ -93,9 +92,6 @@ public final class HTTPConnection: @unchecked Sendable {
 
     // called to handle header data
     private func handleHeaderData(_ data: Data) {
-        if headerParser == nil {
-            headerParser = HTTPHeaderParser()
-        }
         headerElements += headerParser.feed(data)
         // we only handle when there are elements in header parser
         guard let lastElement = headerElements.last else {
@@ -106,16 +102,18 @@ public final class HTTPConnection: @unchecked Sendable {
             return
         }
 
-        var method: String!
-        var path: String!
-        var version: String!
+        guard case .head(let method, let path, let version)? = headerElements.first else {
+            // the parser always emits .head first; anything else is a malformed request
+            logger.error("Header parsed without a request line, closing connection")
+            transport.close()
+            return
+        }
         var headers: [(String, String)] = []
+        headers.reserveCapacity(headerElements.count)
         for element in headerElements {
             switch element {
-            case .head(let headMethod, let headPath, let headVersion):
-                method = headMethod
-                path = headPath
-                version = headVersion
+            case .head:
+                break
             case .header(let key, let value):
                 headers.append((key, value))
             case .end(let bodyPart):
@@ -123,10 +121,10 @@ public final class HTTPConnection: @unchecked Sendable {
             }
         }
         logger.info(
-            "Header parsed, method=\(method!), path=\(path.debugDescription), " +
+            "Header parsed, method=\(method), path=\(path.debugDescription), " +
             "version=\(version.debugDescription), headers=\(headers)"
         )
-        request = HTTPRequest(
+        let request = HTTPRequest(
             method: HTTPRequest.Method.fromString(method),
             path: path,
             version: version,
@@ -218,12 +216,15 @@ public final class HTTPConnection: @unchecked Sendable {
             return
         }
         var headers = headers
-        let headerList = MultiDictionary<String, String, LowercaseKeyTransform>(items: headers)
+        // a handful of headers: a linear case-insensitive scan beats building a dictionary
+        func hasHeader(_ name: String) -> Bool {
+            headers.contains { $0.0.caseInsensitiveCompare(name) == .orderedSame }
+        }
         // we don't support keep-alive connection for now, just force it to be closed
-        if headerList["Connection"] == nil {
+        if !hasHeader("Connection") {
             headers.append(("Connection", "close"))
         }
-        if headerList["Server"] == nil {
+        if !hasHeader("Server") {
             headers.append(("Server", "Embassy"))
         }
         logger.debug("Start response, status=\(status.debugDescription), headers=\(headers.debugDescription)")

@@ -8,14 +8,6 @@
 
 import Foundation
 
-// from http://stackoverflow.com/a/24052094/25077
-/// Update one dictionay by another
-private func += <K, V>(left: inout [K: V], right: [K: V]) {
-    for (k, v) in right {
-        left.updateValue(v, forKey: k)
-    }
-}
-
 public struct SWSGIUtils {
     /// Transform given request into environ dictionary
     static func environFor(request: HTTPRequest) -> [String: Any] {
@@ -37,22 +29,12 @@ public struct SWSGIUtils {
         if let contentLength = request.headers["Content-Length"] {
             environ["CONTENT_LENGTH"] = contentLength
         }
-        environ += environFor(headers: request.headers)
-        return environ
-    }
-
-    /// Transform given header key value pair array into environ style header map,
-    /// like from Content-Length to HTTP_CONTENT_LENGTH
-    static func environFor(
-        headers: MultiDictionary<String, String, LowercaseKeyTransform>
-    ) -> [String: Any] {
-        var environ: [String: Any] = [:]
-        for (key, value) in headers {
-            let key = "HTTP_" + key.uppercased().replacingOccurrences(
-                of: "-",
-                with: "_"
-            )
-            environ[key] = value
+        // header keys go in as HTTP_ + upper-cased, dash-to-underscore, e.g.
+        // Content-Length -> HTTP_CONTENT_LENGTH; written straight into environ
+        // rather than through a second dictionary that is then merged in
+        environ.reserveCapacity(environ.count + request.headers.count)
+        for (key, value) in request.headers {
+            environ["HTTP_" + key.uppercased().replacingOccurrences(of: "-", with: "_")] = value
         }
         return environ
     }
