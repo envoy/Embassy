@@ -36,8 +36,14 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
     private let pipeReceiver: Int32
     // callbacks ready to be called at the next iteration
     private var readyCallbacks = Atomic<[@Sendable () -> Void]>([])
-    // callbacks scheduled to be called later
-    private var scheduledCallbacks = Atomic<[(Date, @Sendable () -> Void)]>([])
+    // callbacks scheduled to be called later, as a min-heap on a monotonic deadline.
+    // DispatchTime is mach_absolute_time underneath, so wall-clock changes cannot fire or
+    // starve timers; ContinuousClock would be the modern spelling but needs iOS 16.
+    private var scheduledCallbacks = Atomic<[(DispatchTime, @Sendable () -> Void)]>([])
+    // fixed anchor mapping wall-clock `Date`s onto the monotonic timeline, taken once at init so
+    // `call(atTime:)` targets keep their relative order regardless of when they are scheduled
+    private let anchorDate = Date()
+    private let anchorTime = DispatchTime.now()
 
     public init(selector: Selector) throws {
         self.selector = selector
@@ -156,14 +162,19 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
     }
 
     public func call(withDelay delay: TimeInterval, callback: @escaping @Sendable () -> Void) {
-        call(atTime: Date().addingTimeInterval(delay), callback: callback)
+        schedule(at: .now() + max(0, delay), callback: callback)
     }
 
     public func call(atTime time: Date, callback: @escaping @Sendable () -> Void) {
+        // map the wall-clock target onto the monotonic timeline via the init-time anchor.
+        // A wall-clock jump after init shifts `atTime` targets by the jump; `withDelay` is
+        // unaffected, and is what timers should normally use.
+        schedule(at: anchorTime + max(0, time.timeIntervalSince(anchorDate)), callback: callback)
+    }
+
+    private func schedule(at deadline: DispatchTime, callback: @escaping @Sendable () -> Void) {
         scheduledCallbacks.withLock { callbacks in
-            HeapSort.heapPush(&callbacks, item: (time, callback)) {
-                $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
-            }
+            HeapSort.heapPush(&callbacks, item: (deadline, callback)) { $0.0 < $1.0 }
         }
         interruptSelector()
     }
@@ -180,6 +191,13 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
         }
     }
 
+    /// Seconds from now until `deadline`, clamped at zero
+    private static func seconds(until deadline: DispatchTime) -> TimeInterval {
+        let now = DispatchTime.now().uptimeNanoseconds
+        guard deadline.uptimeNanoseconds > now else { return 0 }
+        return TimeInterval(deadline.uptimeNanoseconds - now) / TimeInterval(NSEC_PER_SEC)
+    }
+
     // interrupt the selector
     private func interruptSelector() {
         let byte = [UInt8](repeating: 0, count: 1)
@@ -192,17 +210,10 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
 
     // Run once iteration for the event loop
     private func runOnce() {
-        var timeout: TimeInterval?
-        scheduledCallbacks.withValue { callbacks in
-            // as the scheduledCallbacks is a heap queue, the first one will be the smallest one
-            // (the latest one)
-            if let firstTuple = callbacks.first {
-                // schedule timeout for the very next scheduled callback
-                let (minTime, _) = firstTuple
-                timeout = max(0, minTime.timeIntervalSince(Date()))
-            } else {
-                timeout = nil
-            }
+        // as the scheduledCallbacks is a heap queue, the first one is the earliest deadline;
+        // block in select only until then (nil means no timers, block until IO)
+        let timeout: TimeInterval? = scheduledCallbacks.withValue { callbacks in
+            callbacks.first.map { SelectorEventLoop.seconds(until: $0.0) }
         }
 
         var events: [(SelectorKey, Set<IOEvent>)] = []
@@ -233,16 +244,13 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
         }
 
         // Call scheduled callbacks
-        let now = Date()
+        let now = DispatchTime.now()
         var readyScheduledCallbacks: [@Sendable () -> Void] = []
         scheduledCallbacks.withLock { callbacks in
-            // keep poping expired callbacks
-            let timestamp = now.timeIntervalSince1970
-            while let first = callbacks.first, timestamp >= first.0.timeIntervalSince1970 {
+            // keep popping expired callbacks
+            while let first = callbacks.first, first.0 <= now {
                 // pop the expired callbacks from heap queue and add them to ready callback list
-                let (_, callback) = HeapSort.heapPop(&callbacks) {
-                    $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
-                }
+                let (_, callback) = HeapSort.heapPop(&callbacks) { $0.0 < $1.0 }
                 readyScheduledCallbacks.append(callback)
             }
         }
