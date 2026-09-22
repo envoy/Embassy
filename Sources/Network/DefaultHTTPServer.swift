@@ -22,7 +22,8 @@ public final class DefaultHTTPServer: HTTPServer, @unchecked Sendable {
     public let port: Int
 
     // the socket for accepting incoming connections
-    private var acceptSocket: TCPSocket!
+    // nil until start() succeeds; stop() resets it so the server can be started again
+    private var acceptSocket: TCPSocket?
     private let eventLoop: EventLoop
     private var connections = Set<HTTPConnection>()
 
@@ -43,6 +44,9 @@ public final class DefaultHTTPServer: HTTPServer, @unchecked Sendable {
     }
 
     public var listenAddress: (host: String, port: Int) {
+        guard let acceptSocket else {
+            preconditionFailure("listenAddress read before start()")
+        }
         return try! acceptSocket.getSockName()
     }
 
@@ -52,22 +56,24 @@ public final class DefaultHTTPServer: HTTPServer, @unchecked Sendable {
             return
         }
         logger.info("Starting HTTP server on [\(interface)]:\(port) ...")
-        acceptSocket = try TCPSocket()
-        try acceptSocket.bind(port: port, interface: interface)
-        try acceptSocket.listen()
-        eventLoop.setReader(acceptSocket.fileDescriptor) { [unowned self] in
+        let socket = try TCPSocket()
+        try socket.bind(port: port, interface: interface)
+        try socket.listen()
+        eventLoop.setReader(socket.fileDescriptor) { [unowned self] in
             self.handleNewConnection()
         }
+        acceptSocket = socket
         logger.info("HTTP server running")
     }
 
     public func stop() {
-        guard acceptSocket != nil else {
+        guard let socket = acceptSocket else {
             logger.error("Server not started")
             return
         }
-        eventLoop.removeReader(acceptSocket.fileDescriptor)
-        acceptSocket.close()
+        eventLoop.removeReader(socket.fileDescriptor)
+        socket.close()
+        acceptSocket = nil
         for connection in connections {
             connection.close()
         }
@@ -95,6 +101,9 @@ public final class DefaultHTTPServer: HTTPServer, @unchecked Sendable {
 
     // called to handle new connections
     private func handleNewConnection() {
+        guard let acceptSocket else {
+            return
+        }
         do {
             let clientSocket = try acceptSocket.accept()
             let (address, port) = try clientSocket.getPeerName()

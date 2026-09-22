@@ -28,13 +28,13 @@ public struct FileLogHandler: LogHandler, @unchecked Sendable {
         queue.async {
             if let formatter = self.formatter {
                 let msg = formatter.format(record: record) + "\n"
-                self.fileHandle.write(msg.data(using: String.Encoding.utf8)!)
+                self.fileHandle.write(Data(msg.utf8))
                 self.fileHandle.synchronizeFile()
             }
         }
     }
 
     public static func stderrHandler() -> FileLogHandler {
-        return FileLogHandler(fileHandle: FileHandle.standardError)
+        FileLogHandler(fileHandle: FileHandle.standardError)
     }
 }

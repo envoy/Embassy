@@ -115,6 +115,6 @@ public final class DefaultLogger: Logger, @unchecked Sendable {
     ///  - Parameter fileName: file name to be stripped
     ///  - Returns: stripped file name
     static func moduleNameForFileName(_ fileName: String) -> String {
-        return URL(fileURLWithPath: fileName).deletingPathExtension().lastPathComponent
+        URL(fileURLWithPath: fileName).deletingPathExtension().lastPathComponent
     }
 }

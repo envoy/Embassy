@@ -16,7 +16,7 @@ public final class TCPSocket {
     /// Whether is this socket in block mode or not
     var blocking: Bool {
         get {
-            return IOUtils.getBlocking(fileDescriptor: fileDescriptor)
+            IOUtils.getBlocking(fileDescriptor: fileDescriptor)
         }
 
         set {
@@ -99,7 +99,7 @@ public final class TCPSocket {
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return Darwin.bind(fileDescriptor, pointer, size) >= 0
+                Darwin.bind(fileDescriptor, pointer, size) >= 0
             }
         }) else {
             throw OSError.lastIOError()
@@ -120,7 +120,7 @@ public final class TCPSocket {
         var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return Darwin.accept(fileDescriptor, pointer, &size)
+                Darwin.accept(fileDescriptor, pointer, &size)
             }
         }
         guard clientFileDescriptor >= 0 else {
@@ -145,7 +145,7 @@ public final class TCPSocket {
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return Darwin.connect(fileDescriptor, pointer, size)
+                Darwin.connect(fileDescriptor, pointer, size)
             }
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
@@ -194,11 +194,11 @@ public final class TCPSocket {
     }
 
     func getPeerName() throws -> (String, Int) {
-        return try getName(function: getpeername)
+        try getName(function: getpeername)
     }
 
     func getSockName() throws -> (String, Int) {
-        return try getName(function: getsockname)
+        try getName(function: getsockname)
     }
 
     private func getName(
@@ -211,7 +211,7 @@ public final class TCPSocket {
                 to: sockaddr.self,
                 capacity: 1
             ) { addressptr in
-                return function(fileDescriptor, addressptr, &size)
+                function(fileDescriptor, addressptr, &size)
             }
             guard result >= 0 else {
                 throw OSError.lastIOError()

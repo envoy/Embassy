@@ -19,17 +19,17 @@ public enum LogLevel: Int, Sendable {
     var name: String {
         switch self {
         case .notset:
-            return "NOTSET"
+            "NOTSET"
         case .debug:
-            return "DEBUG"
+            "DEBUG"
         case .info:
-            return "INFO"
+            "INFO"
         case .warning:
-            return "WARNING"
+            "WARNING"
         case .error:
-            return "ERROR"
+            "ERROR"
         case .critical:
-            return "CRITICAL"
+            "CRITICAL"
         }
     }
 }

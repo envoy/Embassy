@@ -24,50 +24,50 @@ public struct HTTPRequest {
         public var description: String {
             switch self {
             case .get:
-                return "GET"
+                "GET"
             case .head:
-                return "HEAD"
+                "HEAD"
             case .post:
-                return "POST"
+                "POST"
             case .put:
-                return "PUT"
+                "PUT"
             case .delete:
-                return "DELETE"
+                "DELETE"
             case .trace:
-                return "TRACE"
+                "TRACE"
             case .options:
-                return "OPTIONS"
+                "OPTIONS"
             case .connect:
-                return "CONNECT"
+                "CONNECT"
             case .patch:
-                return "PATCH"
+                "PATCH"
             case .other(name: let name):
-                return name
+                name
             }
         }
 
         public static func fromString(_ name: String) -> Method {
             switch name.uppercased() {
             case "GET":
-                return .get
+                .get
             case "HEAD":
-                return .head
+                .head
             case "POST":
-                return .post
+                .post
             case "PUT":
-                return .put
+                .put
             case "DELETE":
-                return .delete
+                .delete
             case "TRACE":
-                return .trace
+                .trace
             case "OPTIONS":
-                return .options
+                .options
             case "CONNECT":
-                return .connect
+                .connect
             case "PATCH":
-                return .patch
+                .patch
             default:
-                return .other(name: name)
+                .other(name: name)
             }
         }
     }

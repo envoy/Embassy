@@ -44,7 +44,7 @@ struct HeapSort {
     ///  - Parameter heap: the heap queue array, should already be in heap order
     ///  - Returns: the smallest item popped from the heap queue
     static func heapPop<T: Comparable>(_ heap: inout [T]) -> T {
-        return heapPop(&heap, isOrderredBefore: <)
+        heapPop(&heap, isOrderredBefore: <)
     }
 
     private static func shiftDown<T>(_ heap: inout [T], startPos: Array<T>.Index, pos: Array<T>.Index, isOrderredBefore: (T, T) -> Bool) {

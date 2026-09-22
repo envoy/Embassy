@@ -13,11 +13,11 @@ public enum OSError: Error {
     case ioError(number: Int32, message: String)
     /// Return a socket error with the last error number and description
     static func lastIOError() -> OSError {
-        return .ioError(number: errno, message: lastErrorDescription())
+        .ioError(number: errno, message: lastErrorDescription())
     }
 }
 
 /// Return description for last error
 func lastErrorDescription() -> String {
-    return String(cString: strerror(errno))
+    String(cString: strerror(errno))
 }

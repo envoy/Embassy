@@ -162,7 +162,7 @@ public final class Transport: @unchecked Sendable {
         } catch {
             fatalError("Failed to read")
         }
-        guard data.count > 0 else {
+        guard !data.isEmpty else {
             closedByPeer()
             return
         }

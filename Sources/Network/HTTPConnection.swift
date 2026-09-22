@@ -71,7 +71,7 @@ public final class HTTPConnection: @unchecked Sendable {
         let contextHandler = TransformLogHandler(
             handler: propagateHandler
         ) { [unowned self] record in
-            return record.overwriteMessage { [unowned self] in "[\(self.uuid)] \($0.message)" }
+            record.overwriteMessage { [unowned self] in "[\(self.uuid)] \($0.message)" }
         }
         self.logger.add(handler: contextHandler)
     }
@@ -152,15 +152,7 @@ public final class HTTPConnection: @unchecked Sendable {
         environ["embassy.event_loop"] = eventLoop
         environ["embassy.headers"] = headers
 
-        if
-            let bundle = Bundle(identifier: "com.envoy.Embassy"),
-            let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String {
-            environ["embassy.version"] = version
-        } else {
-            // TODO: not sure what's the method we can use to get current package version for Linux,
-            // just put unknown here to make test pass for now
-            environ["embassy.version"] = "unknown"
-        }
+        environ["embassy.version"] = Embassy.version
 
         if let contentLength = request.headers["Content-Length"], let length = Int(contentLength) {
             self.contentLength = length
@@ -229,7 +221,7 @@ public final class HTTPConnection: @unchecked Sendable {
         }
         logger.debug("Start response, status=\(status.debugDescription), headers=\(headers.debugDescription)")
         let headersPart = headers.map { (key, value) in
-            return "\(key): \(value)"
+            "\(key): \(value)"
         }.joined(separator: "\r\n")
         let parts = [
             "HTTP/1.1 \(status)",
@@ -245,7 +237,7 @@ public final class HTTPConnection: @unchecked Sendable {
             logger.error("Response is not ready for sending body")
             return
         }
-        guard data.count > 0 else {
+        guard !data.isEmpty else {
             // TODO: support keep-alive connection here?
             logger.info("Finish response")
             transport.close()
@@ -272,7 +264,7 @@ extension HTTPConnection: Equatable {
 }
 
 public func == (lhs: HTTPConnection, rhs: HTTPConnection) -> Bool {
-    return lhs.uuid == rhs.uuid
+    lhs.uuid == rhs.uuid
 }
 
 extension HTTPConnection: Hashable {

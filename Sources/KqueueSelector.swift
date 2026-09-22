@@ -48,35 +48,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
         }
         let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
         fileDescriptorMap[fileDescriptor] = key
-
-        var kevents: [Darwin.kevent] = []
-        for event in events.elements {
-            let filter: Int16
-            switch event {
-            case .read:
-                filter = Int16(EVFILT_READ)
-            case .write:
-                filter = Int16(EVFILT_WRITE)
-            default:
-                continue
-            }
-            let kevent = Darwin.kevent(
-                ident: UInt(fileDescriptor),
-                filter: filter,
-                flags: UInt16(EV_ADD),
-                fflags: UInt32(0),
-                data: Int(0),
-                udata: nil
-            )
-            kevents.append(kevent)
-        }
-
-        // register events to kqueue
-        guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
-        }) else {
-            throw OSError.lastIOError()
-        }
+        try apply(events, to: fileDescriptor, flags: EV_ADD)
         return key
     }
 
@@ -87,35 +59,28 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
             throw Error.keyError(fileDescriptor: fileDescriptor)
         }
         fileDescriptorMap.removeValue(forKey: fileDescriptor)
-        var kevents: [Darwin.kevent] = []
-        for event in key.events.elements {
-            let filter: Int16
-            switch event {
-            case .read:
-                filter = Int16(EVFILT_READ)
-            case .write:
-                filter = Int16(EVFILT_WRITE)
-            default:
-                continue
-            }
-            let kevent = Darwin.kevent(
+        try apply(key.events, to: fileDescriptor, flags: EV_DELETE)
+        return key
+    }
+
+    /// Submit one kevent change per event in `events` for the file descriptor
+    private func apply(_ events: IOEvent, to fileDescriptor: Int32, flags: Int32) throws {
+        var changes: [Darwin.kevent] = events.elements.map { event in
+            Darwin.kevent(
                 ident: UInt(fileDescriptor),
-                filter: filter,
-                flags: UInt16(EV_DELETE),
-                fflags: UInt32(0),
-                data: Int(0),
+                filter: Int16(event == .read ? EVFILT_READ : EVFILT_WRITE),
+                flags: UInt16(flags),
+                fflags: 0,
+                data: 0,
                 udata: nil
             )
-            kevents.append(kevent)
         }
-
-        // unregister events from kqueue
-        guard kevents.withUnsafeMutableBufferPointer({ pointer in
-            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, Int32(0), nil) >= 0
-        }) else {
+        let applied = changes.withUnsafeMutableBufferPointer { pointer in
+            kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, 0, nil) >= 0
+        }
+        guard applied else {
             throw OSError.lastIOError()
         }
-        return key
     }
 
     public func close() {
@@ -179,7 +144,7 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
 
     public subscript(fileDescriptor: Int32) -> SelectorKey? {
         get {
-            return fileDescriptorMap[fileDescriptor]
+            fileDescriptorMap[fileDescriptor]
         }
     }
 

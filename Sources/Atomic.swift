@@ -26,7 +26,7 @@ final class Atomic<Value>: @unchecked Sendable {
     /// Atomically gets or sets the value of the variable.
     var value: Value {
         get {
-            return withValue { $0 }
+            withValue { $0 }
         }
 
         set(newValue) {
@@ -60,7 +60,7 @@ final class Atomic<Value>: @unchecked Sendable {
     ///
     /// Returns the old value.
     func swap(newValue: Value) -> Value {
-        return modify { _ in newValue }
+        modify { _ in newValue }
     }
 
     /// Atomically modifies the variable.
