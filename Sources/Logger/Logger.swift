@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LogLevel: Int {
+public enum LogLevel: Int, Sendable {
     case notset = 0
     case debug = 10
     case info = 20
@@ -34,7 +34,7 @@ public enum LogLevel: Int {
     }
 }
 
-public struct LogRecord {
+public struct LogRecord: Sendable {
     let loggerName: String
     let level: LogLevel
     let message: String
@@ -61,7 +61,9 @@ extension LogRecord {
     }
 }
 
-public protocol Logger {
+/// Loggers are shared across threads (a connection logger propagates to the server logger),
+/// so conformers must be safe to call from any thread.
+public protocol Logger: Sendable {
     /// Add a handler to the logger
     func add(handler: LogHandler)
 

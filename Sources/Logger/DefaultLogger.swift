@@ -8,10 +8,13 @@
 
 import Foundation
 
-public final class DefaultLogger: Logger {
+public final class DefaultLogger: Logger, @unchecked Sendable {
     let name: String
     let level: LogLevel
-    private(set) var handlers: [LogHandler] = []
+    // handlers may be added from the owning thread while another thread logs through
+    // PropagateLogHandler, so reads and writes go through the lock
+    private let lockedHandlers = Atomic<[LogHandler]>([])
+    var handlers: [LogHandler] { lockedHandlers.value }
 
     public init(name: String, level: LogLevel = .info) {
         self.name = name
@@ -26,7 +29,7 @@ public final class DefaultLogger: Logger {
     /// Add handler to self logger
     ///  - Parameter handler: the handler to add
     public func add(handler: LogHandler) {
-        handlers.append(handler)
+        lockedHandlers.withLock { $0.append(handler) }
     }
 
     public func debug(

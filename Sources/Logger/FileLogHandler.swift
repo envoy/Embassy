@@ -9,8 +9,9 @@
 import Foundation
 import Dispatch
 
-/// A log handler which writes log records to given file handle
-public struct FileLogHandler: LogHandler {
+/// A log handler which writes log records to given file handle.
+/// All writes are serialized on a private queue, which is what makes sharing the handle safe.
+public struct FileLogHandler: LogHandler, @unchecked Sendable {
     let fileHandle: FileHandle
     public var formatter: LogFormatter?
 
