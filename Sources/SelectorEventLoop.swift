@@ -36,7 +36,7 @@ public final class SelectorEventLoop: EventLoop {
         self.selector = selector
         var pipeFds = [Int32](repeating: 0, count: 2)
         let pipeResult = pipeFds.withUnsafeMutableBufferPointer {
-            SystemLibrary.pipe($0.baseAddress)
+            Darwin.pipe($0.baseAddress)
         }
         guard pipeResult >= 0 else {
             throw OSError.lastIOError()
@@ -58,7 +58,7 @@ public final class SelectorEventLoop: EventLoop {
             var readSize = 1
             while readSize > 0 {
                 readSize = bytes.withUnsafeMutableBytes { pointer in
-                    return SystemLibrary.read(localPipeReceiver, pointer, Int(size))
+                    return Darwin.read(localPipeReceiver, pointer, Int(size))
                 }
             }
         }
@@ -67,8 +67,8 @@ public final class SelectorEventLoop: EventLoop {
     deinit {
         stop()
         removeReader(pipeReceiver)
-        _ = SystemLibrary.close(pipeSender)
-        _ = SystemLibrary.close(pipeReceiver)
+        _ = Darwin.close(pipeSender)
+        _ = Darwin.close(pipeReceiver)
     }
 
     public func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void) {

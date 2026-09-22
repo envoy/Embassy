@@ -24,7 +24,7 @@ Lint config exists (`.swiftlint.yaml`) but no `swiftlint` invocation is wired in
 
 Everything lives flat under `Sources/` (single `Embassy` target, no submodules). The layers, bottom to top:
 
-1. **Selector** (`Selector.swift`, `KqueueSelector.swift`) — thin protocol + a `kqueue()` wrapper for readiness notification on file descriptors. `SystemLibrary.swift` gathers the raw Darwin syscalls in one place.
+1. **Selector** (`Selector.swift`, `KqueueSelector.swift`) — thin protocol + a `kqueue()` wrapper for readiness notification on file descriptors. Raw syscalls are called as `Darwin.xxx` directly; the `Darwin.` prefix matters inside `TCPSocket`, whose methods shadow the libc names.
 2. **EventLoop** (`EventLoop.swift` protocol, `SelectorEventLoop.swift` implementation) — the single-threaded run loop. Wraps a `Selector` and adds a timed-callback heap (`HeapSort.swift`) and thread-safe call scheduling (`Atomic.swift`) so callbacks can be enqueued from other threads via `call(withDelay:)` / `call(atTime:)`. **All SWSGI callbacks (`startResponse`, `sendBody`, `swsgi.input`) must only be invoked from the thread running the `EventLoop`** — never dispatch to it via GCD.
 3. **TCPSocket / Transport** (`TCPSocket.swift`, `Transport.swift`, `IOUtils.swift`) — non-blocking socket wrapper and the read/write buffering layer built on top of an `EventLoop` + `Selector` pair. IPv6-first with IPv4 dual-stack support.
 4. **HTTPConnection / HTTPRequest / HTTPHeaderParser** (`HTTPConnection.swift`, `HTTPRequest.swift`, `HTTPHeaderParser.swift`, `MultiDictionary.swift`) — per-connection HTTP/1.1 parsing and response writing state machine, sitting on a `Transport`.

@@ -53,7 +53,7 @@ public final class TCPSocket {
 
     init(blocking: Bool = false) throws {
         let socketType = SOCK_STREAM
-        fileDescriptor = SystemLibrary.socket(AF_INET6, socketType, 0)
+        fileDescriptor = Darwin.socket(AF_INET6, socketType, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
         }
@@ -99,7 +99,7 @@ public final class TCPSocket {
         // bind the address and port on socket
         guard withUnsafePointer(to: &address, { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return SystemLibrary.bind(fileDescriptor, pointer, size) >= 0
+                return Darwin.bind(fileDescriptor, pointer, size) >= 0
             }
         }) else {
             throw OSError.lastIOError()
@@ -109,7 +109,7 @@ public final class TCPSocket {
     /// Listen incomming connections
     ///  - Parameter backlog: maximum backlog of incoming connections
     func listen(backlog: Int = Int(SOMAXCONN)) throws {
-        guard SystemLibrary.listen(fileDescriptor, Int32(backlog)) != -1 else {
+        guard Darwin.listen(fileDescriptor, Int32(backlog)) != -1 else {
             throw OSError.lastIOError()
         }
     }
@@ -120,7 +120,7 @@ public final class TCPSocket {
         var size = socklen_t(MemoryLayout<sockaddr_in6>.size)
         let clientFileDescriptor = withUnsafeMutablePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return SystemLibrary.accept(fileDescriptor, pointer, &size)
+                return Darwin.accept(fileDescriptor, pointer, &size)
             }
         }
         guard clientFileDescriptor >= 0 else {
@@ -145,7 +145,7 @@ public final class TCPSocket {
         // connect to the host and port
         let connectResult = withUnsafePointer(to: &address) { pointer in
             return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { pointer in
-                return SystemLibrary.connect(fileDescriptor, pointer, size)
+                return Darwin.connect(fileDescriptor, pointer, size)
             }
         }
         guard connectResult >= 0 || errno == EINPROGRESS else {
@@ -159,7 +159,7 @@ public final class TCPSocket {
     @discardableResult
     func send(data: Data) throws -> Int {
         let bytesSent = data.withUnsafeBytes { pointer in
-            SystemLibrary.send(fileDescriptor, pointer, data.count, Int32(0))
+            Darwin.send(fileDescriptor, pointer, data.count, Int32(0))
         }
         guard bytesSent >= 0 else {
             throw OSError.lastIOError()
@@ -173,7 +173,7 @@ public final class TCPSocket {
     func recv(size: Int) throws -> Data {
         var bytes = Data(count: size)
         let bytesRead = bytes.withUnsafeMutableBytes { pointer in
-            return SystemLibrary.recv(fileDescriptor, pointer, size, Int32(0))
+            return Darwin.recv(fileDescriptor, pointer, size, Int32(0))
         }
         guard bytesRead >= 0 else {
             throw OSError.lastIOError()
@@ -186,8 +186,8 @@ public final class TCPSocket {
         guard fileDescriptor != -1 else {
             return
         }
-        _ = SystemLibrary.shutdown(fileDescriptor, Int32(SHUT_WR))
-        _ = SystemLibrary.close(fileDescriptor)
+        _ = Darwin.shutdown(fileDescriptor, Int32(SHUT_WR))
+        _ = Darwin.close(fileDescriptor)
         fileDescriptor = -1
     }
 
@@ -226,7 +226,7 @@ public final class TCPSocket {
                             family: AF_INET,
                             addressLength: INET_ADDRSTRLEN
                         ),
-                        Int(SystemLibrary.ntohs(addressptr.pointee.sin_port))
+                        Int(UInt16(bigEndian: addressptr.pointee.sin_port))
                     )
                 }
             case AF_INET6:
@@ -240,7 +240,7 @@ public final class TCPSocket {
                             family: AF_INET6,
                             addressLength: INET6_ADDRSTRLEN
                         ),
-                        Int(SystemLibrary.ntohs(addressptr.pointee.sin6_port))
+                        Int(UInt16(bigEndian: addressptr.pointee.sin6_port))
                     )
                 }
             default:
