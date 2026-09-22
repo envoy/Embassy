@@ -74,6 +74,20 @@ final class Atomic<Value> {
         }
     }
 
+    /// Atomically mutates the value in place.
+    ///
+    /// Unlike `modify`, the closure receives the stored value `inout`, so the
+    /// storage stays uniquely referenced and collection mutations do not force
+    /// a copy-on-write copy.
+    ///
+    /// Returns the result of the action.
+    func withLock<Result>(_ action: (inout Value) throws -> Result) rethrows -> Result {
+        lock()
+        defer { unlock() }
+
+        return try action(&_value)
+    }
+
     /// Atomically performs an arbitrary action using the current value of the
     /// variable.
     ///
