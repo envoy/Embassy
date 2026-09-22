@@ -8,7 +8,9 @@
 
 import Foundation
 
-public final class KqueueSelector: Selector {
+/// Thread confinement: `register`/`unregister`/`select` mutate unsynchronized state and must only
+/// be called from the thread running the owning `EventLoop`.
+public final class KqueueSelector: Selector, @unchecked Sendable {
     enum Error: Swift.Error {
         case keyError(fileDescriptor: Int32)
     }

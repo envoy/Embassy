@@ -19,8 +19,15 @@ private class CallbackHandle {
 
 /// EventLoop uses given selector to monitor IO events, trigger callbacks when needed to
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
-public final class SelectorEventLoop: EventLoop {
-    private(set) public var running: Bool = false
+///
+/// Thread contract: `call(...)` and `stop()` are safe from any thread. Everything else, including
+/// `setReader`/`setWriter`, must run on the thread executing `runForever()`. `Sendable` is unchecked
+/// because the loop is captured by its own `@Sendable` callbacks; the cross-thread entry points are
+/// guarded by `Atomic`.
+public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
+    private let isRunning = Atomic<Bool>(false)
+    /// Indicate whether is this event loop running (readable from any thread)
+    public var running: Bool { isRunning.value }
     private let selector: Selector
     // these are for self-pipe-trick ref: https://cr.yp.to/docs/selfpipe.html
     // to be able to interrupt the blocking selector, we create a pipe and add it to the
@@ -162,12 +169,12 @@ public final class SelectorEventLoop: EventLoop {
     }
 
     public func stop() {
-        running = false
+        isRunning.value = false
         interruptSelector()
     }
 
     public func runForever() {
-        running = true
+        isRunning.value = true
         while running {
             runOnce()
         }

@@ -9,9 +9,12 @@
 import Foundation
 import Dispatch
 
-public final class DefaultHTTPServer: HTTPServer {
+/// Thread confinement: every method and stored property of this type belongs to the thread
+/// running its `EventLoop`. The `Sendable` conformance is unchecked because references to it are
+/// captured by `@Sendable` loop callbacks, not because it is safe to touch from other threads.
+public final class DefaultHTTPServer: HTTPServer, @unchecked Sendable {
     public let logger = DefaultLogger()
-    public var app: SWSGI
+    public let app: SWSGI
 
     /// Interface of TCP/IP to bind
     public let interface: String
@@ -79,6 +82,15 @@ public final class DefaultHTTPServer: HTTPServer {
             semaphore.signal()
         }
         _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+    }
+
+    public func stopAndWait() async {
+        await withCheckedContinuation { continuation in
+            eventLoop.call {
+                self.stop()
+                continuation.resume()
+            }
+        }
     }
 
     // called to handle new connections

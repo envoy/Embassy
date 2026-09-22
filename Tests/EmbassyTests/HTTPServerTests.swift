@@ -340,4 +340,24 @@ class HTTPServerTests: XCTestCase {
         }
         loop.stop()
     }
+
+    func testStopAndWaitAsync() async {
+        let port = try! getUnusedTCPPort()
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) { _, startResponse, sendBody in
+            startResponse("200 OK", [])
+            sendBody(Data())
+        }
+        try! server.start()
+
+        let loop = self.loop!
+        queue.async {
+            loop.runForever()
+        }
+        let begin = Date()
+        await server.stopAndWait()
+        XCTAssertEqual(Date().timeIntervalSince(begin), 0, accuracy: tickAccuracy)
+        // a second stop is a no-op that only logs
+        server.stop()
+        loop.stop()
+    }
 }

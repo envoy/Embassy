@@ -8,7 +8,10 @@
 
 import Foundation
 
-public final class Transport {
+/// Thread confinement: every method and stored property of this type belongs to the thread
+/// running its `EventLoop`. The `Sendable` conformance is unchecked because references to it are
+/// captured by `@Sendable` loop callbacks, not because it is safe to touch from other threads.
+public final class Transport: @unchecked Sendable {
     enum CloseReason {
         /// Connection closed by peer
         case byPeer
@@ -58,7 +61,7 @@ public final class Transport {
         self.eventLoop = eventLoop
         self.closedCallback = closedCallback
         self.readDataCallback = readDataCallback
-        eventLoop.setReader(socket.fileDescriptor, callback: handleRead)
+        eventLoop.setReader(socket.fileDescriptor) { self.handleRead() }
     }
 
     deinit {
@@ -174,7 +177,7 @@ public final class Transport {
             outgoingBuffer.removeFirst(sentBytes)
             if outgoingBuffer.count > 0 {
                 // Not all was written; register write handler.
-                eventLoop.setWriter(socket.fileDescriptor, callback: handleWrite)
+                eventLoop.setWriter(socket.fileDescriptor) { self.handleWrite() }
             } else {
                 eventLoop.removeWriter(socket.fileDescriptor)
                 if closing {
