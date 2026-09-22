@@ -22,10 +22,11 @@ let package = Package(
         .testTarget(
             name: "EmbassyTests",
             dependencies: ["Embassy"],
-            path: "Tests/EmbassyTests"
+            path: "Tests/EmbassyTests",
+            // The library builds in Swift 6 mode. The XCTest suite still captures test-case
+            // state in @Sendable completion handlers all over; it moves to Swift 6 with the
+            // Swift Testing migration.
+            swiftSettings: [.swiftLanguageMode(.v5)]
         )
-    ],
-    // Swift 5 language mode until the strict-concurrency work lands; the
-    // toolchain is still Swift 6, only the language mode is held back.
-    swiftLanguageModes: [.v5]
+    ]
 )

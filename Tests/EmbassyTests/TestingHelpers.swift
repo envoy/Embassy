@@ -12,12 +12,6 @@ import XCTest
 @testable import Embassy
 
 import Darwin
-let isLittleEndian = Int(OSHostByteOrder()) == OSLittleEndian
-let htons  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let ntohs  = isLittleEndian ? _OSSwapInt16 : { $0 }
-let bind = Darwin.bind
-let random = Darwin.arc4random
-let randomUniform = Darwin.arc4random_uniform
 typealias TestingSelector = KqueueSelector
 
 /// Base unit for sequencing events in tests. Loopback IO completes in well
@@ -56,7 +50,7 @@ func getUnusedTCPPort() throws -> Int {
     var address = sockaddr_in()
     address.sin_len = UInt8(MemoryLayout<sockaddr_in>.stride)
     address.sin_family = sa_family_t(AF_INET)
-    address.sin_port = htons(UInt16(0))
+    address.sin_port = UInt16(0).bigEndian
     address.sin_addr = interfaceAddress
     address.sin_zero = (0, 0, 0, 0, 0, 0, 0, 0)
     let addressSize = socklen_t(MemoryLayout<sockaddr_in>.size)
@@ -66,7 +60,7 @@ func getUnusedTCPPort() throws -> Int {
             to: sockaddr.self,
             capacity: 1
         ) { pointer in
-            return bind(fileDescriptor, pointer, addressSize) >= 0
+            return Darwin.bind(fileDescriptor, pointer, addressSize) >= 0
         }
     }) else {
         throw OSError.lastIOError()
@@ -84,7 +78,7 @@ func getUnusedTCPPort() throws -> Int {
     }) else {
         throw OSError.lastIOError()
     }
-    return Int(ntohs(socketAddress.sin_port))
+    return Int(UInt16(bigEndian: socketAddress.sin_port))
 }
 
 func makeRandomString(_ length: Int) -> String {

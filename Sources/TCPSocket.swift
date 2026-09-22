@@ -275,6 +275,7 @@ public final class TCPSocket {
         guard converted else {
             throw OSError.lastIOError()
         }
-        return String(cString: address)
+        let length = address.firstIndex(of: 0) ?? address.count
+        return String(decoding: address[..<length].map { UInt8(bitPattern: $0) }, as: UTF8.self)
     }
 }

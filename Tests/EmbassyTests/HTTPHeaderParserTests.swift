@@ -11,7 +11,7 @@ import XCTest
 
 @testable import Embassy
 
-extension HTTPHeaderParser.Element: @retroactive Equatable {}
+extension HTTPHeaderParser.Element: Equatable {}
 
 public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
     switch lhs {
