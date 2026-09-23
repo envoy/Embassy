@@ -18,7 +18,7 @@ public protocol KeyTransformer {
 public struct NoOpKeyTransform<T: Hashable>: KeyTransformer {
     public typealias Key = T
     public static func transform(key: T) -> Key {
-        return key
+        key
     }
 }
 
@@ -27,7 +27,7 @@ public struct NoOpKeyTransform<T: Hashable>: KeyTransformer {
 public struct LowercaseKeyTransform: KeyTransformer {
     public typealias Key = String
     public static func transform(key: Key) -> Key {
-        return key.lowercased()
+        key.lowercased()
     }
 }
 
@@ -51,10 +51,7 @@ public struct MultiDictionary<
         self.items = items
         var keyValuesMap: DictionaryType = [:]
         for (key, value) in items {
-            let transformedKey = KeyTransform.transform(key: key)
-            var values = keyValuesMap[transformedKey] ?? []
-            values.append(value)
-            keyValuesMap[transformedKey] = values
+            keyValuesMap[KeyTransform.transform(key: key), default: []].append(value)
         }
         self.keyValuesMap = keyValuesMap
     }
@@ -63,13 +60,13 @@ public struct MultiDictionary<
     ///  - Parameter key: the key
     ///  - Returns: tuple of array of values for given key
     public func valuesFor(key: Key) -> [Value]? {
-        return keyValuesMap[KeyTransform.transform(key: key)]
+        keyValuesMap[KeyTransform.transform(key: key)]
     }
     /// Get the first value for given key if available
     ///  - Parameter key: the key
     ///  - Returns: first value for the key if available, otherwise nil will be returned
     public subscript(key: Key) -> Value? {
-        return valuesFor(key: key)?.first
+        valuesFor(key: key)?.first
     }
 }
 
@@ -79,15 +76,15 @@ extension MultiDictionary: Collection {
     public typealias Index = ArrayType.Index
 
     public var startIndex: Index {
-        return items.startIndex
+        items.startIndex
     }
 
     public var endIndex: Index {
-        return items.endIndex
+        items.endIndex
     }
 
     public subscript(position: Index) -> Element {
-        return items[position]
+        items[position]
     }
 
     public func index(after i: Index) -> Index {
@@ -100,14 +97,6 @@ extension MultiDictionary: Collection {
 extension MultiDictionary: ExpressibleByArrayLiteral {
     public typealias Element = ArrayType.Element
     public init(arrayLiteral elements: Element...) {
-        items = elements
-        var keyValuesMap: DictionaryType = [:]
-        for (key, value) in items {
-            let transformedKey = KeyTransform.transform(key: key)
-            var values = keyValuesMap[transformedKey] ?? []
-            values.append(value)
-            keyValuesMap[transformedKey] = values
-        }
-        self.keyValuesMap = keyValuesMap
+        self.init(items: elements)
     }
 }

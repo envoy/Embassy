@@ -10,6 +10,6 @@ import Foundation
 
 public struct DefaultLogFormatter: LogFormatter {
     public func format(record: LogRecord) -> String {
-        return "\(record.time) [\(record.level)] - \(record.loggerName): \(record.message)"
+        "\(record.time) [\(record.level)] - \(record.loggerName): \(record.message)"
     }
 }
