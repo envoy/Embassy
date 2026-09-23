@@ -1,10 +1,7 @@
 # Embassy
 
-[![Build Status](https://travis-ci.org/envoy/Embassy.svg?branch=master)](https://travis-ci.org/envoy/Embassy)
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-brightgreen.svg)](https://github.com/Carthage/Carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
-[![CocoaPods](https://img.shields.io/cocoapods/v/Embassy.svg)]()
-![Swift Version](https://img.shields.io/badge/Swift-5.0-orange.svg)
+![Swift Version](https://img.shields.io/badge/Swift-6.0-orange.svg)
 ![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|tvOS-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
@@ -34,8 +31,8 @@ let loop = try! SelectorEventLoop(selector: try! KqueueSelector())
 let server = DefaultHTTPServer(eventLoop: loop, port: 8080) {
     (
         environ: [String: Any],
-        startResponse: ((String, [(String, String)]) -> Void),
-        sendBody: ((Data) -> Void)
+        startResponse: SWSGIStartResponse,
+        sendBody: SWSGISendBody
     ) in
     // Start HTTP response
     startResponse("200 OK", [])
@@ -71,8 +68,8 @@ To use the async event loop, you can get it via key `embassy.event_loop` in `env
 ```Swift
 let app = { (
     environ: [String: Any],
-    startResponse: ((String, [(String, String)]) -> Void),
-    sendBody: @escaping ((Data) -> Void)
+    startResponse: SWSGIStartResponse,
+    sendBody: SWSGISendBody
 ) in
     startResponse("200 OK", [])
 
@@ -114,10 +111,15 @@ It's defined as
 ```Swift
 public typealias SWSGI = (
     [String: Any],
-    @escaping ((String, [(String, String)]) -> Void),
-    @escaping ((Data) -> Void)
+    @escaping SWSGIStartResponse,
+    @escaping SWSGISendBody
 ) -> Void
+
+public typealias SWSGIStartResponse = @Sendable (String, [(String, String)]) -> Void
+public typealias SWSGISendBody = @Sendable (Data) -> Void
 ```
+
+`startResponse` and `sendBody` are `@Sendable` so they can be captured by callbacks passed to `EventLoop.call`. They must still only be invoked on the event loop thread.
 
 ### `environ`
 
@@ -195,25 +197,9 @@ sendBody(Data())
 
 ## Install
 
-### CocoaPods
+### Swift Package Manager
 
-To install with CocoaPod, add Embassy to your Podfile:
-
-```
-pod 'Embassy', '~> 4.1'
-```
-
-### Carthage
-
-To install with Carthage, add Embassy to your Cartfile:
-
-```
-github "envoy/Embassy" ~> 4.1
-```
-
-### Package Manager
-
-Add it this Embassy repo in `Package.swift`, like this
+Embassy is distributed only through Swift Package Manager. Add it to `Package.swift`:
 
 ```swift
 import PackageDescription

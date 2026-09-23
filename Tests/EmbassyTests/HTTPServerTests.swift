@@ -78,8 +78,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 _: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
@@ -122,8 +122,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 _: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             startResponse("200 OK", [])
             sendBody(bigDataChunk)
@@ -159,8 +159,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: @escaping ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             startResponse("200 OK", [])
 
@@ -208,8 +208,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             if environ["HTTP_EXPECT"] as? String == "100-continue" {
                 startResponse("100 Continue", [])
@@ -253,8 +253,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: @escaping ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             if environ["HTTP_EXPECT"] as? String == "100-continue" {
                 // Notice: under linux, it seems the underlying URLSession implementation (cURL in
@@ -295,7 +295,7 @@ class HTTPServerTests: XCTestCase {
     func testAddressReuse() {
         var called: Bool = false
         let port = try! getUnusedTCPPort()
-        let app = { (_: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ((Data) -> Void)) in
+        let app = { (_: [String: Any], startResponse: @escaping SWSGIStartResponse, sendBody: @escaping SWSGISendBody) in
             startResponse("200 OK", [])
             sendBody(Data())
             self.loop.stop()
@@ -324,8 +324,8 @@ class HTTPServerTests: XCTestCase {
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 _: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                startResponse: @escaping SWSGIStartResponse,
+                sendBody: @escaping SWSGISendBody
             ) in
             startResponse("200 OK", [])
             sendBody(Data())
@@ -338,6 +338,26 @@ class HTTPServerTests: XCTestCase {
         assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             server.stopAndWait()
         }
+        loop.stop()
+    }
+
+    func testStopAndWaitAsync() async {
+        let port = try! getUnusedTCPPort()
+        let server = DefaultHTTPServer(eventLoop: loop, port: port) { _, startResponse, sendBody in
+            startResponse("200 OK", [])
+            sendBody(Data())
+        }
+        try! server.start()
+
+        let loop = self.loop!
+        queue.async {
+            loop.runForever()
+        }
+        let begin = Date()
+        await server.stopAndWait()
+        XCTAssertEqual(Date().timeIntervalSince(begin), 0, accuracy: tickAccuracy)
+        // a second stop is a no-op that only logs
+        server.stop()
         loop.stop()
     }
 }

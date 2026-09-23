@@ -17,8 +17,9 @@
 
 import Foundation
 
-/// An atomic variable.
-final class Atomic<Value> {
+/// An atomic variable. Every access goes through the mutex, so the box itself may be shared
+/// across threads; callers remain responsible for the thread-safety of `Value`'s contents.
+final class Atomic<Value>: @unchecked Sendable {
     private var mutex = pthread_mutex_t()
     private var _value: Value
 

@@ -7,7 +7,8 @@ import XCTest
 
 @testable import Embassy
 
-private final class RecordingLogHandler: LogHandler {
+// test double; only ever touched from the test thread
+private final class RecordingLogHandler: LogHandler, @unchecked Sendable {
     var formatter: LogFormatter?
     var records: [LogRecord] = []
 

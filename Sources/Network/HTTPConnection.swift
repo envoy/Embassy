@@ -9,7 +9,10 @@
 import Foundation
 
 /// HTTPConnection represents an active HTTP connection
-public final class HTTPConnection {
+/// Thread confinement: every method and stored property of this type belongs to the thread
+/// running its `EventLoop`. The `Sendable` conformance is unchecked because references to it are
+/// captured by `@Sendable` loop callbacks, not because it is safe to touch from other threads.
+public final class HTTPConnection: @unchecked Sendable {
     enum RequestState {
         case parsingHeader
         case readingBody
@@ -170,7 +173,11 @@ public final class HTTPConnection {
         // pause the reading for now, let `swsgi.input` called and resume it later
         transport.resume(reading: false)
 
-        app(environ, startResponse, sendBody)
+        app(
+            environ,
+            { self.startResponse($0, headers: $1) },
+            { self.sendBody($0) }
+        )
     }
 
     private func swsgiInput(_ handler: ((Data) -> Void)?) {

@@ -12,9 +12,9 @@ import Foundation
 public struct TransformLogHandler: LogHandler {
     public let handler: LogHandler
     public var formatter: LogFormatter?
-    public let transform: (LogRecord) -> LogRecord
+    public let transform: @Sendable (LogRecord) -> LogRecord
 
-    public init(handler: LogHandler, transform: @escaping (LogRecord) -> LogRecord) {
+    public init(handler: LogHandler, transform: @escaping @Sendable (LogRecord) -> LogRecord) {
         self.handler = handler
         self.transform = transform
     }

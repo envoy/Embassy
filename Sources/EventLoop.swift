@@ -10,6 +10,10 @@ import Foundation
 
 /// EventLoop uses given selector to monitor IO events, trigger callbacks when needed to
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
+///
+/// Thread contract: every callback runs on the thread that is executing `runForever()`.
+/// The `call` family may be invoked from any thread, which is why callbacks are `@Sendable`;
+/// `setReader`/`setWriter`/`removeReader`/`removeWriter` must be called on the loop thread.
 public protocol EventLoop {
     /// Indicate whether is this event loop running
     var running: Bool { get }
@@ -17,7 +21,7 @@ public protocol EventLoop {
     /// Set a read-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be read
-    func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void)
+    func setReader(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void)
 
     /// Remove reader callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
@@ -26,7 +30,7 @@ public protocol EventLoop {
     /// Set a write-ready callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
     ///  - Parameter callback: callback function to be triggered when file is ready to be written
-    func setWriter(_ fileDescriptor: Int32, callback: @escaping () -> Void)
+    func setWriter(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void)
 
     /// Remove writer callback for given fileDescriptor
     ///  - Parameter fileDescriptor: target file descriptor
@@ -34,17 +38,17 @@ public protocol EventLoop {
 
     /// Call given callback as soon as possible (the next event loop iteration)
     ///  - Parameter callback: the callback function to be called
-    func call(callback: @escaping () -> Void)
+    func call(callback: @escaping @Sendable () -> Void)
 
     /// Call given callback `withDelay` seconds later
     ///  - Parameter withDelay: delaying in seconds
     ///  - Parameter callback: the callback function to be called
-    func call(withDelay: TimeInterval, callback: @escaping () -> Void)
+    func call(withDelay: TimeInterval, callback: @escaping @Sendable () -> Void)
 
     /// Call given callback at specific time
     ///  - Parameter atTime: time the callback to be called
     ///  - Parameter callback: the callback function to be called
-    func call(atTime: Date, callback: @escaping () -> Void)
+    func call(atTime: Date, callback: @escaping @Sendable () -> Void)
 
     /// Stop the event loop
     func stop()
