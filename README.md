@@ -2,7 +2,7 @@
 
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 ![Swift Version](https://img.shields.io/badge/Swift-6.0-orange.svg)
-![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|tvOS-lightgrey.svg)
+![Platform](https://img.shields.io/badge/Platform-macOS|iOS|tvOS-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
 Super lightweight async HTTP server in pure Swift.
@@ -13,8 +13,8 @@ Super lightweight async HTTP server in pure Swift.
 
 ## Features
 
- - Swift 4 & 5
- - iOS / tvOS / macOS
+ - Swift 6 language mode with strict concurrency
+ - iOS 15+ / tvOS 15+ / macOS 12+
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible
@@ -90,17 +90,28 @@ let app = { (
 
 Please notice that functions passed into SWSGI should be only called within the same thread for running the `EventLoop`, they are all not threadsafe, therefore, **you should not use [GCD](https://developer.apple.com/library/ios/documentation/Performance/Reference/GCD_libdispatch_Ref/) for delaying any call**. Instead, there are some methods from `EventLoop` you can use, and they are all threadsafe
 
-### call(callback: (Void) -> Void)
+### call(callback: @escaping @Sendable () -> Void)
 
 Call given callback as soon as possible in the event loop
 
-### call(withDelay: TimeInterval, callback: (Void) -> Void)
+### call(withDelay: TimeInterval, callback: @escaping @Sendable () -> Void)
 
-Schedule given callback to `withDelay` seconds then call it in the event loop.
+Schedule given callback to `withDelay` seconds then call it in the event loop. Delays are measured on a monotonic clock, so wall-clock changes on the device do not shift them.
 
-### call(atTime: Date, callback: (Void) -> Void)
+### call(atTime: Date, callback: @escaping @Sendable () -> Void)
 
 Schedule given callback to be called at `atTime` in the event loop. If the given time is in the past or zero, this methods works exactly like `call` with only callback parameter.
+
+Callbacks are `@Sendable` because `call` may be invoked from any thread; the callback itself always runs on the loop thread.
+
+## Stopping the server
+
+`HTTPServer.stop()` must be called on the loop thread. From any other thread use `stopAndWait()`, which hops onto the loop, stops the server, and returns once it has. It comes in a blocking form and an `async` form:
+
+```Swift
+server.stopAndWait()        // blocks the calling thread
+await server.stopAndWait()  // suspends instead
+```
 
 ## What's SWSGI (Swift Web Server Gateway Interface)?
 
@@ -167,7 +178,7 @@ Some extra Embassy server specific keys are
 
  - `embassy.connection` - `HTTPConnection` object for the request
  - `embassy.event_loop` - `EventLoop` object
- - `embassy.version` - Version of embassy as a String, e.g. `3.0.0`
+ - `embassy.version` - Version of embassy as a String, e.g. `5.0.0`
 
 ### `startResponse`
 
@@ -202,15 +213,19 @@ sendBody(Data())
 Embassy is distributed only through Swift Package Manager. Add it to `Package.swift`:
 
 ```swift
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
     name: "EmbassyExample",
+    platforms: [.iOS(.v15), .macOS(.v12), .tvOS(.v15)],
     dependencies: [
         .package(url: "https://github.com/envoy/Embassy.git",
-                 from: "4.1.4"),
+                 from: "5.0.0"),
     ]
 )
 ```
+
+Embassy 5 is a breaking release over 4.x: `EventLoop` and SWSGI callbacks are `@Sendable`, `HTTPServer.app` is read-only, `Selector` gained `modify`, and Linux is no longer supported.
 
 You can read this [example project](https://github.com/envoy/example-embassy) here.
