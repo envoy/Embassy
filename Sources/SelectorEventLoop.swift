@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 private class CallbackHandle {
     let reader: (() -> Void)?
     let writer: (() -> Void)?
@@ -48,7 +47,7 @@ public final class SelectorEventLoop: EventLoop {
         IOUtils.setBlocking(fileDescriptor: pipeReceiver, blocking: false)
         // subscribe to pipe receiver read-ready event, do nothing, just allow selector
         // to be interrupted
-        
+
         // Notice: we use a local copy of pipeReceiver to avoid referencing self
         // here, thus we won't have reference cycle problem
         let localPipeReceiver = pipeReceiver
@@ -68,8 +67,8 @@ public final class SelectorEventLoop: EventLoop {
     deinit {
         stop()
         removeReader(pipeReceiver)
-        let _ = SystemLibrary.close(pipeSender)
-        let _ = SystemLibrary.close(pipeReceiver)
+        _ = SystemLibrary.close(pipeSender)
+        _ = SystemLibrary.close(pipeReceiver)
     }
 
     public func setReader(_ fileDescriptor: Int32, callback: @escaping () -> Void) {
@@ -237,10 +236,8 @@ public final class SelectorEventLoop: EventLoop {
             var notExpiredCallbacks = callbacks
             // keep poping expired callbacks
             let timestamp = now.timeIntervalSince1970
-            while (
-                !notExpiredCallbacks.isEmpty &&
-                timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970
-            ) {
+            while !notExpiredCallbacks.isEmpty &&
+                timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970 {
                 // pop the expired callbacks from heap queue and add them to ready callback list
                 let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) {
                     $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970

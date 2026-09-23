@@ -1,2 +1,6 @@
 xcuserdata
 .build
+.derived-data-log-*
+.swiftpm
+.vscode
+.DS_Store

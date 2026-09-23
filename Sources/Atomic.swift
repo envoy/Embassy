@@ -17,7 +17,6 @@
 
 import Foundation
 
-
 /// An atomic variable.
 final class Atomic<Value> {
     private var mutex = pthread_mutex_t()

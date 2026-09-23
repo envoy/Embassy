@@ -126,8 +126,8 @@ public final class KqueueSelector: Selector {
             }
         }
 
-        var kevents = Array<Darwin.kevent>(repeating: Darwin.kevent(), count: selectMaximumEvent)
-        let eventCount:Int32 = kevents.withUnsafeMutableBufferPointer { pointer in
+        var kevents = [Darwin.kevent](repeating: Darwin.kevent(), count: selectMaximumEvent)
+        let eventCount: Int32 = kevents.withUnsafeMutableBufferPointer { pointer in
             return withUnsafeOptionalPointer(to: &timeSpec) { timeSpecPointer in
                 return kevent(
                     kqueue,

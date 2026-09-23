@@ -96,7 +96,7 @@ func makeRandomString(_ length: Int) -> String {
     let endIndex = UInt32(letters.count - 1)
     let result: [Any?] = Array(repeating: nil, count: length)
     return String(result.map({ _ in
-        letters[String.Index(encodedOffset: Int(arc4random_uniform(endIndex)))]
+      letters[String.Index(utf16Offset: Int(arc4random_uniform(endIndex)), in: letters)]
     }))
 }
 
