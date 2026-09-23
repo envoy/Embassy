@@ -50,6 +50,15 @@ public protocol Selector {
     @discardableResult
     func unregister(_ fileDescriptor: Int32) throws -> SelectorKey
 
+    /// Change the watched events and user data of an already registered file descriptor
+    /// without unregistering it. Passing an empty `events` set unregisters it.
+    ///  - Parameter fileDescriptor: the registered file descriptor to change
+    ///  - Parameter events: the complete new set of IO events to watch
+    ///  - Parameter data: the new user custom data
+    ///  - Returns: the updated SelectorKey (or the removed key when `events` is empty)
+    @discardableResult
+    func modify(_ fileDescriptor: Int32, events: IOEvent, data: Any?) throws -> SelectorKey
+
     /// Close the selector to release underlaying resource
     func close()
 

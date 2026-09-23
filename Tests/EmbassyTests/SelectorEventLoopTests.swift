@@ -7,205 +7,150 @@
 //
 
 import Foundation
-import XCTest
-import Dispatch
+import Testing
 
 @testable import Embassy
 
-class SelectorEventLoopTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
-    var loop: SelectorEventLoop!
-
-    override func setUp() {
-        super.setUp()
-        loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        // set a 30 seconds timeout
-        queue.asyncAfter(
-            deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
-        ) {
-            if self.loop.running {
-                self.loop.stop()
-                XCTFail("Time out")
-            }
-        }
+@Suite struct SelectorEventLoopTests {
+    private func makeLoop() throws -> SelectorEventLoop {
+        try SelectorEventLoop(selector: try KqueueSelector())
     }
 
-    func testStop() {
-        queue.asyncAfter(
-            deadline: .inTicks(1)
-        ) {
-            XCTAssert(self.loop.running)
-            self.loop.stop()
-            XCTAssertFalse(self.loop.running)
+    @Test func stop() async throws {
+        let loop = try makeLoop()
+        let runningWhenStopped = Locked<Bool?>(nil)
+        after(1) {
+            runningWhenStopped.value = loop.running
+            loop.stop()
         }
 
-        XCTAssertFalse(loop.running)
-        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssertFalse(loop.running)
+        #expect(!loop.running)
+        let elapsed = await run(loop)
+        expectDuration(1 * tick, elapsed)
+        #expect(runningWhenStopped.value == true)
+        #expect(!loop.running)
     }
 
-    func testCallSoon() {
-        var called = false
+    @Test func callSoon() async throws {
+        let loop = try makeLoop()
+        let called = Locked(false)
         loop.call {
-            called = true
-            self.loop.stop()
+            called.value = true
+            loop.stop()
         }
-        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssert(called)
+        let elapsed = await run(loop)
+        expectDuration(0, elapsed)
+        #expect(called.value)
     }
 
-    func testCallLater() {
-        var events: [Int] = []
-        loop.call(withDelay: 0 * tick) {
-            events.append(0)
-        }
-        loop.call(withDelay: 1 * tick) {
-            events.append(1)
-        }
-        loop.call(withDelay: 2 * tick) {
-            self.loop.stop()
-        }
-        loop.call(withDelay: 3 * tick) {
-            events.append(3)
-        }
-        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssertEqual(events, [0, 1])
+    @Test func callLater() async throws {
+        let loop = try makeLoop()
+        let events = Locked<[Int]>([])
+        loop.call(withDelay: 0) { events.append(0) }
+        loop.call(withDelay: 1 * tick) { events.append(1) }
+        loop.call(withDelay: 2 * tick) { loop.stop() }
+        loop.call(withDelay: 3 * tick) { events.append(3) }
+
+        let elapsed = await run(loop)
+        expectDuration(2 * tick, elapsed)
+        #expect(events.value == [0, 1])
     }
 
-    func testCallAtOrder() {
-        var events: [Int] = []
+    @Test func callAtOrder() async throws {
+        let loop = try makeLoop()
+        let events = Locked<[Int]>([])
         let now = Date()
-        loop.call(atTime: now.addingTimeInterval(0)) {
-            events.append(0)
-        }
-        loop.call(atTime: now.addingTimeInterval(0.000002)) {
-            events.append(2)
-        }
-        loop.call(atTime: now.addingTimeInterval(0.000001)) {
-            events.append(1)
-        }
+        loop.call(atTime: now.addingTimeInterval(0)) { events.append(0) }
+        loop.call(atTime: now.addingTimeInterval(0.000002)) { events.append(2) }
+        loop.call(atTime: now.addingTimeInterval(0.000001)) { events.append(1) }
         loop.call(atTime: now.addingTimeInterval(0.000004)) {
             events.append(4)
-            self.loop.stop()
+            loop.stop()
         }
-        loop.call(atTime: now.addingTimeInterval(0.000003)) {
-            events.append(3)
-        }
-        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssertEqual(events, [0, 1, 2, 3, 4])
+        loop.call(atTime: now.addingTimeInterval(0.000003)) { events.append(3) }
+
+        let elapsed = await run(loop)
+        expectDuration(0, elapsed)
+        #expect(events.value == [0, 1, 2, 3, 4])
     }
 
-    func testSetReader() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-        var readerCalled = false
+    @Test func setReader() async throws {
+        let loop = try makeLoop()
+        let (listenSocket, port) = try makeListenSocket()
+        let readerCalled = Locked(false)
 
         loop.setReader(listenSocket.fileDescriptor) {
-            readerCalled = true
-            self.loop.stop()
+            readerCalled.value = true
+            loop.stop()
         }
 
-        let clientSocket = try! TCPSocket()
-
-        // make a connection 1 seconds later
+        let clientSocket = try TCPSocket()
         loop.call(withDelay: 1 * tick) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssert(readerCalled)
+        let elapsed = await run(loop)
+        expectDuration(1 * tick, elapsed)
+        #expect(readerCalled.value)
     }
 
-    func testSetWriter() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-        var writerCalled = false
+    @Test func setWriter() async throws {
+        let loop = try makeLoop()
+        let (_, port) = try makeListenSocket()
+        let writerCalled = Locked(false)
+        let clientSocket = try TCPSocket()
 
-        let clientSocket = try! TCPSocket()
-
-        // make a connect 1 seconds later
-        loop.call(withDelay: 1 * tick) { [unowned self] in
+        loop.call(withDelay: 1 * tick) {
             try! clientSocket.connect(host: "::1", port: port)
-
             // Notice: It seems we should only select on the socket after it's either connecting
             // or listening, and that's why we put setWriter here instead of before or after
             // ref: http://stackoverflow.com/q/41656400/25077
-            self.loop.setWriter(clientSocket.fileDescriptor) {
-                writerCalled = true
-                self.loop.stop()
+            loop.setWriter(clientSocket.fileDescriptor) {
+                writerCalled.value = true
+                loop.stop()
             }
         }
 
-        assertExecutingTime(1.0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssert(writerCalled)
+        let elapsed = await run(loop)
+        expectDuration(1 * tick, elapsed)
+        #expect(writerCalled.value)
     }
 
-    func testRemoveReader() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        let clientSocket = try! TCPSocket()
-        var acceptedSocket: TCPSocket!
-
-        var readData = [String]()
-        let readAcceptedSocket = {
-            let data = try! acceptedSocket.recv(size: 1024)
-            readData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            if readData.count >= 2 {
-                self.loop.removeReader(acceptedSocket.fileDescriptor)
-            }
-        }
+    @Test func removeReader() async throws {
+        let loop = try makeLoop()
+        let (listenSocket, port) = try makeListenSocket()
+        let clientSocket = try TCPSocket()
+        let acceptedSocket = Locked<TCPSocket?>(nil)
+        let readData = Locked<[String]>([])
 
         loop.setReader(listenSocket.fileDescriptor) {
-            acceptedSocket = try! listenSocket.accept()
-            self.loop.setReader(acceptedSocket.fileDescriptor, callback: readAcceptedSocket)
+            let accepted = try! listenSocket.accept()
+            acceptedSocket.value = accepted
+            loop.setReader(accepted.fileDescriptor) {
+                readData.append(utf8String(try! accepted.recv(size: 1024)))
+                if readData.value.count >= 2 {
+                    loop.removeReader(accepted.fileDescriptor)
+                }
+            }
         }
 
-        try! clientSocket.connect(host: "::1", port: port)
+        try clientSocket.connect(host: "::1", port: port)
 
-        loop.call(withDelay: 1 * tick) {
-            try! clientSocket.send(data: Data("hello".utf8))
-        }
-        loop.call(withDelay: 2 * tick) {
-            try! clientSocket.send(data: Data("baby".utf8))
-        }
-        loop.call(withDelay: 3 * tick) {
-            try! clientSocket.send(data: Data("fin".utf8))
-        }
-        loop.call(withDelay: 4 * tick) {
-            self.loop.stop()
-        }
+        loop.call(withDelay: 1 * tick) { try! clientSocket.send(data: Data("hello".utf8)) }
+        loop.call(withDelay: 2 * tick) { try! clientSocket.send(data: Data("baby".utf8)) }
+        loop.call(withDelay: 3 * tick) { try! clientSocket.send(data: Data("fin".utf8)) }
+        loop.call(withDelay: 4 * tick) { loop.stop() }
 
-        assertExecutingTime(4.0 * tick, accuracy: tickAccuracy) {
-            self.loop.runForever()
-        }
-        XCTAssertEqual(readData, ["hello", "baby"])
+        let elapsed = await run(loop)
+        expectDuration(4 * tick, elapsed)
+        #expect(readData.value == ["hello", "baby"])
     }
 
-    func testEventLoopReferenceCycle() {
+    @Test func eventLoopReferenceCycle() throws {
         // Notice: we had a reference cycle from the setReader callback to the
         // selector loop object before, we ensure that when loop is not hold
         // by anybody, it should be released here
-        weak var loop = try! SelectorEventLoop(selector: try! TestingSelector())
-        XCTAssertNil(loop)
+        weak let loop = try makeLoop()
+        #expect(loop == nil)
     }
 }

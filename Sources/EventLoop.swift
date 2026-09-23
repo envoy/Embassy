@@ -12,9 +12,10 @@ import Foundation
 /// Follow Python EventLoop design https://docs.python.org/3/library/asyncio-eventloop.html
 ///
 /// Thread contract: every callback runs on the thread that is executing `runForever()`.
-/// The `call` family may be invoked from any thread, which is why callbacks are `@Sendable`;
-/// `setReader`/`setWriter`/`removeReader`/`removeWriter` must be called on the loop thread.
-public protocol EventLoop {
+/// The `call` family may be invoked from any thread, which is why callbacks are `@Sendable` and
+/// the loop itself is `Sendable`; `setReader`/`setWriter`/`removeReader`/`removeWriter` must be
+/// called on the loop thread.
+public protocol EventLoop: Sendable {
     /// Indicate whether is this event loop running
     var running: Bool { get }
 

@@ -85,17 +85,14 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
     }
 
     public func setReader(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void) {
-        // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
+            // already watched: change the filter set and callbacks in place
             let oldHandle = key.data as! CallbackHandle
-            let handle = CallbackHandle(reader: callback, writer: oldHandle.writer)
-            try! selector.unregister(fileDescriptor)
-            try! selector.register(
+            try! selector.modify(
                 fileDescriptor,
                 events: key.events.union([.read]),
-                data: handle
+                data: CallbackHandle(reader: callback, writer: oldHandle.writer)
             )
-        // register the new file descriptor
         } else {
             try! selector.register(
                 fileDescriptor,
@@ -109,28 +106,24 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
         guard let key = selector[fileDescriptor] else {
             return
         }
-        try! selector.unregister(fileDescriptor)
-        let newEvents = key.events.subtracting([.read])
-        guard !newEvents.isEmpty else {
-            return
-        }
         let oldHandle = key.data as! CallbackHandle
-        let handle = CallbackHandle(reader: nil, writer: oldHandle.writer)
-        try! selector.register(fileDescriptor, events: newEvents, data: handle)
+        // an empty event set unregisters the descriptor
+        try! selector.modify(
+            fileDescriptor,
+            events: key.events.subtracting([.read]),
+            data: CallbackHandle(reader: nil, writer: oldHandle.writer)
+        )
     }
 
     public func setWriter(_ fileDescriptor: Int32, callback: @escaping @Sendable () -> Void) {
-        // we already have the file descriptor in selector, unregister it then register
         if let key = selector[fileDescriptor] {
+            // already watched: change the filter set and callbacks in place
             let oldHandle = key.data as! CallbackHandle
-            let handle = CallbackHandle(reader: oldHandle.reader, writer: callback)
-            try! selector.unregister(fileDescriptor)
-            try! selector.register(
+            try! selector.modify(
                 fileDescriptor,
                 events: key.events.union([.write]),
-                data: handle
+                data: CallbackHandle(reader: oldHandle.reader, writer: callback)
             )
-            // register the new file descriptor
         } else {
             try! selector.register(
                 fileDescriptor,
@@ -144,14 +137,13 @@ public final class SelectorEventLoop: EventLoop, @unchecked Sendable {
         guard let key = selector[fileDescriptor] else {
             return
         }
-        try! selector.unregister(fileDescriptor)
-        let newEvents = key.events.subtracting([.write])
-        guard !newEvents.isEmpty else {
-            return
-        }
         let oldHandle = key.data as! CallbackHandle
-        let handle = CallbackHandle(reader: oldHandle.reader, writer: nil)
-        try! selector.register(fileDescriptor, events: newEvents, data: handle)
+        // an empty event set unregisters the descriptor
+        try! selector.modify(
+            fileDescriptor,
+            events: key.events.subtracting([.write]),
+            data: CallbackHandle(reader: oldHandle.reader, writer: nil)
+        )
     }
 
     public func call(callback: @escaping @Sendable () -> Void) {

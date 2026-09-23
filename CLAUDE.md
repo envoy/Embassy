@@ -16,7 +16,7 @@ swift test --filter <TestCaseName>/<testMethodName>   # single test
 
 SwiftPM is the only build system; the old `Embassy.xcodeproj`/`.xcworkspace` and CocoaPods/Carthage manifests were removed. Open `Package.swift` directly in Xcode. Deployment floor is iOS 15 / macOS 12 / tvOS 15.
 
-Test sources live at `Tests/EmbassyTests/`. Timing-sensitive tests sequence events with the shared `tick` constant in `TestingHelpers.swift` (100 ms) instead of whole seconds; keep new tests on that scale.
+Tests use Swift Testing (`@Suite`/`@Test`/`#expect`), build in Swift 6 language mode, and run in parallel. `TestingHelpers.swift` has the conventions: `run(loop)` drives an event loop on its own thread and returns elapsed seconds; `onThread`/`timed` do the same for blocking calls like `select` and `accept`; `Locked<T>` holds state that loop callbacks mutate; `makeListenSocket()` binds port 0 so parallel tests never race for a port. Timing is sequenced in `tick` units (100 ms) with `expectDuration`; keep new tests on that scale.
 
 Lint config exists (`.swiftlint.yaml`) but no `swiftlint` invocation is wired into a script in this repo — run `swiftlint` directly if installed.
 

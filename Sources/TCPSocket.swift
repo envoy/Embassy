@@ -9,7 +9,10 @@
 import Foundation
 
 /// Class wrapping around TCP/IPv6 socket
-public final class TCPSocket {
+///
+/// Thread confinement: a socket belongs to whichever thread drives it (normally the event loop
+/// thread). `Sendable` is unchecked so references can be handed to `@Sendable` loop callbacks.
+public final class TCPSocket: @unchecked Sendable {
     /// The file descriptor number for socket
     var fileDescriptor: Int32
 

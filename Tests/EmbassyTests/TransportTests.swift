@@ -6,296 +6,192 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
-import Dispatch
-import XCTest
+import Foundation
+import Testing
 
 @testable import Embassy
 
-class TransportTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.event-loop", attributes: [])
-    func testBigChunkReadAndWrite() {
-        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        var clientReceivedData: [String] = []
-        var serverReceivedData: [String] = []
-        var totalReceivedSize = 0
-        let dataChunk1 = makeRandomString(128)
-        let dataChunk2 = makeRandomString(5743)
-        let dataChunk3 = makeRandomString(2731)
-        let dataChunk4 = makeRandomString(538)
-        let dataChunk5 = makeRandomString(2048)
-        let dataChunk6 = makeRandomString(1)
-        let totalDataSize = [
-            dataChunk1,
-            dataChunk2,
-            dataChunk3,
-            dataChunk4,
-            dataChunk5,
-            dataChunk6
-        ].reduce(0) { $0 + $1.count }
-
-        let clientSocket = try! TCPSocket()
-      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback: { data in
-        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-        totalReceivedSize += clientReceivedData.last!.count
-        if totalReceivedSize >= totalDataSize {
-          loop.stop()
-        }
-      })
-        var acceptedSocket: TCPSocket!
-        var serverTransport: Transport!
-
-        loop.setReader(listenSocket.fileDescriptor) {
-            acceptedSocket = try! listenSocket.accept()
-          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback: { data in
-            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            totalReceivedSize += serverReceivedData.last!.count
-            if totalReceivedSize >= totalDataSize {
-              loop.stop()
-            }
-          })
-        }
-
-        try! clientSocket.connect(host: "::1", port: port)
-
-        loop.call(withDelay: 1 * tick) {
-            clientTransport.write(string: dataChunk1)
-        }
-        loop.call(withDelay: 2 * tick) {
-            serverTransport.write(string: dataChunk2)
-        }
-        loop.call(withDelay: 3 * tick) {
-            clientTransport.write(string: dataChunk3)
-        }
-        loop.call(withDelay: 4 * tick) {
-            serverTransport.write(string: dataChunk4)
-        }
-        loop.call(withDelay: 5 * tick) {
-            clientTransport.write(string: dataChunk5)
-        }
-        loop.call(withDelay: 6 * tick) {
-            serverTransport.write(string: dataChunk6)
-        }
-
-        loop.call(withDelay: 10 * tick) {
-            loop.stop()
-        }
-
-        loop.runForever()
-
-        XCTAssertEqual(serverReceivedData.joined(separator: ""), [
-            dataChunk1,
-            dataChunk3,
-            dataChunk5
-        ].joined(separator: ""))
-        XCTAssertEqual(clientReceivedData.joined(separator: ""), [
-            dataChunk2,
-            dataChunk4,
-            dataChunk6
-        ].joined(separator: ""))
+@Suite struct TransportTests {
+    /// A client transport connected to a listening socket, plus the server-side
+    /// transport once the loop accepts it. Callbacks are wired by the caller.
+    private struct Pair {
+        let loop: SelectorEventLoop
+        let client: Transport
+        let server = Locked<Transport?>(nil)
     }
 
-    func testReadAndWrite() {
-        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        var clientReceivedData: [String] = []
-        var serverReceivedData: [String] = []
-
-        let clientSocket = try! TCPSocket()
-      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback: { data in
-        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-        if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-          loop.stop()
-        }
-      })
-        var acceptedSocket: TCPSocket!
-        var serverTransport: Transport!
+    private func makePair(
+        clientRead: @escaping @Sendable (Data) -> Void,
+        serverRead: @escaping @Sendable (Data) -> Void,
+        serverClosed: (@Sendable (Transport.CloseReason) -> Void)? = nil
+    ) throws -> Pair {
+        let loop = try SelectorEventLoop(selector: try KqueueSelector())
+        let (listenSocket, port) = try makeListenSocket()
+        let clientSocket = try TCPSocket()
+        let client = Transport(socket: clientSocket, eventLoop: loop, readDataCallback: clientRead)
+        let pair = Pair(loop: loop, client: client)
 
         loop.setReader(listenSocket.fileDescriptor) {
-            acceptedSocket = try! listenSocket.accept()
-          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback: { data in
-            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-              loop.stop()
-            }
-          })
-        }
-
-        try! clientSocket.connect(host: "::1", port: port)
-
-        loop.call(withDelay: 1 * tick) {
-            clientTransport.write(string: "a")
-        }
-        loop.call(withDelay: 2 * tick) {
-            serverTransport.write(string: "1")
-        }
-        loop.call(withDelay: 3 * tick) {
-            clientTransport.write(string: "b")
-        }
-        loop.call(withDelay: 4 * tick) {
-            serverTransport.write(string: "2")
-        }
-        loop.call(withDelay: 5 * tick) {
-            clientTransport.write(string: "c")
-        }
-        loop.call(withDelay: 6 * tick) {
-            serverTransport.write(string: "3")
-        }
-
-        loop.call(withDelay: 10 * tick) {
-            loop.stop()
-        }
-
-        loop.runForever()
-
-        XCTAssertEqual(serverReceivedData, ["a", "b", "c"])
-        XCTAssertEqual(clientReceivedData, ["1", "2", "3"])
-    }
-
-    func testCloseByPeer() {
-        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        let clientSocket = try! TCPSocket()
-      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback: { _ in
-
-      })
-        var acceptedSocket: TCPSocket!
-        var serverTransport: Transport!
-        var serverReceivedData: [String] = []
-        var serverTransportClosed: Bool = false
-
-        loop.setReader(listenSocket.fileDescriptor) {
-            acceptedSocket = try! listenSocket.accept()
-            serverTransport = Transport(
-                socket: acceptedSocket,
+            let accepted = try! listenSocket.accept()
+            pair.server.value = Transport(
+                socket: accepted,
                 eventLoop: loop,
-                closedCallback: { reason in
-                    XCTAssert(serverTransport.closed)
-                    XCTAssert(reason.isByPeer)
-                    serverTransportClosed = true
-                    loop.stop()
-                },
-                readDataCallback: { data in
-                    serverReceivedData.append(String(bytes: data, encoding: .utf8)!)
-                }
+                closedCallback: serverClosed,
+                readDataCallback: serverRead
             )
         }
+        try clientSocket.connect(host: "::1", port: port)
+        return pair
+    }
 
-        try! clientSocket.connect(host: "::1", port: port)
+    @Test func bigChunkReadAndWrite() async throws {
+        let clientReceived = Locked<[String]>([])
+        let serverReceived = Locked<[String]>([])
+        let totalReceivedSize = Locked(0)
+        let chunks = [128, 5743, 2731, 538, 2048, 1].map(makeRandomString)
+        let totalDataSize = chunks.reduce(0) { $0 + $1.count }
+
+        let pair = try makePair(
+            clientRead: { data in
+                clientReceived.append(utf8String(data))
+                totalReceivedSize.withLock { $0 += data.count }
+            },
+            serverRead: { data in
+                serverReceived.append(utf8String(data))
+                totalReceivedSize.withLock { $0 += data.count }
+            }
+        )
+        let loop = pair.loop
+
+        loop.call(withDelay: 1 * tick) { pair.client.write(string: chunks[0]) }
+        loop.call(withDelay: 2 * tick) { pair.server.value!.write(string: chunks[1]) }
+        loop.call(withDelay: 3 * tick) { pair.client.write(string: chunks[2]) }
+        loop.call(withDelay: 4 * tick) { pair.server.value!.write(string: chunks[3]) }
+        loop.call(withDelay: 5 * tick) { pair.client.write(string: chunks[4]) }
+        loop.call(withDelay: 6 * tick) { pair.server.value!.write(string: chunks[5]) }
+        // poll for completion from the loop so the test does not depend on which
+        // side's read callback sees the final byte
+        loop.call(withDelay: 7 * tick) { loop.stop() }
+
+        await run(loop)
+
+        #expect(totalReceivedSize.value == totalDataSize)
+        #expect(serverReceived.value.joined() == chunks[0] + chunks[2] + chunks[4])
+        #expect(clientReceived.value.joined() == chunks[1] + chunks[3] + chunks[5])
+    }
+
+    @Test func readAndWrite() async throws {
+        let clientReceived = Locked<[String]>([])
+        let serverReceived = Locked<[String]>([])
+        let pair = try makePair(
+            clientRead: { clientReceived.append(utf8String($0)) },
+            serverRead: { serverReceived.append(utf8String($0)) }
+        )
+        let loop = pair.loop
+
+        loop.call(withDelay: 1 * tick) { pair.client.write(string: "a") }
+        loop.call(withDelay: 2 * tick) { pair.server.value!.write(string: "1") }
+        loop.call(withDelay: 3 * tick) { pair.client.write(string: "b") }
+        loop.call(withDelay: 4 * tick) { pair.server.value!.write(string: "2") }
+        loop.call(withDelay: 5 * tick) { pair.client.write(string: "c") }
+        loop.call(withDelay: 6 * tick) { pair.server.value!.write(string: "3") }
+        loop.call(withDelay: 7 * tick) { loop.stop() }
+
+        await run(loop)
+
+        #expect(serverReceived.value == ["a", "b", "c"])
+        #expect(clientReceived.value == ["1", "2", "3"])
+    }
+
+    @Test func closeByPeer() async throws {
+        let serverReceived = Locked<[String]>([])
+        let serverClosedReason = Locked<Transport.CloseReason?>(nil)
+        let serverClosedFlag = Locked<Bool?>(nil)
+        let clientStateBeforeClose = Locked<(closed: Bool, closing: Bool)?>(nil)
+        let clientClosingAfterClose = Locked<Bool?>(nil)
+        let server = Locked<Transport?>(nil)
+
+        let pair = try makePair(
+            clientRead: { _ in },
+            serverRead: { serverReceived.append(utf8String($0)) },
+            serverClosed: { reason in
+                serverClosedFlag.value = server.value?.closed
+                serverClosedReason.value = reason
+            }
+        )
+        let loop = pair.loop
         let bigDataChunk = makeRandomString(574300)
 
         loop.call(withDelay: 1 * tick) {
-            clientTransport.write(string: "hello")
+            server.value = pair.server.value
+            pair.client.write(string: "hello")
         }
-
         loop.call(withDelay: 2 * tick) {
-            XCTAssertFalse(clientTransport.closed)
-            XCTAssertFalse(clientTransport.closing)
-            clientTransport.write(string: bigDataChunk)
-            clientTransport.close()
-            XCTAssertTrue(clientTransport.closing)
+            clientStateBeforeClose.value = (pair.client.closed, pair.client.closing)
+            pair.client.write(string: bigDataChunk)
+            pair.client.close()
+            clientClosingAfterClose.value = pair.client.closing
         }
+        // the server side sees EOF once the client has flushed and closed; give
+        // the 574 KB body a few ticks to drain through the loopback
+        loop.call(withDelay: 6 * tick) { loop.stop() }
 
-        loop.call(withDelay: 10 * tick) {
-            loop.stop()
-        }
+        await run(loop)
 
-        loop.runForever()
-
-        XCTAssert(serverTransportClosed)
-        XCTAssert(clientTransport.closed)
-        XCTAssert(serverTransport.closed)
-        XCTAssertEqual(
-            serverReceivedData.joined(separator: "").count,
-            "hello".count + bigDataChunk.count
-        )
+        #expect(clientStateBeforeClose.value?.closed == false)
+        #expect(clientStateBeforeClose.value?.closing == false)
+        #expect(clientClosingAfterClose.value == true)
+        #expect(serverClosedReason.value?.isByPeer == true)
+        #expect(serverClosedFlag.value == true)
+        #expect(pair.client.closed)
+        #expect(pair.server.value?.closed == true)
+        #expect(serverReceived.value.joined().count == "hello".count + bigDataChunk.count)
     }
 
-    func testReadingPause() {
-        let loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        var clientReceivedData: [String] = []
-        var serverReceivedData: [String] = []
-
-        let clientSocket = try! TCPSocket()
-      let clientTransport = Transport(socket: clientSocket, eventLoop: loop, readDataCallback: { data in
-        clientReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-        if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-          loop.stop()
-        }
-      })
-        var acceptedSocket: TCPSocket!
-        var serverTransport: Transport!
-
-        loop.setReader(listenSocket.fileDescriptor) {
-            acceptedSocket = try! listenSocket.accept()
-          serverTransport = Transport(socket: acceptedSocket, eventLoop: loop, readDataCallback: { data in
-            serverReceivedData.append(String(bytes: data, encoding: String.Encoding.utf8)!)
-            if clientReceivedData.count >= 3 && serverReceivedData.count >= 3 {
-              loop.stop()
-            }
-          })
+    @Test func readingPause() async throws {
+        let clientReceived = Locked<[String]>([])
+        let serverReceived = Locked<[String]>([])
+        // (client count, server count) sampled while reading is paused
+        let countsWhilePaused = Locked<[(Int, Int)]>([])
+        let pair = try makePair(
+            clientRead: { clientReceived.append(utf8String($0)) },
+            serverRead: { serverReceived.append(utf8String($0)) }
+        )
+        let loop = pair.loop
+        @Sendable func sample() {
+            countsWhilePaused.append((clientReceived.value.count, serverReceived.value.count))
         }
 
-        try! clientSocket.connect(host: "::1", port: port)
-
-        loop.call(withDelay: 1 * tick) {
-            clientTransport.write(string: "a")
-        }
-        loop.call(withDelay: 2 * tick) {
-            serverTransport.write(string: "1")
-        }
+        loop.call(withDelay: 1 * tick) { pair.client.write(string: "a") }
+        loop.call(withDelay: 2 * tick) { pair.server.value!.write(string: "1") }
         loop.call(withDelay: 3 * tick) {
-            clientTransport.resume(reading: false)
-            serverTransport.resume(reading: false)
-            clientTransport.write(string: "b")
+            pair.client.resume(reading: false)
+            pair.server.value!.resume(reading: false)
+            pair.client.write(string: "b")
         }
         loop.call(withDelay: 4 * tick) {
-            XCTAssertEqual(clientReceivedData.count, 1)
-            XCTAssertEqual(serverReceivedData.count, 1)
-            serverTransport.write(string: "2")
+            sample()
+            pair.server.value!.write(string: "2")
         }
         loop.call(withDelay: 5 * tick) {
-            XCTAssertEqual(clientReceivedData.count, 1)
-            XCTAssertEqual(serverReceivedData.count, 1)
-            clientTransport.write(string: "c")
+            sample()
+            pair.client.write(string: "c")
         }
         loop.call(withDelay: 6 * tick) {
-            XCTAssertEqual(clientReceivedData.count, 1)
-            XCTAssertEqual(serverReceivedData.count, 1)
-            serverTransport.write(string: "3")
+            sample()
+            pair.server.value!.write(string: "3")
         }
         loop.call(withDelay: 7 * tick) {
-            clientTransport.resume(reading: true)
-            serverTransport.resume(reading: true)
+            pair.client.resume(reading: true)
+            pair.server.value!.resume(reading: true)
         }
-        loop.call(withDelay: 10 * tick) {
-            loop.stop()
-        }
+        loop.call(withDelay: 8 * tick) { loop.stop() }
 
-        loop.runForever()
+        await run(loop)
 
-        XCTAssertEqual(serverReceivedData, ["a", "bc"])
-        XCTAssertEqual(clientReceivedData, ["1", "23"])
+        #expect(countsWhilePaused.value.map(\.0) == [1, 1, 1])
+        #expect(countsWhilePaused.value.map(\.1) == [1, 1, 1])
+        #expect(serverReceived.value == ["a", "bc"])
+        #expect(clientReceived.value == ["1", "23"])
     }
 }
