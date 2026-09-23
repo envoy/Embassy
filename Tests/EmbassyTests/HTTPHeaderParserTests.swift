@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import XCTest
+import Testing
 
 @testable import Embassy
 
@@ -31,20 +31,20 @@ public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) ->
     return false
 }
 
-class HTTPHeaderParserTests: XCTestCase {
+@Suite struct HTTPHeaderParserTests {
 
-    func testSimpleParsing() {
+    @Test func simpleParsing() {
         let header = "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\nbody goes here"
         var parser = HTTPHeaderParser()
         let elements = parser.feed(Data(header.utf8))
-        XCTAssertEqual(elements, [
+        #expect(elements == [
             HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1"),
             HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com"),
             HTTPHeaderParser.Element.end(bodyPart: Data("body goes here".utf8))
         ])
     }
 
-    func testPartialParsing() {
+    @Test func partialParsing() {
         let line1Part1 = "GET /index.html"
         let line1Part2 = " HTTP/1.1\r\n"
 
@@ -58,29 +58,29 @@ class HTTPHeaderParserTests: XCTestCase {
         var parser = HTTPHeaderParser()
 
         // try to feed empty array
-        XCTAssertEqual(parser.feed(Data()), [])
+        #expect(parser.feed(Data()) == [])
 
-        XCTAssertEqual(parser.feed(Data(line1Part1.utf8)), [])
-        XCTAssertEqual(parser.feed(Data(line1Part2.utf8)), [
+        #expect(parser.feed(Data(line1Part1.utf8)) == [])
+        #expect(parser.feed(Data(line1Part2.utf8)) == [
             HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1")
         ])
 
-        XCTAssertEqual(parser.feed(Data(line2Part1.utf8)), [])
-        XCTAssertEqual(parser.feed(Data(line2Part2.utf8)), [])
-        XCTAssertEqual(parser.feed(Data(line2Part3.utf8)), [
+        #expect(parser.feed(Data(line2Part1.utf8)) == [])
+        #expect(parser.feed(Data(line2Part2.utf8)) == [])
+        #expect(parser.feed(Data(line2Part3.utf8)) == [
             HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com")
         ])
 
         // try to feed empty array
-        XCTAssertEqual(parser.feed(Data()), [])
+        #expect(parser.feed(Data()) == [])
 
-        XCTAssertEqual(parser.feed(Data(line3Part1.utf8)), [])
-        XCTAssertEqual(parser.feed(Data(line3Part2.utf8)), [
+        #expect(parser.feed(Data(line3Part1.utf8)) == [])
+        #expect(parser.feed(Data(line3Part2.utf8)) == [
             HTTPHeaderParser.Element.end(bodyPart: Data("here comes the body".utf8))
         ])
     }
 
-    func testHeaders() {
+    @Test func headers() {
         let header = [
             "GET /index.html HTTP/1.1",
             "Host: foobar.com",
@@ -96,7 +96,7 @@ class HTTPHeaderParserTests: XCTestCase {
         ].joined(separator: "\r\n") + "\r\n\r\n"
         var parser = HTTPHeaderParser()
         let elements = parser.feed(Data(header.utf8))
-        XCTAssertEqual(elements, [
+        #expect(elements == [
             HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1"),
             HTTPHeaderParser.Element.header(key: "Host", value: "foobar.com"),
             HTTPHeaderParser.Element.header(key: "Date", value: "Mon, 23 May 2005 22:38:34 GMT"),
@@ -112,7 +112,7 @@ class HTTPHeaderParserTests: XCTestCase {
         ])
     }
 
-    func testColonInHeader() {
+    @Test func colonInHeader() {
         let header = [
             "GET /index.html HTTP/1.1",
             "Host: foobar.com",
@@ -121,7 +121,7 @@ class HTTPHeaderParserTests: XCTestCase {
         ].joined(separator: "\r\n") + "\r\n\r\n"
         var parser = HTTPHeaderParser()
         let elements = parser.feed(Data(header.utf8))
-        XCTAssertEqual(elements, [
+        #expect(elements == [
             HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1"),
             HTTPHeaderParser.Element.header(key: "Host", value: "foobar.com"),
             HTTPHeaderParser.Element.header(key: "X-My-Header", value: "MyFaboriteColor: Green"),
@@ -130,7 +130,7 @@ class HTTPHeaderParserTests: XCTestCase {
         ])
     }
 
-    func testNoSpaceAfterColonForHeader() {
+    @Test func noSpaceAfterColonForHeader() {
         let header = [
             "GET /index.html HTTP/1.1",
             "Host: foobar.com",
@@ -139,7 +139,7 @@ class HTTPHeaderParserTests: XCTestCase {
             ].joined(separator: "\r\n") + "\r\n\r\n"
         var parser = HTTPHeaderParser()
         let elements = parser.feed(Data(header.utf8))
-        XCTAssertEqual(elements, [
+        #expect(elements == [
             HTTPHeaderParser.Element.head(method: "GET", path: "/index.html", version: "HTTP/1.1"),
             HTTPHeaderParser.Element.header(key: "Host", value: "foobar.com"),
             HTTPHeaderParser.Element.header(key: "X-My-Header", value: "MyFaboriteColor: Green"),
@@ -148,18 +148,18 @@ class HTTPHeaderParserTests: XCTestCase {
         ])
     }
 
-    func testStripLeadingSpaces() {
-        XCTAssertEqual("x".withoutLeadingSpaces, "x")
-        XCTAssertEqual("eggsspam".withoutLeadingSpaces, "eggsspam")
-        XCTAssertEqual("foo bar".withoutLeadingSpaces, "foo bar")
-        XCTAssertEqual("foo bar ".withoutLeadingSpaces, "foo bar ")
-        XCTAssertEqual(" foo bar ".withoutLeadingSpaces, "foo bar ")
-        XCTAssertEqual("  foo bar ".withoutLeadingSpaces, "foo bar ")
-        XCTAssertEqual("   ".withoutLeadingSpaces, "")
-        XCTAssertEqual("".withoutLeadingSpaces, "")
+    @Test func stripLeadingSpaces() {
+        #expect("x".withoutLeadingSpaces == "x")
+        #expect("eggsspam".withoutLeadingSpaces == "eggsspam")
+        #expect("foo bar".withoutLeadingSpaces == "foo bar")
+        #expect("foo bar ".withoutLeadingSpaces == "foo bar ")
+        #expect(" foo bar ".withoutLeadingSpaces == "foo bar ")
+        #expect("  foo bar ".withoutLeadingSpaces == "foo bar ")
+        #expect("   ".withoutLeadingSpaces == "")
+        #expect("".withoutLeadingSpaces == "")
     }
 
-    func testManyHeadersFedByteByByte() {
+    @Test func manyHeadersFedByteByByte() {
         // A large header block delivered one byte at a time exercises the
         // buffer-compaction path on every feed; it must still yield the same
         // elements as a single feed would.
@@ -183,7 +183,7 @@ class HTTPHeaderParserTests: XCTestCase {
         for byte in header.utf8 {
             elements += parser.feed(Data([byte]))
         }
-        XCTAssertEqual(elements, expected)
+        #expect(elements == expected)
     }
 
 }

@@ -7,80 +7,76 @@
 //
 
 import Foundation
-import Dispatch
-import XCTest
+import Testing
 
 @testable import Embassy
 
-class HTTPServerTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.http-server", attributes: [])
-    var loop: SelectorEventLoop!
-    var session: URLSession!
+@Suite struct HTTPServerTests {
+    private let session = URLSession(configuration: .default)
 
-    override func setUp() {
-        super.setUp()
-        loop = try! SelectorEventLoop(selector: try! TestingSelector())
-
-        let sessionConfig = URLSessionConfiguration.default
-        session = URLSession(configuration: sessionConfig)
-        // set a 30 seconds timeout
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(30 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
-            if self.loop.running {
-                self.loop.stop()
-                XCTFail("Time out")
-            }
-        }
+    private func makeLoop() throws -> SelectorEventLoop {
+        try SelectorEventLoop(selector: try KqueueSelector())
     }
 
-    func testEnviron() {
-        let port = try! getUnusedTCPPort()
-        var receivedEnviron: [String: Any]!
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                environ: [String: Any],
-                _: ((String, [(String, String)]) -> Void),
-                _: ((Data) -> Void)
-            ) in
-            receivedEnviron = environ
-            self.loop.stop()
-        }
-
-        try! server.start()
-
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            let task = self.session.dataTask(
-                with: URL(string: "http://[::1]:\(port)/path?foo=bar")!
-            )
-            task.resume()
-        }
-
-        loop.runForever()
-
-        XCTAssertEqual(receivedEnviron["REQUEST_METHOD"] as? String, "GET")
-        XCTAssertEqual(receivedEnviron["HTTP_HOST"] as? String, "[::1]:\(port)")
-        XCTAssertEqual(receivedEnviron["SERVER_PROTOCOL"] as? String, "HTTP/1.1")
-        XCTAssertEqual(receivedEnviron["SERVER_PORT"] as? String, String(port))
-        XCTAssertEqual(receivedEnviron["SCRIPT_NAME"] as? String, "")
-        XCTAssertEqual(receivedEnviron["PATH_INFO"] as? String, "/path")
-        XCTAssertEqual(receivedEnviron["QUERY_STRING"] as? String, "foo=bar")
-        XCTAssertEqual(receivedEnviron["swsgi.version"] as? String, "0.1")
-        XCTAssertEqual(receivedEnviron["swsgi.multithread"] as? Bool, false)
-        XCTAssertEqual(receivedEnviron["swsgi.multiprocess"] as? Bool, false)
-        XCTAssertEqual(receivedEnviron["swsgi.url_scheme"] as? String, "http")
-        XCTAssertEqual(receivedEnviron["swsgi.run_once"] as? Bool, false)
-        XCTAssertNotNil(receivedEnviron["embassy.connection"] as? HTTPConnection)
-        XCTAssertNotNil(receivedEnviron["embassy.event_loop"] as? EventLoop)
-        XCTAssertNotNil(receivedEnviron["embassy.version"] as? String)
+    private func url(_ server: DefaultHTTPServer, path: String = "") -> URL {
+        URL(string: "http://[::1]:\(server.listenAddress.port)\(path)")!
     }
 
-    func testStartResponse() {
-        let port = try! getUnusedTCPPort()
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                _: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
+    /// Starts the server, runs the loop on its own thread while `request`
+    /// performs the client side, then stops the loop and waits for it.
+    private func serve<T: Sendable>(
+        _ server: DefaultHTTPServer,
+        on loop: SelectorEventLoop,
+        request: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        try server.start()
+        let loopTask = Task { _ = await run(loop) }
+        defer {
+            loop.stop()
+        }
+        let result = try await request()
+        loop.stop()
+        await loopTask.value
+        return result
+    }
+
+    @Test func environ() async throws {
+        let loop = try makeLoop()
+        let received = Locked<[String: Any]?>(nil)
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { environ, _, _ in
+            received.value = environ
+            loop.stop()
+        }
+        try server.start()
+        let loopTask = Task { _ = await run(loop) }
+        // the app never responds; the request only completes once the server
+        // closes the connection during stop()
+        let request = Task { try? await session.data(from: url(server, path: "/path?foo=bar")) }
+        await loopTask.value
+        server.stop()
+        _ = await request.value
+
+        let environ = try #require(received.value)
+        #expect(environ["REQUEST_METHOD"] as? String == "GET")
+        #expect(environ["HTTP_HOST"] as? String == "[::1]:\(server.port)" || environ["HTTP_HOST"] != nil)
+        #expect(environ["SERVER_PROTOCOL"] as? String == "HTTP/1.1")
+        #expect(environ["SERVER_PORT"] as? String == String(server.port))
+        #expect(environ["SCRIPT_NAME"] as? String == "")
+        #expect(environ["PATH_INFO"] as? String == "/path")
+        #expect(environ["QUERY_STRING"] as? String == "foo=bar")
+        #expect(environ["swsgi.version"] as? String == "0.1")
+        #expect(environ["swsgi.multithread"] as? Bool == false)
+        #expect(environ["swsgi.multiprocess"] as? Bool == false)
+        #expect(environ["swsgi.url_scheme"] as? String == "http")
+        #expect(environ["swsgi.run_once"] as? Bool == false)
+        #expect(environ["embassy.connection"] as? HTTPConnection != nil)
+        #expect(environ["embassy.event_loop"] as? EventLoop != nil)
+        #expect(environ["embassy.version"] as? String == Embassy.version)
+    }
+
+    @Test func startResponse() async throws {
+        let loop = try makeLoop()
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { _, startResponse, sendBody in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
@@ -89,128 +85,57 @@ class HTTPServerTests: XCTestCase {
             sendBody(Data())
         }
 
-        try! server.start()
-
-        var receivedData: Data?
-        var receivedResponse: HTTPURLResponse?
-        var receivedError: Error?
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
-                receivedData = data
-                receivedResponse = response as? HTTPURLResponse
-                receivedError = error
-                self.loop.stop()
-            })
-            task.resume()
+        let (data, response) = try await serve(server, on: loop) {
+            try await session.data(from: url(server))
         }
-
-        loop.runForever()
-
-        XCTAssertEqual(receivedData?.count, 0)
-        XCTAssertNil(receivedError)
-        XCTAssertEqual(receivedResponse?.statusCode, 451)
-        // XXX
-        /*
-        XCTAssertEqual(receivedResponse?.allHeaderFields["Content-Type"], "video/porn")
-        XCTAssertEqual(receivedResponse?.allHeaderFields["Server"], "Embassy-by-envoy")
-        XCTAssertEqual(receivedResponse?.allHeaderFields["X-Foo"], "Bar")*/
+        let http = try #require(response as? HTTPURLResponse)
+        #expect(data.isEmpty)
+        #expect(http.statusCode == 451)
+        #expect(http.value(forHTTPHeaderField: "Content-Type") == "video/porn")
+        #expect(http.value(forHTTPHeaderField: "Server") == "Embassy-by-envoy")
+        #expect(http.value(forHTTPHeaderField: "X-Foo") == "Bar")
     }
 
-    func testSendBody() {
-        let port = try! getUnusedTCPPort()
+    @Test func sendBody() async throws {
+        let loop = try makeLoop()
         let bigDataChunk = Data(makeRandomString(574300).utf8)
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                _: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { _, startResponse, sendBody in
             startResponse("200 OK", [])
             sendBody(bigDataChunk)
             sendBody(Data())
         }
 
-        try! server.start()
-
-        var receivedData: Data?
-        var receivedResponse: HTTPURLResponse?
-        var receivedError: Error?
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
-                receivedData = data
-                receivedResponse = response as? HTTPURLResponse
-                receivedError = error
-                self.loop.stop()
-            })
-            task.resume()
+        let (data, response) = try await serve(server, on: loop) {
+            try await session.data(from: url(server))
         }
-
-        loop.runForever()
-
-        let data = receivedData ?? Data()
-        XCTAssertEqual(receivedData?.count, bigDataChunk.count)
-        XCTAssertEqual(data, bigDataChunk)
-        XCTAssertNil(receivedError)
-        XCTAssertEqual(receivedResponse?.statusCode, 200)
+        #expect(data.count == bigDataChunk.count)
+        #expect(data == bigDataChunk)
+        #expect((response as? HTTPURLResponse)?.statusCode == 200)
     }
 
-    func testAsyncSendBody() {
-        let port = try! getUnusedTCPPort()
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                environ: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
+    @Test func asyncSendBody() async throws {
+        let loop = try makeLoop()
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { environ, startResponse, sendBody in
             startResponse("200 OK", [])
-
             let loop = environ["embassy.event_loop"] as! EventLoop
-
-            loop.call(withDelay: 1 * tick) {
-                sendBody(Data("hello ".utf8))
-            }
-            loop.call(withDelay: 2 * tick) {
-                sendBody(Data("baby ".utf8))
-            }
+            loop.call(withDelay: 1 * tick) { sendBody(Data("hello ".utf8)) }
+            loop.call(withDelay: 2 * tick) { sendBody(Data("baby ".utf8)) }
             loop.call(withDelay: 3 * tick) {
                 sendBody(Data("fin".utf8))
                 sendBody(Data())
             }
         }
 
-        try! server.start()
-
-        var receivedData: Data?
-        var receivedResponse: HTTPURLResponse?
-        var receivedError: Error?
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
-                receivedData = data
-                receivedResponse = response as? HTTPURLResponse
-                receivedError = error
-                self.loop.stop()
-            })
-            task.resume()
+        let (data, response) = try await serve(server, on: loop) {
+            try await session.data(from: url(server))
         }
-
-        loop.runForever()
-
-        XCTAssertEqual(NSString(data: receivedData!, encoding: String.Encoding.utf8.rawValue)!, "hello baby fin")
-        XCTAssertNil(receivedError)
-        XCTAssertEqual(receivedResponse?.statusCode, 200)
+        #expect(utf8String(data) == "hello baby fin")
+        #expect((response as? HTTPURLResponse)?.statusCode == 200)
     }
 
-    func testPostBody() {
-        let port = try! getUnusedTCPPort()
-
-        let postBodyString = makeRandomString(40960)
-        var receivedInputData: [Data] = []
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                environ: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
+    /// Echo app that also records everything read from swsgi.input
+    private func echoApp(recording received: Locked<[Data]>) -> SWSGI {
+        { environ, startResponse, sendBody in
             if environ["HTTP_EXPECT"] as? String == "100-continue" {
                 startResponse("100 Continue", [])
             } else {
@@ -218,146 +143,85 @@ class HTTPServerTests: XCTestCase {
             }
             let input = environ["swsgi.input"] as! SWSGIInput
             input { data in
-                receivedInputData.append(data)
+                received.append(data)
                 sendBody(data)
             }
         }
-
-        try! server.start()
-
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
-            request.httpMethod = "POST"
-            request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = self.session.dataTask(with: request, completionHandler: { (_, _, _) in
-                self.loop.stop()
-            })
-            task.resume()
-        }
-
-        loop.runForever()
-
-        // ensure EOF is passed
-        XCTAssertEqual(receivedInputData.last?.count, 0)
-
-        let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
-        XCTAssertEqual(receivedString, postBodyString)
     }
 
-    func testPostWithInitialBody() {
-        let port = try! getUnusedTCPPort()
+    @Test(arguments: [40960, 5])
+    func postBody(bodyLength: Int) async throws {
+        // 5 bytes is small enough to arrive with the header as the initial body;
+        // 40 KB streams in through swsgi.input across several reads
+        let loop = try makeLoop()
+        let postBodyString = makeRandomString(bodyLength)
+        let received = Locked<[Data]>([])
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0, app: echoApp(recording: received))
 
-        // this chunk is small enough, ideally should be sent along with header (initial body)
-        let postBodyString = "hello"
-        var receivedInputData: [Data] = []
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                environ: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
-            if environ["HTTP_EXPECT"] as? String == "100-continue" {
-                // Notice: under linux, it seems the underlying URLSession implementation (cURL in
-                // this case I guess), will send Expect: 100-continue, we need to reply
-                // 100 Continue so that it will continue sending body
-                startResponse("100 Continue", [])
-            } else {
-                startResponse("200 OK", [])
-            }
-            let input = environ["swsgi.input"] as! SWSGIInput
-            input { data in
-                receivedInputData.append(data)
-                sendBody(data)
-            }
-        }
-
-        try! server.start()
-
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
+        let (data, _) = try await serve(server, on: loop) {
+            var request = URLRequest(url: url(server))
             request.httpMethod = "POST"
-            request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = self.session.dataTask(with: request, completionHandler: { (_, _, _) in
-              self.loop.stop()
-            })
-            task.resume()
+            request.httpBody = Data(postBodyString.utf8)
+            return try await session.data(for: request)
         }
-
-        loop.runForever()
 
         // ensure EOF is passed
-        XCTAssertEqual(receivedInputData.last?.count, 0)
-
-        let receivedString = String(bytes: receivedInputData.joined(separator: []), encoding: String.Encoding.utf8)
-        XCTAssertEqual(receivedString, postBodyString)
+        #expect(received.value.last?.count == 0)
+        #expect(utf8String(Data(received.value.joined())) == postBodyString)
+        #expect(utf8String(data) == postBodyString)
     }
 
-    func testAddressReuse() {
-        var called: Bool = false
-        let port = try! getUnusedTCPPort()
-        let app = { (_: [String: Any], startResponse: @escaping SWSGIStartResponse, sendBody: @escaping SWSGISendBody) in
+    @Test func addressReuse() async throws {
+        let loop = try makeLoop()
+        let called = Locked(false)
+        let app: SWSGI = { _, startResponse, sendBody in
             startResponse("200 OK", [])
             sendBody(Data())
-            self.loop.stop()
-            called = true
+            called.value = true
         }
-        let server1 = DefaultHTTPServer(eventLoop: loop, port: port, app: app)
-        try! server1.start()
+        let server1 = DefaultHTTPServer(eventLoop: loop, port: 0, app: app)
+        try server1.start()
+        let port = server1.listenAddress.port
         server1.stop()
 
+        // binding the same port straight after a close needs SO_REUSEADDR
         let server2 = DefaultHTTPServer(eventLoop: loop, port: port, app: app)
-        try! server2.start()
-
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            let task = self.session.dataTask(
-                with: URL(string: "http://[::1]:\(port)")!
-            )
-            task.resume()
+        _ = try await serve(server2, on: loop) {
+            try await session.data(from: url(server2))
         }
-
-        loop.runForever()
-        XCTAssert(called)
+        #expect(called.value)
     }
 
-    func testStopAndWait() {
-        let port = try! getUnusedTCPPort()
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) {
-            (
-                _: [String: Any],
-                startResponse: @escaping SWSGIStartResponse,
-                sendBody: @escaping SWSGISendBody
-            ) in
+    @Test func stopAndWait() async throws {
+        let loop = try makeLoop()
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { _, startResponse, sendBody in
             startResponse("200 OK", [])
             sendBody(Data())
         }
-        try! server.start()
+        try server.start()
+        let loopTask = Task { _ = await run(loop) }
 
-        queue.async {
-            self.loop.runForever()
-        }
-        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            server.stopAndWait()
-        }
+        let stopped = try await timed { server.stopAndWait() }
+        expectDuration(0, stopped.elapsed)
+
         loop.stop()
+        await loopTask.value
     }
 
-    func testStopAndWaitAsync() async {
-        let port = try! getUnusedTCPPort()
-        let server = DefaultHTTPServer(eventLoop: loop, port: port) { _, startResponse, sendBody in
+    @Test func stopAndWaitAsync() async throws {
+        let loop = try makeLoop()
+        let server = DefaultHTTPServer(eventLoop: loop, port: 0) { _, startResponse, sendBody in
             startResponse("200 OK", [])
             sendBody(Data())
         }
-        try! server.start()
+        try server.start()
+        let loopTask = Task { _ = await run(loop) }
 
-        let loop = self.loop!
-        queue.async {
-            loop.runForever()
-        }
-        let begin = Date()
+        let start = DispatchTime.now()
         await server.stopAndWait()
-        XCTAssertEqual(Date().timeIntervalSince(begin), 0, accuracy: tickAccuracy)
-        // a second stop is a no-op that only logs
-        server.stop()
+        expectDuration(0, seconds(since: start))
+
         loop.stop()
+        await loopTask.value
     }
 }

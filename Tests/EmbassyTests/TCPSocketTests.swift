@@ -7,121 +7,51 @@
 //
 
 import Foundation
-import Dispatch
-import XCTest
+import Testing
 
 @testable import Embassy
 
-class TCPSocketTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.tcp-sockets", attributes: [])
-
-    func testAccept() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        let exp0 = expectation(description: "socket accepcted")
-        var acceptedSocket: TCPSocket!
-        queue.async {
-            acceptedSocket = try! listenSocket.accept()
-            exp0.fulfill()
-        }
-
-        let clientSocket = try! TCPSocket()
-        try! clientSocket.connect(host: "::1", port: port)
-
-        waitForExpectations(timeout: 3) { error in
-            XCTAssertNil(error)
-        }
-        XCTAssertNotNil(acceptedSocket)
+@Suite struct TCPSocketTests {
+    /// Accepts on a helper thread while the client connects from here
+    private func connectPair(clientBlocking: Bool = true) async throws -> (client: TCPSocket, accepted: TCPSocket) {
+        let (listenSocket, port) = try makeListenSocket(blocking: true)
+        async let accepted = onThread { try listenSocket.accept() }
+        let client = try TCPSocket(blocking: clientBlocking)
+        try client.connect(host: "::1", port: port)
+        return (client, try await accepted)
     }
 
-    func testReadAndWrite() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
+    @Test func accept() async throws {
+        let (_, accepted) = try await connectPair(clientBlocking: false)
+        #expect(accepted.fileDescriptor >= 0)
+    }
 
-        let exp0 = expectation(description: "socket accepcted")
-        var acceptedSocket: TCPSocket!
-        queue.async {
-            acceptedSocket = try! listenSocket.accept()
-            exp0.fulfill()
-        }
-
-        let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect(host: "::1", port: port)
-
-        waitForExpectations(timeout: 4) { error in
-            XCTAssertNil(error)
-        }
-
+    @Test func readAndWrite() async throws {
+        let (client, accepted) = try await connectPair()
         let stringToSend = "hello baby"
         let bytesToSend = Data(stringToSend.utf8)
 
-        var receivedData: Data?
-        let exp1 = expectation(description: "socket received")
+        let sentBytes = try client.send(data: bytesToSend)
+        #expect(sentBytes == bytesToSend.count)
 
-        let sentBytes = try! clientSocket.send(data: bytesToSend)
-        XCTAssertEqual(sentBytes, bytesToSend.count)
-
-        queue.async {
-            // accept() hands back a non-blocking socket; block here so the read
-            // waits for the bytes instead of racing the send with EAGAIN
-            acceptedSocket.blocking = true
-            receivedData = try! acceptedSocket.recv(size: 1024)
-            exp1.fulfill()
+        let received = try await onThread {
+            // accept() hands back a non-blocking socket; block so the read waits
+            // for the bytes instead of racing the send with EAGAIN
+            accepted.blocking = true
+            return try accepted.recv(size: 1024)
         }
-
-        waitForExpectations(timeout: 3) { error in
-            XCTAssertNil(error)
-        }
-
-        XCTAssertEqual(String(bytes: receivedData!, encoding: String.Encoding.utf8), stringToSend)
+        #expect(utf8String(received) == stringToSend)
     }
 
-    func testGetPeerName() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        let exp0 = expectation(description: "socket accepcted")
-        var acceptedSocket: TCPSocket!
-        queue.async {
-            acceptedSocket = try! listenSocket.accept()
-            exp0.fulfill()
-        }
-
-        let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect(host: "::1", port: port)
-
-        waitForExpectations(timeout: 4, handler: nil)
-
-        XCTAssertEqual(try! acceptedSocket.getPeerName().0, "::1")
-        XCTAssertEqual(try! clientSocket.getPeerName().0, "::1")
+    @Test func getPeerName() async throws {
+        let (client, accepted) = try await connectPair()
+        #expect(try accepted.getPeerName().0 == "::1")
+        #expect(try client.getPeerName().0 == "::1")
     }
 
-    func testGetSockName() {
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket(blocking: true)
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        let exp0 = expectation(description: "socket accepcted")
-        var acceptedSocket: TCPSocket!
-        queue.async {
-            acceptedSocket = try! listenSocket.accept()
-            exp0.fulfill()
-        }
-
-        let clientSocket = try! TCPSocket(blocking: true)
-        try! clientSocket.connect(host: "::1", port: port)
-
-        waitForExpectations(timeout: 4, handler: nil)
-
-        XCTAssertEqual(try! acceptedSocket.getSockName().0, "::1")
-        XCTAssertEqual(try! clientSocket.getSockName().0, "::1")
+    @Test func getSockName() async throws {
+        let (client, accepted) = try await connectPair()
+        #expect(try accepted.getSockName().0 == "::1")
+        #expect(try client.getSockName().0 == "::1")
     }
 }

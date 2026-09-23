@@ -3,7 +3,8 @@
 //  Embassy
 //
 
-import XCTest
+import Foundation
+import Testing
 
 @testable import Embassy
 
@@ -17,9 +18,8 @@ private final class RecordingLogHandler: LogHandler, @unchecked Sendable {
     }
 }
 
-class DefaultLoggerTests: XCTestCase {
-
-    func testMessageBelowLevelIsNotEvaluated() {
+@Suite struct DefaultLoggerTests {
+    @Test func messageBelowLevelIsNotEvaluated() {
         let handler = RecordingLogHandler()
         let logger = DefaultLogger(name: "test", level: .info)
         logger.add(handler: handler)
@@ -31,16 +31,16 @@ class DefaultLoggerTests: XCTestCase {
         }
 
         logger.debug(expensiveMessage())
-        XCTAssertEqual(evaluations, 0, "suppressed log must not evaluate its message")
-        XCTAssertTrue(handler.records.isEmpty)
+        #expect(evaluations == 0, "suppressed log must not evaluate its message")
+        #expect(handler.records.isEmpty)
 
         logger.info(expensiveMessage())
-        XCTAssertEqual(evaluations, 1)
-        XCTAssertEqual(handler.records.map(\.message), ["expensive"])
-        XCTAssertEqual(handler.records.first?.level, .info)
+        #expect(evaluations == 1)
+        #expect(handler.records.map(\.message) == ["expensive"])
+        #expect(handler.records.first?.level == .info)
     }
 
-    func testLogRecordStillRespectsLevel() {
+    @Test func logRecordStillRespectsLevel() {
         let handler = RecordingLogHandler()
         let logger = DefaultLogger(name: "test", level: .warning)
         logger.add(handler: handler)
@@ -50,6 +50,14 @@ class DefaultLoggerTests: XCTestCase {
             file: #file, function: #function, line: #line, time: Date()
         )
         logger.log(record: record)
-        XCTAssertTrue(handler.records.isEmpty)
+        #expect(handler.records.isEmpty)
+    }
+
+    @Test(arguments: [
+        (LogLevel.notset, "NOTSET"), (.debug, "DEBUG"), (.info, "INFO"),
+        (.warning, "WARNING"), (.error, "ERROR"), (.critical, "CRITICAL")
+    ])
+    func levelNames(level: LogLevel, name: String) {
+        #expect(level.name == name)
     }
 }

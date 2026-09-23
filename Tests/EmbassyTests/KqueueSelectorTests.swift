@@ -6,263 +6,172 @@
 //  Copyright © 2016 Fang-Pen Lin. All rights reserved.
 //
 
-import XCTest
+import Foundation
+import Testing
 
 @testable import Embassy
 
-class KqueueSelectorTests: XCTestCase {
-    let queue = DispatchQueue(label: "com.envoy.embassy-tests.kqueue", attributes: [])
+@Suite struct KqueueSelectorTests {
+    @Test func register() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
 
-    func testRegister() {
-        let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
-
-        XCTAssertNil(selector[socket.fileDescriptor])
+        #expect(selector[socket.fileDescriptor] == nil)
 
         let data = "my data"
-        try! selector.register(socket.fileDescriptor, events: [.read], data: data)
+        try selector.register(socket.fileDescriptor, events: [.read], data: data)
 
-        let key = selector[socket.fileDescriptor]
-        XCTAssertEqual(key?.fileDescriptor, socket.fileDescriptor)
-        XCTAssertEqual(key?.events, [.read])
-        XCTAssertEqual(key?.data as? String, data)
+        let key = try #require(selector[socket.fileDescriptor])
+        #expect(key.fileDescriptor == socket.fileDescriptor)
+        #expect(key.events == [.read])
+        #expect(key.data as? String == data)
     }
 
-    func testUnregister() {
-        let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+    @Test func unregister() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
 
-        try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
+        try selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
-        let key = try! selector.unregister(socket.fileDescriptor)
-        XCTAssertNil(selector[socket.fileDescriptor])
-        XCTAssertNil(key.data as? String)
-        XCTAssertEqual(key.fileDescriptor, socket.fileDescriptor)
-        XCTAssertEqual(key.events, [.read])
+        let key = try selector.unregister(socket.fileDescriptor)
+        #expect(selector[socket.fileDescriptor] == nil)
+        #expect(key.data as? String == nil)
+        #expect(key.fileDescriptor == socket.fileDescriptor)
+        #expect(key.events == [.read])
     }
 
-    func testRegisterKeyError() {
-        let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
-        try! selector.register(socket.fileDescriptor, events: [.read], data: nil)
+    @Test func registerKeyError() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
+        try selector.register(socket.fileDescriptor, events: [.read], data: nil)
 
-        XCTAssertThrowsError(try selector.register(
-            socket.fileDescriptor,
-            events: [.read],
-            data: nil
-        )) { error in
-            guard let error = error as? KqueueSelector.Error else {
-                XCTFail()
-                return
-            }
-            guard case .keyError = error else {
-                XCTFail()
-                return
-            }
+        #expect(throws: KqueueSelector.Error.self) {
+            try selector.register(socket.fileDescriptor, events: [.read], data: nil)
         }
     }
 
-    func testUnregisterKeyError() {
-        let selector = try! KqueueSelector()
-        let socket = try! TCPSocket()
+    @Test func unregisterKeyError() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
 
-        XCTAssertThrowsError(try selector.unregister(socket.fileDescriptor)) { error in
-            guard let error = error as? KqueueSelector.Error else {
-                XCTFail()
-                return
-            }
-            guard case .keyError = error else {
-                XCTFail()
-                return
-            }
+        #expect(throws: KqueueSelector.Error.self) {
+            try selector.unregister(socket.fileDescriptor)
         }
     }
 
-    func testSelectOneSocket() {
-        let selector = try! KqueueSelector()
+    @Test func selectOneSocket() async throws {
+        let selector = try KqueueSelector()
+        let (listenSocket, port) = try makeListenSocket()
+        try selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
 
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
+        // nothing is connecting, so select must wait out the whole timeout
+        let idle = try await timed { toEventSet(try selector.select(timeout: 2 * tick)) }
+        #expect(idle.result.isEmpty)
+        expectDuration(2 * tick, idle.elapsed)
 
-        try! selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
+        let clientSocket = try TCPSocket()
+        after(1) { try! clientSocket.connect(host: "::1", port: port) }
 
-        // ensure we have a correct timeout here
-        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
-            XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
-        }
-
-        let clientSocket = try! TCPSocket()
-
-        // make a connect 1 seconds later
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            try! clientSocket.connect(host: "::1", port: port)
-        }
-
-        let ioEvents = assertExecutingTime(1 * tick, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 10.0)
-        }
-        XCTAssertEqual(ioEvents.count, 1)
-        XCTAssertEqual(ioEvents.first?.0.fileDescriptor, listenSocket.fileDescriptor)
-        XCTAssertEqual(ioEvents.first?.0.events, [.read])
-        XCTAssertNil(ioEvents.first?.0.data)
+        let ready = try await timed { summarize(try selector.select(timeout: 10)) }
+        expectDuration(1 * tick, ready.elapsed)
+        #expect(ready.result.count == 1)
+        #expect(ready.result.first?.fileDescriptor == listenSocket.fileDescriptor)
+        #expect(ready.result.first?.events == [.read])
+        #expect(ready.result.first?.hasData == false)
     }
 
-    func testSelectEventFilter() {
-        let selector = try! KqueueSelector()
+    @Test func selectEventFilter() async throws {
+        let selector = try KqueueSelector()
+        let (listenSocket, port) = try makeListenSocket()
+        // watching only for write on a listening socket: a pending connection is not a write event
+        try selector.register(listenSocket.fileDescriptor, events: [.write], data: nil)
 
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
+        #expect(try await onThread { toEventSet(try selector.select(timeout: 1 * tick)) }.isEmpty)
 
-        try! selector.register(listenSocket.fileDescriptor, events: [.write], data: nil)
+        let clientSocket = try TCPSocket()
+        after(1) { try! clientSocket.connect(host: "::1", port: port) }
 
-        XCTAssertEqual(try! selector.select(timeout: 1.0 * tick).count, 0)
-
-        let clientSocket = try! TCPSocket()
-        // make a connect 1 seconds later
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            try! clientSocket.connect(host: "::1", port: port)
-        }
-
-        // ensure we don't get any event triggered in two seconds
-        XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
+        #expect(try await onThread { toEventSet(try selector.select(timeout: 2 * tick)) }.isEmpty)
     }
 
-    func testSelectAfterUnregister() {
-        let selector = try! KqueueSelector()
+    @Test func selectAfterUnregister() async throws {
+        let selector = try KqueueSelector()
+        let (listenSocket, port) = try makeListenSocket()
+        try selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
 
-        let port = try! getUnusedTCPPort()
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
+        let clientSocket = try TCPSocket()
+        after(1) { try! clientSocket.connect(host: "::1", port: port) }
 
-        try! selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
+        let ready = try await timed { toEventSet(try selector.select(timeout: 2 * tick)) }
+        expectDuration(1 * tick, ready.elapsed)
+        #expect(ready.result == [
+            FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
+        ])
 
-        let clientSocket = try! TCPSocket()
-        // make a connect 1 seconds later
-        queue.asyncAfter(deadline: .inTicks(1)) {
-            try! clientSocket.connect(host: "::1", port: port)
-        }
+        try selector.unregister(listenSocket.fileDescriptor)
 
-        assertExecutingTime(1 * tick, accuracy: tickAccuracy) {
-            let events = try! selector.select(timeout: 2.0 * tick)
-            let result = toEventSet(events)
-            XCTAssertEqual(result, Set([
-                FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
-            ]))
-        }
+        let clientSocket2 = try TCPSocket()
+        after(1) { try! clientSocket2.connect(host: "::1", port: port) }
 
-        try! selector.unregister(listenSocket.fileDescriptor)
-
-        let clientSocket2 = try! TCPSocket()
-        // make a connect 1 seconds later
-        queue.asyncAfter(
-            deadline: .inTicks(1)
-        ) {
-            try! clientSocket2.connect(host: "::1", port: port)
-        }
-
-        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
-            XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
-        }
+        let afterUnregister = try await timed { toEventSet(try selector.select(timeout: 2 * tick)) }
+        expectDuration(2 * tick, afterUnregister.elapsed)
+        #expect(afterUnregister.result.isEmpty)
     }
 
-    func testSelectMultipleSocket() {
-        let selector = try! KqueueSelector()
+    @Test func selectMultipleSocket() async throws {
+        let selector = try KqueueSelector()
+        let (listenSocket, port) = try makeListenSocket()
+        let clientSocket = try TCPSocket()
 
-        let port = try! getUnusedTCPPort()
+        try selector.register(listenSocket.fileDescriptor, events: [.read, .write], data: nil)
+        try selector.register(clientSocket.fileDescriptor, events: [.read, .write], data: nil)
 
-        let clientSocket = try! TCPSocket()
+        try clientSocket.connect(host: "::1", port: port)
+        try await Task.sleep(nanoseconds: UInt64(tick * TimeInterval(NSEC_PER_SEC)))
 
-        let listenSocket = try! TCPSocket()
-        try! listenSocket.bind(port: port)
-        try! listenSocket.listen()
-
-        try! selector.register(listenSocket.fileDescriptor, events: [.read, .write], data: nil)
-        try! selector.register(clientSocket.fileDescriptor, events: [.read, .write], data: nil)
-
-        try! clientSocket.connect(host: "::1", port: port)
-
-        Thread.sleep(forTimeInterval: tick)
-
-        let ioEvents0 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 10.0)
-        }
-        let result0 = toEventSet(ioEvents0)
-        XCTAssertEqual(result0, Set([
+        let events0 = try await timed { toEventSet(try selector.select(timeout: 10)) }
+        expectDuration(0, events0.elapsed)
+        #expect(events0.result == [
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
             FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
-        ]))
+        ])
 
-        let acceptedSocket = try! listenSocket.accept()
-        try! selector.register(acceptedSocket.fileDescriptor, events: [.read, .write], data: nil)
+        let acceptedSocket = try listenSocket.accept()
+        try selector.register(acceptedSocket.fileDescriptor, events: [.read, .write], data: nil)
 
-        let ioEvents1 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 10.0)
-        }
-        let result1 = toEventSet(ioEvents1)
-        XCTAssertEqual(result1, Set([
+        let writeOnly: Set<FileDescriptorEvent> = [
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
             FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
-        ]))
+        ]
+        let events1 = try await timed { toEventSet(try selector.select(timeout: 10)) }
+        expectDuration(0, events1.elapsed)
+        #expect(events1.result == writeOnly)
 
         // both sockets stay write-ready, so select returns immediately with only
         // the write events; nothing is readable
-        let writeOnly = assertExecutingTime(0, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 1 * tick)
-        }
-        XCTAssertEqual(toEventSet(writeOnly), Set([
-            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
-            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
-        ]))
+        let events1b = try await timed { toEventSet(try selector.select(timeout: 1 * tick)) }
+        expectDuration(0, events1b.elapsed)
+        #expect(events1b.result == writeOnly)
 
-        try! clientSocket.send(data: Data("hello".utf8))
+        try clientSocket.send(data: Data("hello".utf8))
+        try await Task.sleep(nanoseconds: UInt64(tick * TimeInterval(NSEC_PER_SEC)))
 
-        Thread.sleep(forTimeInterval: tick)
-
-        let ioEvents2 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 10.0)
-        }
-        let result2 = toEventSet(ioEvents2)
-        XCTAssertEqual(result2, Set([
+        let events2 = try await timed { toEventSet(try selector.select(timeout: 10)) }
+        expectDuration(0, events2.elapsed)
+        #expect(events2.result == [
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
             FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .read),
             FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
-        ]))
+        ])
 
-        let receivedString = String(
-            bytes: try! acceptedSocket.recv(size: 1024),
-            encoding: String.Encoding.utf8
-        )
-        XCTAssertEqual(receivedString, "hello")
+        #expect(utf8String(try acceptedSocket.recv(size: 1024)) == "hello")
 
-        let ioEvents3 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 10.0)
-        }
-        let result3 = toEventSet(ioEvents3)
-        XCTAssertEqual(result3, Set([
-            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
-            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
-        ]))
+        let events3 = try await timed { toEventSet(try selector.select(timeout: 10)) }
+        expectDuration(0, events3.elapsed)
+        #expect(events3.result == writeOnly)
 
-        // both sockets stay write-ready, so select returns immediately with only
-        // the write events; nothing is readable
-        let writeOnlyAgain = assertExecutingTime(0, accuracy: tickAccuracy) {
-            return try! selector.select(timeout: 1 * tick)
-        }
-        XCTAssertEqual(toEventSet(writeOnlyAgain), Set([
-            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
-            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
-        ]))
-    }
-
-    fileprivate func toEventSet(_ events: [(SelectorKey, IOEvent)]) -> Set<FileDescriptorEvent> {
-        return Set(events.flatMap { (key, ioEvents) in
-            return ioEvents.elements.map { FileDescriptorEvent(fileDescriptor: key.fileDescriptor, ioEvent: $0) }
-        })
+        let events3b = try await timed { toEventSet(try selector.select(timeout: 1 * tick)) }
+        expectDuration(0, events3b.elapsed)
+        #expect(events3b.result == writeOnly)
     }
 }
-
