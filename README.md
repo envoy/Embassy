@@ -5,7 +5,7 @@
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 [![CocoaPods](https://img.shields.io/cocoapods/v/Embassy.svg)]()
 ![Swift Version](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|Linux-lightgrey.svg)
+![Plaform](https://img.shields.io/badge/Platform-macOS|iOS|tvOS-lightgrey.svg)
 [![GitHub license](https://img.shields.io/github/license/envoy/Embassy.svg)](https://github.com/envoy/Embassy/blob/master/LICENSE)
 
 Super lightweight async HTTP server in pure Swift.
@@ -17,7 +17,7 @@ Super lightweight async HTTP server in pure Swift.
 ## Features
 
  - Swift 4 & 5
- - iOS / tvOS / MacOS / Linux
+ - iOS / tvOS / macOS
  - Super lightweight, only 1.5 K of lines
  - Zero third-party dependency
  - Async event loop based HTTP server, makes long-polling, delay and bandwidth throttling all possible

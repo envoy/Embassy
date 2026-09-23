@@ -27,46 +27,32 @@ public final class TCPSocket {
     /// Whether to ignore SIGPIPE signal or not
     var ignoreSigPipe: Bool {
         get {
-            #if os(Linux)
-                return false
-            #else
-                var value: Int32 = 0
-                var size = socklen_t(MemoryLayout<Int32>.size)
-                assert(
-                    getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
-                    "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-                )
-                return value == 1
-            #endif
+            var value: Int32 = 0
+            var size = socklen_t(MemoryLayout<Int32>.size)
+            assert(
+                getsockopt(fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, &value, &size) >= 0,
+                "Failed to get SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+            )
+            return value == 1
         }
 
         set {
-            #if os(Linux)
-                // TODO: maybe we should call signal(SIGPIPE, SIG_IGN) here? but it affects
-                // whole process
-                return
-            #else
-                var value: Int32 = newValue ? 1 : 0
-                assert(
-                    setsockopt(
-                        fileDescriptor,
-                        SOL_SOCKET,
-                        SO_NOSIGPIPE,
-                        &value,
-                        socklen_t(MemoryLayout<Int32>.size)
-                        ) >= 0,
-                    "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
-                )
-            #endif
+            var value: Int32 = newValue ? 1 : 0
+            assert(
+                setsockopt(
+                    fileDescriptor,
+                    SOL_SOCKET,
+                    SO_NOSIGPIPE,
+                    &value,
+                    socklen_t(MemoryLayout<Int32>.size)
+                    ) >= 0,
+                "Failed to set SO_NOSIGPIPE, errno=\(errno), message=\(lastErrorDescription())"
+            )
         }
     }
 
     init(blocking: Bool = false) throws {
-        #if os(Linux)
-            let socketType = Int32(SOCK_STREAM.rawValue)
-        #else
-            let socketType = SOCK_STREAM
-        #endif
+        let socketType = SOCK_STREAM
         fileDescriptor = SystemLibrary.socket(AF_INET6, socketType, 0)
         guard fileDescriptor >= 0 else {
             throw OSError.lastIOError()
@@ -103,9 +89,7 @@ public final class TCPSocket {
         }
         // create IPv6 socket address
         var address = sockaddr_in6()
-        #if !os(Linux)
         address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
-        #endif
         address.sin6_family = sa_family_t(AF_INET6)
         address.sin6_port = UInt16(port).bigEndian
         address.sin6_flowinfo = 0
@@ -151,9 +135,7 @@ public final class TCPSocket {
     func connect(host: String, port: Int) throws {
         // create IPv6 socket address
         var address = sockaddr_in6()
-        #if !os(Linux)
         address.sin6_len = UInt8(MemoryLayout<sockaddr_in6>.stride)
-        #endif
         address.sin6_family = sa_family_t(AF_INET6)
         address.sin6_port = UInt16(port).bigEndian
         address.sin6_flowinfo = 0

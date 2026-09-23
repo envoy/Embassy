@@ -11,19 +11,6 @@ import XCTest
 
 @testable import Embassy
 
-#if os(Linux)
-    extension HTTPHeaderParserTests {
-        static var allTests = [
-            ("testSimpleParsing", testSimpleParsing),
-            ("testPartialParsing", testPartialParsing),
-            ("testHeaders", testHeaders),
-            ("testColonInHeader", testColonInHeader),
-            ("testNoSpaceAfterColonForHeader", testNoSpaceAfterColonForHeader),
-            ("testStripLeadingSpaces", testStripLeadingSpaces)
-        ]
-    }
-#endif
-
 extension HTTPHeaderParser.Element: @retroactive Equatable {}
 
 public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
