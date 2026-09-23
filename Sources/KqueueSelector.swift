@@ -63,9 +63,33 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
         return key
     }
 
+    @discardableResult
+    public func modify(_ fileDescriptor: Int32, events: IOEvent, data: Any?) throws -> SelectorKey {
+        guard let old = fileDescriptorMap[fileDescriptor] else {
+            throw Error.keyError(fileDescriptor: fileDescriptor)
+        }
+        guard !events.isEmpty else {
+            return try unregister(fileDescriptor)
+        }
+        let key = SelectorKey(fileDescriptor: fileDescriptor, events: events, data: data)
+        fileDescriptorMap[fileDescriptor] = key
+        // only the delta goes to the kernel: added filters as EV_ADD, dropped ones as
+        // EV_DELETE, all in a single kevent call. Unchanged filters cost nothing.
+        try apply(
+            changes(events.subtracting(old.events), to: fileDescriptor, flags: EV_ADD)
+                + changes(old.events.subtracting(events), to: fileDescriptor, flags: EV_DELETE)
+        )
+        return key
+    }
+
     /// Submit one kevent change per event in `events` for the file descriptor
     private func apply(_ events: IOEvent, to fileDescriptor: Int32, flags: Int32) throws {
-        var changes: [Darwin.kevent] = events.elements.map { event in
+        try apply(changes(events, to: fileDescriptor, flags: flags))
+    }
+
+    /// One kevent change per event in `events`, all carrying `flags`
+    private func changes(_ events: IOEvent, to fileDescriptor: Int32, flags: Int32) -> [Darwin.kevent] {
+        events.elements.map { event in
             Darwin.kevent(
                 ident: UInt(fileDescriptor),
                 filter: Int16(event == .read ? EVFILT_READ : EVFILT_WRITE),
@@ -75,6 +99,14 @@ public final class KqueueSelector: Selector, @unchecked Sendable {
                 udata: nil
             )
         }
+    }
+
+    /// Submit a batch of kevent changes in one syscall
+    private func apply(_ changes: [Darwin.kevent]) throws {
+        guard !changes.isEmpty else {
+            return
+        }
+        var changes = changes
         let applied = changes.withUnsafeMutableBufferPointer { pointer in
             kevent(kqueue, pointer.baseAddress, Int32(pointer.count), nil, 0, nil) >= 0
         }

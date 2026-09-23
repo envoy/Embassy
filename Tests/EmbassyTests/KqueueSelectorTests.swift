@@ -59,6 +59,66 @@ import Testing
         }
     }
 
+    @Test func modify() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
+        try selector.register(socket.fileDescriptor, events: [.read], data: "first")
+
+        // widen the filter set and swap the data
+        let widened = try selector.modify(socket.fileDescriptor, events: [.read, .write], data: "second")
+        #expect(widened.events == [.read, .write])
+        #expect(widened.data as? String == "second")
+        #expect(selector[socket.fileDescriptor]?.events == [.read, .write])
+        #expect(selector[socket.fileDescriptor]?.data as? String == "second")
+
+        // narrow it again
+        let narrowed = try selector.modify(socket.fileDescriptor, events: [.write], data: nil)
+        #expect(narrowed.events == [.write])
+        #expect(narrowed.data == nil)
+        #expect(selector[socket.fileDescriptor]?.events == [.write])
+
+        // an empty set unregisters
+        let removed = try selector.modify(socket.fileDescriptor, events: [], data: nil)
+        #expect(removed.events == [.write])
+        #expect(selector[socket.fileDescriptor] == nil)
+    }
+
+    @Test func modifyKeyError() throws {
+        let selector = try KqueueSelector()
+        let socket = try TCPSocket()
+
+        #expect(throws: KqueueSelector.Error.self) {
+            try selector.modify(socket.fileDescriptor, events: [.read], data: nil)
+        }
+    }
+
+    @Test func selectAfterModify() async throws {
+        let selector = try KqueueSelector()
+        let (listenSocket, port) = try makeListenSocket()
+        let clientSocket = try TCPSocket()
+        try clientSocket.connect(host: "::1", port: port)
+        try await Task.sleep(nanoseconds: UInt64(tick * TimeInterval(NSEC_PER_SEC)))
+        let acceptedSocket = try listenSocket.accept()
+
+        // watching write only: the connected socket is immediately writable
+        try selector.register(clientSocket.fileDescriptor, events: [.write], data: nil)
+        #expect(try await onThread { toEventSet(try selector.select(timeout: 1 * tick)) } == [
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write)
+        ])
+
+        // switch to read only: nothing has been sent, so the kernel must report nothing
+        try selector.modify(clientSocket.fileDescriptor, events: [.read], data: nil)
+        let idle = try await timed { toEventSet(try selector.select(timeout: 1 * tick)) }
+        #expect(idle.result.isEmpty)
+        expectDuration(1 * tick, idle.elapsed)
+
+        // now data arrives on the read filter that modify added
+        try acceptedSocket.send(data: Data("hello".utf8))
+        #expect(try await onThread { toEventSet(try selector.select(timeout: 10)) } == [
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .read)
+        ])
+    }
+
     @Test func selectOneSocket() async throws {
         let selector = try KqueueSelector()
         let (listenSocket, port) = try makeListenSocket()
