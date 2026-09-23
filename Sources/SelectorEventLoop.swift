@@ -142,10 +142,8 @@ public final class SelectorEventLoop: EventLoop {
     }
 
     public func call(callback: @escaping () -> Void) {
-        readyCallbacks.modify { callbacks in
-            var callbacks = callbacks
+        readyCallbacks.withLock { callbacks in
             callbacks.append(callback)
-            return callbacks
         }
         interruptSelector()
     }
@@ -155,12 +153,10 @@ public final class SelectorEventLoop: EventLoop {
     }
 
     public func call(atTime time: Date, callback: @escaping () -> Void) {
-        scheduledCallbacks.modify { callbacks in
-            var callbacks = callbacks
+        scheduledCallbacks.withLock { callbacks in
             HeapSort.heapPush(&callbacks, item: (time, callback)) {
                 $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
             }
-            return callbacks
         }
         interruptSelector()
     }
@@ -232,23 +228,22 @@ public final class SelectorEventLoop: EventLoop {
         // Call scheduled callbacks
         let now = Date()
         var readyScheduledCallbacks: [(() -> Void)] = []
-        scheduledCallbacks.modify { callbacks in
-            var notExpiredCallbacks = callbacks
+        scheduledCallbacks.withLock { callbacks in
             // keep poping expired callbacks
             let timestamp = now.timeIntervalSince1970
-            while !notExpiredCallbacks.isEmpty &&
-                timestamp >= notExpiredCallbacks.first!.0.timeIntervalSince1970 {
+            while let first = callbacks.first, timestamp >= first.0.timeIntervalSince1970 {
                 // pop the expired callbacks from heap queue and add them to ready callback list
-                let (_, callback) = HeapSort.heapPop(&notExpiredCallbacks) {
+                let (_, callback) = HeapSort.heapPop(&callbacks) {
                     $0.0.timeIntervalSince1970 < $1.0.timeIntervalSince1970
                 }
                 readyScheduledCallbacks.append(callback)
             }
-            return notExpiredCallbacks
         }
 
-        // Call ready callbacks
-        let callbacks = readyCallbacks.swap(newValue: []) + readyScheduledCallbacks
+        // Call ready callbacks; take the queue in one swap so callbacks that
+        // enqueue more work run on the next iteration rather than starving IO
+        var callbacks = readyCallbacks.swap(newValue: [])
+        callbacks.append(contentsOf: readyScheduledCallbacks)
         for callback in callbacks {
             callback()
         }

@@ -16,7 +16,7 @@ swift test --filter <TestCaseName>/<testMethodName>   # single test
 
 There's no Xcode scheme-based test story documented beyond SwiftPM — `Embassy.xcodeproj`/`.xcworkspace` exist but SwiftPM is the source of truth.
 
-Note: `Package.swift`'s `EmbassyTests` target has no explicit `path`, so SwiftPM expects test sources at `Tests/EmbassyTests/` (not a flat `Tests/`).
+Test sources live at `Tests/EmbassyTests/`. Timing-sensitive tests sequence events with the shared `tick` constant in `TestingHelpers.swift` (100 ms) instead of whole seconds; keep new tests on that scale.
 
 Lint config exists (`.swiftlint.yaml`) but no `swiftlint` invocation is wired into a script in this repo — run `swiftlint` directly if installed.
 

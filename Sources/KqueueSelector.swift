@@ -17,6 +17,9 @@ public final class KqueueSelector: Selector {
     private let selectMaximumEvent: Int
     private let kqueue: Int32
     private var fileDescriptorMap: [Int32: SelectorKey] = [:]
+    // reusable buffer for kevent() to write ready events into; allocated once
+    // rather than on every select() call
+    private var readyEvents: [Darwin.kevent]
 
     public init(selectMaximumEvent: Int = 1024) throws {
         kqueue = Darwin.kqueue()
@@ -24,6 +27,7 @@ public final class KqueueSelector: Selector {
             throw OSError.lastIOError()
         }
         self.selectMaximumEvent = selectMaximumEvent
+        readyEvents = [Darwin.kevent](repeating: Darwin.kevent(), count: selectMaximumEvent)
     }
 
     deinit {
@@ -124,8 +128,7 @@ public final class KqueueSelector: Selector {
             }
         }
 
-        var kevents = [Darwin.kevent](repeating: Darwin.kevent(), count: selectMaximumEvent)
-        let eventCount: Int32 = kevents.withUnsafeMutableBufferPointer { pointer in
+        let eventCount: Int32 = readyEvents.withUnsafeMutableBufferPointer { pointer in
             return withUnsafeOptionalPointer(to: &timeSpec) { timeSpecPointer in
                 return kevent(
                     kqueue,
@@ -141,22 +144,31 @@ public final class KqueueSelector: Selector {
             throw OSError.lastIOError()
         }
 
-        var fileDescriptorIOEvents = [Int32: Set<IOEvent>]()
+        // kqueue reports read and write readiness as separate events; merge them
+        // per file descriptor so each key appears once in the result
+        var result: [(SelectorKey, Set<IOEvent>)] = []
+        result.reserveCapacity(Int(eventCount))
+        var indexByFileDescriptor: [Int32: Int] = [:]
         for index in 0..<Int(eventCount) {
-            let event = kevents[index]
+            let event = readyEvents[index]
             let fileDescriptor = Int32(event.ident)
-            var ioEvents = fileDescriptorIOEvents[fileDescriptor] ?? Set<IOEvent>()
-            if event.filter == Int16(EVFILT_READ) {
-                ioEvents.insert(.read)
-            } else if event.filter == Int16(EVFILT_WRITE) {
-                ioEvents.insert(.write)
+            let ioEvent: IOEvent
+            switch Int32(event.filter) {
+            case EVFILT_READ:
+                ioEvent = .read
+            case EVFILT_WRITE:
+                ioEvent = .write
+            default:
+                continue
             }
-            fileDescriptorIOEvents[fileDescriptor] = ioEvents
+            if let existing = indexByFileDescriptor[fileDescriptor] {
+                result[existing].1.insert(ioEvent)
+            } else if let key = fileDescriptorMap[fileDescriptor] {
+                indexByFileDescriptor[fileDescriptor] = result.count
+                result.append((key, [ioEvent]))
+            }
         }
-        let fdMap = fileDescriptorMap
-        return fileDescriptorIOEvents.compactMap { event in
-            fdMap[event.0].map { ($0, event.1) } ?? nil
-        }
+        return result
     }
 
     public subscript(fileDescriptor: Int32) -> SelectorKey? {

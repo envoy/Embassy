@@ -47,7 +47,7 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             let task = self.session.dataTask(
                 with: URL(string: "http://[::1]:\(port)/path?foo=bar")!
             )
@@ -94,7 +94,7 @@ class HTTPServerTests: XCTestCase {
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
         var receivedError: Error?
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
@@ -135,7 +135,7 @@ class HTTPServerTests: XCTestCase {
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
         var receivedError: Error?
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
@@ -166,13 +166,13 @@ class HTTPServerTests: XCTestCase {
 
             let loop = environ["embassy.event_loop"] as! EventLoop
 
-            loop.call(withDelay: 1) {
+            loop.call(withDelay: 1 * tick) {
                 sendBody(Data("hello ".utf8))
             }
-            loop.call(withDelay: 2) {
+            loop.call(withDelay: 2 * tick) {
                 sendBody(Data("baby ".utf8))
             }
-            loop.call(withDelay: 3) {
+            loop.call(withDelay: 3 * tick) {
                 sendBody(Data("fin".utf8))
                 sendBody(Data())
             }
@@ -183,7 +183,7 @@ class HTTPServerTests: XCTestCase {
         var receivedData: Data?
         var receivedResponse: HTTPURLResponse?
         var receivedError: Error?
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             let task = self.session.dataTask(with: URL(string: "http://[::1]:\(port)")!, completionHandler: { (data, response, error) in
                 receivedData = data
                 receivedResponse = response as? HTTPURLResponse
@@ -225,7 +225,7 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
@@ -273,7 +273,7 @@ class HTTPServerTests: XCTestCase {
 
         try! server.start()
 
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
@@ -308,7 +308,7 @@ class HTTPServerTests: XCTestCase {
         let server2 = DefaultHTTPServer(eventLoop: loop, port: port, app: app)
         try! server2.start()
 
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             let task = self.session.dataTask(
                 with: URL(string: "http://[::1]:\(port)")!
             )
@@ -335,7 +335,7 @@ class HTTPServerTests: XCTestCase {
         queue.async {
             self.loop.runForever()
         }
-        assertExecutingTime(0, accuracy: 0.5) {
+        assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             server.stopAndWait()
         }
         loop.stop()

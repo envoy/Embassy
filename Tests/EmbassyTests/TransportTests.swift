@@ -63,26 +63,26 @@ class TransportTests: XCTestCase {
 
         try! clientSocket.connect(host: "::1", port: port)
 
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             clientTransport.write(string: dataChunk1)
         }
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             serverTransport.write(string: dataChunk2)
         }
-        loop.call(withDelay: 3) {
+        loop.call(withDelay: 3 * tick) {
             clientTransport.write(string: dataChunk3)
         }
-        loop.call(withDelay: 4) {
+        loop.call(withDelay: 4 * tick) {
             serverTransport.write(string: dataChunk4)
         }
-        loop.call(withDelay: 5) {
+        loop.call(withDelay: 5 * tick) {
             clientTransport.write(string: dataChunk5)
         }
-        loop.call(withDelay: 6) {
+        loop.call(withDelay: 6 * tick) {
             serverTransport.write(string: dataChunk6)
         }
 
-        loop.call(withDelay: 10) {
+        loop.call(withDelay: 10 * tick) {
             loop.stop()
         }
 
@@ -133,26 +133,26 @@ class TransportTests: XCTestCase {
 
         try! clientSocket.connect(host: "::1", port: port)
 
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             clientTransport.write(string: "a")
         }
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             serverTransport.write(string: "1")
         }
-        loop.call(withDelay: 3) {
+        loop.call(withDelay: 3 * tick) {
             clientTransport.write(string: "b")
         }
-        loop.call(withDelay: 4) {
+        loop.call(withDelay: 4 * tick) {
             serverTransport.write(string: "2")
         }
-        loop.call(withDelay: 5) {
+        loop.call(withDelay: 5 * tick) {
             clientTransport.write(string: "c")
         }
-        loop.call(withDelay: 6) {
+        loop.call(withDelay: 6 * tick) {
             serverTransport.write(string: "3")
         }
 
-        loop.call(withDelay: 10) {
+        loop.call(withDelay: 10 * tick) {
             loop.stop()
         }
 
@@ -199,11 +199,11 @@ class TransportTests: XCTestCase {
         try! clientSocket.connect(host: "::1", port: port)
         let bigDataChunk = makeRandomString(574300)
 
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             clientTransport.write(string: "hello")
         }
 
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             XCTAssertFalse(clientTransport.closed)
             XCTAssertFalse(clientTransport.closing)
             clientTransport.write(string: bigDataChunk)
@@ -211,7 +211,7 @@ class TransportTests: XCTestCase {
             XCTAssertTrue(clientTransport.closing)
         }
 
-        loop.call(withDelay: 10) {
+        loop.call(withDelay: 10 * tick) {
             loop.stop()
         }
 
@@ -259,37 +259,37 @@ class TransportTests: XCTestCase {
 
         try! clientSocket.connect(host: "::1", port: port)
 
-        loop.call(withDelay: 1) {
+        loop.call(withDelay: 1 * tick) {
             clientTransport.write(string: "a")
         }
-        loop.call(withDelay: 2) {
+        loop.call(withDelay: 2 * tick) {
             serverTransport.write(string: "1")
         }
-        loop.call(withDelay: 3) {
+        loop.call(withDelay: 3 * tick) {
             clientTransport.resume(reading: false)
             serverTransport.resume(reading: false)
             clientTransport.write(string: "b")
         }
-        loop.call(withDelay: 4) {
+        loop.call(withDelay: 4 * tick) {
             XCTAssertEqual(clientReceivedData.count, 1)
             XCTAssertEqual(serverReceivedData.count, 1)
             serverTransport.write(string: "2")
         }
-        loop.call(withDelay: 5) {
+        loop.call(withDelay: 5 * tick) {
             XCTAssertEqual(clientReceivedData.count, 1)
             XCTAssertEqual(serverReceivedData.count, 1)
             clientTransport.write(string: "c")
         }
-        loop.call(withDelay: 6) {
+        loop.call(withDelay: 6 * tick) {
             XCTAssertEqual(clientReceivedData.count, 1)
             XCTAssertEqual(serverReceivedData.count, 1)
             serverTransport.write(string: "3")
         }
-        loop.call(withDelay: 7) {
+        loop.call(withDelay: 7 * tick) {
             clientTransport.resume(reading: true)
             serverTransport.resume(reading: true)
         }
-        loop.call(withDelay: 10) {
+        loop.call(withDelay: 10 * tick) {
             loop.stop()
         }
 

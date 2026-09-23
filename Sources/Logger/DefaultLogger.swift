@@ -81,6 +81,11 @@ public final class DefaultLogger: Logger {
         file: String = #file,
         line: Int = #line
     ) {
+        // check the level before evaluating `message`, otherwise the autoclosure
+        // buys nothing and every suppressed log still pays for string formatting
+        guard level.rawValue >= self.level.rawValue else {
+            return
+        }
         let record = LogRecord(
             loggerName: name,
             level: level,

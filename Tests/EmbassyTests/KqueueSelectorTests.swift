@@ -89,18 +89,18 @@ class KqueueSelectorTests: XCTestCase {
         try! selector.register(listenSocket.fileDescriptor, events: [.read], data: nil)
 
         // ensure we have a correct timeout here
-        assertExecutingTime(2, accuracy: 1) {
-            XCTAssertEqual(try! selector.select(timeout: 2.0).count, 0)
+        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
+            XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
         }
 
         let clientSocket = try! TCPSocket()
 
         // make a connect 1 seconds later
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        let ioEvents = assertExecutingTime(1, accuracy: 1) {
+        let ioEvents = assertExecutingTime(1 * tick, accuracy: tickAccuracy) {
             return try! selector.select(timeout: 10.0)
         }
         XCTAssertEqual(ioEvents.count, 1)
@@ -119,16 +119,16 @@ class KqueueSelectorTests: XCTestCase {
 
         try! selector.register(listenSocket.fileDescriptor, events: [.write], data: nil)
 
-        XCTAssertEqual(try! selector.select(timeout: 1.0).count, 0)
+        XCTAssertEqual(try! selector.select(timeout: 1.0 * tick).count, 0)
 
         let clientSocket = try! TCPSocket()
         // make a connect 1 seconds later
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
         // ensure we don't get any event triggered in two seconds
-        XCTAssertEqual(try! selector.select(timeout: 2.0).count, 0)
+        XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
     }
 
     func testSelectAfterUnregister() {
@@ -143,12 +143,12 @@ class KqueueSelectorTests: XCTestCase {
 
         let clientSocket = try! TCPSocket()
         // make a connect 1 seconds later
-        queue.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)) {
+        queue.asyncAfter(deadline: .inTicks(1)) {
             try! clientSocket.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(1, accuracy: 1) {
-            let events = try! selector.select(timeout: 2.0)
+        assertExecutingTime(1 * tick, accuracy: tickAccuracy) {
+            let events = try! selector.select(timeout: 2.0 * tick)
             let result = toEventSet(events)
             XCTAssertEqual(result, Set([
                 FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
@@ -160,13 +160,13 @@ class KqueueSelectorTests: XCTestCase {
         let clientSocket2 = try! TCPSocket()
         // make a connect 1 seconds later
         queue.asyncAfter(
-            deadline: DispatchTime.now() + Double(Int64(1 * NSEC_PER_SEC)) / Double(NSEC_PER_SEC)
+            deadline: .inTicks(1)
         ) {
             try! clientSocket2.connect(host: "::1", port: port)
         }
 
-        assertExecutingTime(2, accuracy: 1) {
-            XCTAssertEqual(try! selector.select(timeout: 2.0).count, 0)
+        assertExecutingTime(2 * tick, accuracy: tickAccuracy) {
+            XCTAssertEqual(try! selector.select(timeout: 2.0 * tick).count, 0)
         }
     }
 
@@ -186,9 +186,9 @@ class KqueueSelectorTests: XCTestCase {
 
         try! clientSocket.connect(host: "::1", port: port)
 
-        sleep(1)
+        Thread.sleep(forTimeInterval: tick)
 
-        let ioEvents0 = assertExecutingTime(0, accuracy: 1) {
+        let ioEvents0 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             return try! selector.select(timeout: 10.0)
         }
         let result0 = toEventSet(ioEvents0)
@@ -200,7 +200,7 @@ class KqueueSelectorTests: XCTestCase {
         let acceptedSocket = try! listenSocket.accept()
         try! selector.register(acceptedSocket.fileDescriptor, events: [.read, .write], data: nil)
 
-        let ioEvents1 = assertExecutingTime(0, accuracy: 1) {
+        let ioEvents1 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             return try! selector.select(timeout: 10.0)
         }
         let result1 = toEventSet(ioEvents1)
@@ -209,16 +209,21 @@ class KqueueSelectorTests: XCTestCase {
             FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
         ]))
 
-        // we should have no events now
-        assertExecutingTime(1, accuracy: 1) {
-            return try! selector.select(timeout: 1)
+        // both sockets stay write-ready, so select returns immediately with only
+        // the write events; nothing is readable
+        let writeOnly = assertExecutingTime(0, accuracy: tickAccuracy) {
+            return try! selector.select(timeout: 1 * tick)
         }
+        XCTAssertEqual(toEventSet(writeOnly), Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
+        ]))
 
         try! clientSocket.send(data: Data("hello".utf8))
 
-        sleep(1)
+        Thread.sleep(forTimeInterval: tick)
 
-        let ioEvents2 = assertExecutingTime(0, accuracy: 1) {
+        let ioEvents2 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             return try! selector.select(timeout: 10.0)
         }
         let result2 = toEventSet(ioEvents2)
@@ -234,7 +239,7 @@ class KqueueSelectorTests: XCTestCase {
         )
         XCTAssertEqual(receivedString, "hello")
 
-        let ioEvents3 = assertExecutingTime(0, accuracy: 1) {
+        let ioEvents3 = assertExecutingTime(0 * tick, accuracy: tickAccuracy) {
             return try! selector.select(timeout: 10.0)
         }
         let result3 = toEventSet(ioEvents3)
@@ -243,10 +248,15 @@ class KqueueSelectorTests: XCTestCase {
             FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
         ]))
 
-        // we should have no events now
-        assertExecutingTime(1, accuracy: 1) {
-            return try! selector.select(timeout: 1)
+        // both sockets stay write-ready, so select returns immediately with only
+        // the write events; nothing is readable
+        let writeOnlyAgain = assertExecutingTime(0, accuracy: tickAccuracy) {
+            return try! selector.select(timeout: 1 * tick)
         }
+        XCTAssertEqual(toEventSet(writeOnlyAgain), Set([
+            FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
+        ]))
     }
 
     fileprivate func toEventSet(_ events: [(SelectorKey, Set<IOEvent>)]) -> Set<FileDescriptorEvent> {

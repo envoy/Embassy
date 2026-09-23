@@ -20,6 +20,22 @@ let random = Darwin.arc4random
 let randomUniform = Darwin.arc4random_uniform
 typealias TestingSelector = KqueueSelector
 
+/// Base unit for sequencing events in tests. Loopback IO completes in well
+/// under a millisecond, so steps only need to be far enough apart to order
+/// events deterministically, not to wait for anything real.
+let tick: TimeInterval = 0.1
+
+/// Timing slack for `assertExecutingTime`, in seconds. kqueue timeouts and GCD
+/// deadlines are accurate to a few milliseconds.
+let tickAccuracy: TimeInterval = 0.05
+
+extension DispatchTime {
+    /// Deadline `ticks` ticks from now
+    static func inTicks(_ ticks: Double) -> DispatchTime {
+        .now() + ticks * tick
+    }
+}
+
 /// Find an available localhost TCP port from 1024-65535 and return it.
 /// Ref: https://github.com/pytest-dev/pytest-asyncio/blob/412c63776b32229ed8320e6c7ea920d7498cd695/pytest_asyncio/plugin.py#L103-L107
 func getUnusedTCPPort() throws -> Int {
