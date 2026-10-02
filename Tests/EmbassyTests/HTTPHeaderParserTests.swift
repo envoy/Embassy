@@ -19,13 +19,13 @@ import XCTest
             ("testHeaders", testHeaders),
             ("testColonInHeader", testColonInHeader),
             ("testNoSpaceAfterColonForHeader", testNoSpaceAfterColonForHeader),
-            ("testStripLeadingSpaces", testStripLeadingSpaces),
+            ("testStripLeadingSpaces", testStripLeadingSpaces)
         ]
     }
 #endif
 
-extension HTTPHeaderParser.Element: Equatable {
-}
+extension HTTPHeaderParser.Element: @retroactive Equatable {}
+
 public func == (lhs: HTTPHeaderParser.Element, rhs: HTTPHeaderParser.Element) -> Bool {
     switch lhs {
     case .head(let lhsMethod, let lhsPath, let lhsVersion):
@@ -81,7 +81,7 @@ class HTTPHeaderParserTests: XCTestCase {
         XCTAssertEqual(parser.feed(Data(line2Part1.utf8)), [])
         XCTAssertEqual(parser.feed(Data(line2Part2.utf8)), [])
         XCTAssertEqual(parser.feed(Data(line2Part3.utf8)), [
-            HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com"),
+            HTTPHeaderParser.Element.header(key: "Host", value: "www.example.com")
         ])
 
         // try to feed empty array

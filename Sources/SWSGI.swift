@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 /**
     Swift Web Server Gateway Interface
 

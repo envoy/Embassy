@@ -37,10 +37,9 @@ public struct MultiDictionary<
     Key,
     Value,
     KeyTransform: KeyTransformer>
-    where KeyTransform.Key == Key
- {
-    public typealias ArrayType = Array<(Key, Value)>
-    public typealias DictionaryType = Dictionary<Key, Array<Value>>
+    where KeyTransform.Key == Key {
+    public typealias ArrayType = [(Key, Value)]
+    public typealias DictionaryType = [Key: [Value]]
 
     // Items in this multi dictionary
     fileprivate let items: ArrayType
@@ -48,7 +47,7 @@ public struct MultiDictionary<
     /// order
     fileprivate let keyValuesMap: DictionaryType
 
-    public init(items: Array<(Key, Value)>) {
+    public init(items: [(Key, Value)]) {
         self.items = items
         var keyValuesMap: DictionaryType = [:]
         for (key, value) in items {
@@ -63,7 +62,7 @@ public struct MultiDictionary<
     /// Get all values for given key in occurrence order
     ///  - Parameter key: the key
     ///  - Returns: tuple of array of values for given key
-    public func valuesFor(key: Key) -> Array<Value>? {
+    public func valuesFor(key: Key) -> [Value]? {
         return keyValuesMap[KeyTransform.transform(key: key)]
     }
     /// Get the first value for given key if available

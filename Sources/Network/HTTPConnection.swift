@@ -153,8 +153,7 @@ public final class HTTPConnection {
 
         if
             let bundle = Bundle(identifier: "com.envoy.Embassy"),
-            let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String
-        {
+            let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String {
             environ["embassy.version"] = version
         } else {
             // TODO: not sure what's the method we can use to get current package version for Linux,

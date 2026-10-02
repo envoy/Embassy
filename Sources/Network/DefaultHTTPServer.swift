@@ -83,22 +83,26 @@ public final class DefaultHTTPServer: HTTPServer {
 
     // called to handle new connections
     private func handleNewConnection() {
-        let clientSocket = try! acceptSocket.accept()
-        let (address, port) = try! clientSocket.getPeerName()
-        let transport = Transport(socket: clientSocket, eventLoop: eventLoop)
-        let connection = HTTPConnection(
-            app: appForConnection,
-            serverName: "[\(interface)]",
-            serverPort: self.port,
-            transport: transport,
-            eventLoop: eventLoop,
-            logger: logger
-        )
-        connections.insert(connection)
-        connection.closedCallback = { [unowned self, unowned connection] in
-            self.connections.remove(connection)
+        do {
+            let clientSocket = try acceptSocket.accept()
+            let (address, port) = try clientSocket.getPeerName()
+            let transport = Transport(socket: clientSocket, eventLoop: eventLoop)
+            let connection = HTTPConnection(
+                app: appForConnection,
+                serverName: "[\(interface)]",
+                serverPort: self.port,
+                transport: transport,
+                eventLoop: eventLoop,
+                logger: logger
+            )
+            connections.insert(connection)
+            connection.closedCallback = { [unowned self, unowned connection] in
+                self.connections.remove(connection)
+            }
+            logger.info("New connection \(connection.uuid) from [\(address)]:\(port)")
+        } catch {
+            logger.error("error handling connection: \(error)")
         }
-        logger.info("New connection \(connection.uuid) from [\(address)]:\(port)")
     }
 
     private func appForConnection(

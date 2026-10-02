@@ -22,7 +22,7 @@ import Dispatch
             ("testSelectOneSocket", testSelectOneSocket),
             ("testSelectEventFilter", testSelectEventFilter),
             ("testSelectAfterUnregister", testSelectAfterUnregister),
-            ("testSelectMultipleSocket", testSelectMultipleSocket),
+            ("testSelectMultipleSocket", testSelectMultipleSocket)
         ]
     }
 #endif
@@ -173,7 +173,7 @@ class SelectSelectorTests: XCTestCase {
             let events = try! selector.select(timeout: 2.0)
             let result = toEventSet(events)
             XCTAssertEqual(result, Set([
-                FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read),
+                FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
             ]))
         }
 
@@ -215,7 +215,7 @@ class SelectSelectorTests: XCTestCase {
         let result0 = toEventSet(ioEvents0)
         XCTAssertEqual(result0, Set([
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
-            FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read),
+            FileDescriptorEvent(fileDescriptor: listenSocket.fileDescriptor, ioEvent: .read)
         ]))
 
         let acceptedSocket = try! listenSocket.accept()
@@ -227,7 +227,7 @@ class SelectSelectorTests: XCTestCase {
         let result1 = toEventSet(ioEvents1)
         XCTAssertEqual(result1, Set([
             FileDescriptorEvent(fileDescriptor: clientSocket.fileDescriptor, ioEvent: .write),
-            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write),
+            FileDescriptorEvent(fileDescriptor: acceptedSocket.fileDescriptor, ioEvent: .write)
         ]))
 
         // we should have no events now

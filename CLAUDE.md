@@ -1,0 +1,36 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+Embassy is a lightweight, pure-Swift, async event-loop-based HTTP server (~1.5K LOC). Zero third-party dependencies. Targets macOS / iOS / tvOS / Linux. It's commonly embedded in iOS apps for UI testing against a local server. Envoy's `Ambassador` web framework is built on top of this.
+
+## Build & test
+
+```bash
+swift build
+swift test
+swift test --filter <TestCaseName>/<testMethodName>   # single test
+```
+
+There's no Xcode scheme-based test story documented beyond SwiftPM — `Embassy.xcodeproj`/`.xcworkspace` exist but SwiftPM is the source of truth.
+
+Note: `Package.swift`'s `EmbassyTests` target has no explicit `path`, so SwiftPM expects test sources at `Tests/EmbassyTests/` (not a flat `Tests/`). `Tests/LinuxMain.swift` (used only for pre-SPM-test-discovery Linux runs) module-qualifies test cases as `EmbassyTests.*` — keep it in sync if the test layout ever changes.
+
+Lint config exists (`.swiftlint.yaml`) but no `swiftlint` invocation is wired into a script in this repo — run `swiftlint` directly if installed.
+
+## Architecture
+
+Everything lives flat under `Sources/` (single `Embassy` target, no submodules). The layers, bottom to top:
+
+1. **Selector** (`Selector.swift`, `SelectSelector.swift`, `KqueueSelector.swift`) — thin protocol + platform-specific wrappers around `select()`/`kqueue()` for readiness notification on file descriptors. `SystemLibrary.swift` isolates the raw libc/Darwin syscalls behind a protocol so selectors are testable.
+2. **EventLoop** (`EventLoop.swift` protocol, `SelectorEventLoop.swift` implementation) — the single-threaded run loop. Wraps a `Selector` and adds a timed-callback heap (`HeapSort.swift`) and thread-safe call scheduling (`Atomic.swift`) so callbacks can be enqueued from other threads via `call(withDelay:)` / `call(atTime:)`. **All SWSGI callbacks (`startResponse`, `sendBody`, `swsgi.input`) must only be invoked from the thread running the `EventLoop`** — never dispatch to it via GCD.
+3. **TCPSocket / Transport** (`TCPSocket.swift`, `Transport.swift`, `IOUtils.swift`) — non-blocking socket wrapper and the read/write buffering layer built on top of an `EventLoop` + `Selector` pair. IPv6-first with IPv4 dual-stack support.
+4. **HTTPConnection / HTTPRequest / HTTPHeaderParser** (`HTTPConnection.swift`, `HTTPRequest.swift`, `HTTPHeaderParser.swift`, `MultiDictionary.swift`) — per-connection HTTP/1.1 parsing and response writing state machine, sitting on a `Transport`.
+5. **HTTPServer / DefaultHTTPServer** (`HTTPServer.swift` protocol, `DefaultHTTPServer.swift`) — accepts connections and dispatches each request into a **SWSGI** application closure.
+6. **SWSGI** (`SWSGI.swift`, `SWSGIUtils.swift`) — the app-facing gateway interface (Embassy's answer to Python's WSGI): `([String: Any], startResponse, sendBody) -> Void`. This is the extension point consumers implement; everything below it is server plumbing. See README.md for the full `environ` key reference (`embassy.event_loop`, `embassy.connection`, `swsgi.input`, etc.).
+
+**Logging** (`Logger.swift`, `DefaultLogger.swift`, `LogHandler.swift`, `*LogHandler.swift`, `LogFormatter.swift`) is a separate, independent subsystem (handler chain + formatter) used internally and exposed for consumers.
+
+Test suite (`Tests/`) mirrors the source layout 1:1 (one `*Tests.swift` per major component) plus `TestingHelpers.swift` for shared fixtures.

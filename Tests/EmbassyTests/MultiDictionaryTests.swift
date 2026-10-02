@@ -14,7 +14,7 @@ import XCTest
     extension MultiDictionaryTests {
         static var allTests = [
             ("testCaseInsenstiveMultiDictionary", testCaseInsenstiveMultiDictionary),
-            ("testCaseSenstiveMultiDictionary", testCaseSenstiveMultiDictionary),
+            ("testCaseSenstiveMultiDictionary", testCaseSenstiveMultiDictionary)
         ]
     }
 #endif

@@ -22,7 +22,7 @@ import XCTest
             ("testPostBody", testPostBody),
             ("testPostWithInitialBody", testPostWithInitialBody),
             ("testAddressReuse", testAddressReuse),
-            ("testStopAndWait", testStopAndWait),
+            ("testStopAndWait", testStopAndWait)
         ]
     }
 #endif
@@ -47,18 +47,14 @@ class HTTPServerTests: XCTestCase {
         }
     }
 
-    override func tearDown() {
-        super.tearDown()
-    }
-
     func testEnviron() {
         let port = try! getUnusedTCPPort()
         var receivedEnviron: [String: Any]!
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
                 environ: [String: Any],
-                startResponse: ((String, [(String, String)]) -> Void),
-                sendBody: ((Data) -> Void)
+                _: ((String, [(String, String)]) -> Void),
+                _: ((Data) -> Void)
             ) in
             receivedEnviron = environ
             self.loop.stop()
@@ -96,14 +92,14 @@ class HTTPServerTests: XCTestCase {
         let port = try! getUnusedTCPPort()
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
-                environ: [String: Any],
+                _: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
                 sendBody: ((Data) -> Void)
             ) in
             startResponse("451 Big brother doesn't like this", [
                 ("Content-Type", "video/porn"),
                 ("Server", "Embassy-by-envoy"),
-                ("X-Foo", "Bar"),
+                ("X-Foo", "Bar")
             ])
             sendBody(Data())
         }
@@ -140,7 +136,7 @@ class HTTPServerTests: XCTestCase {
         let bigDataChunk = Data(makeRandomString(574300).utf8)
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
-                environ: [String: Any],
+                _: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
                 sendBody: ((Data) -> Void)
             ) in
@@ -248,7 +244,7 @@ class HTTPServerTests: XCTestCase {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: request, completionHandler: { (_, _, _) in
                 self.loop.stop()
             })
             task.resume()
@@ -296,7 +292,7 @@ class HTTPServerTests: XCTestCase {
             var request = URLRequest(url: URL(string: "http://[::1]:\(port)")!)
             request.httpMethod = "POST"
             request.httpBody = postBodyString.data(using: String.Encoding.utf8)
-            let task = self.session.dataTask(with: request, completionHandler: { (data, response, error) in
+            let task = self.session.dataTask(with: request, completionHandler: { (_, _, _) in
               self.loop.stop()
             })
             task.resume()
@@ -314,7 +310,7 @@ class HTTPServerTests: XCTestCase {
     func testAddressReuse() {
         var called: Bool = false
         let port = try! getUnusedTCPPort()
-        let app = { (environ: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ((Data) -> Void)) in
+        let app = { (_: [String: Any], startResponse: ((String, [(String, String)]) -> Void), sendBody: ((Data) -> Void)) in
             startResponse("200 OK", [])
             sendBody(Data())
             self.loop.stop()
@@ -342,7 +338,7 @@ class HTTPServerTests: XCTestCase {
         let port = try! getUnusedTCPPort()
         let server = DefaultHTTPServer(eventLoop: loop, port: port) {
             (
-                environ: [String: Any],
+                _: [String: Any],
                 startResponse: ((String, [(String, String)]) -> Void),
                 sendBody: ((Data) -> Void)
             ) in

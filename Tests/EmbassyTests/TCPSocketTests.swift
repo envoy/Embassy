@@ -18,7 +18,7 @@ import XCTest
             ("testAccept", testAccept),
             ("testReadAndWrite", testReadAndWrite),
             ("testGetPeerName", testGetPeerName),
-            ("testGetSockName", testGetSockName),
+            ("testGetSockName", testGetSockName)
         ]
     }
 #endif

@@ -16,8 +16,7 @@ public struct FileLogHandler: LogHandler {
 
     private let queue = DispatchQueue(
         label: "com.envoy.Embassy.logging.FileLogHandler.queue",
-        attributes: []
-    )
+        attributes: [])
 
     public init(fileHandle: FileHandle, formatter: LogFormatter? = nil) {
         self.fileHandle = fileHandle

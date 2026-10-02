@@ -16,7 +16,7 @@ import XCTest
             ("testPush", testPush),
             ("testPop", testPop),
             ("testSortWithRandomNumbers", testSortWithRandomNumbers),
-            ("testSortWithRandomNumbersWithCustomCompareFunction", testSortWithRandomNumbersWithCustomCompareFunction),
+            ("testSortWithRandomNumbersWithCustomCompareFunction", testSortWithRandomNumbersWithCustomCompareFunction)
         ]
     }
 #endif

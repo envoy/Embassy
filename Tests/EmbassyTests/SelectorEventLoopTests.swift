@@ -21,7 +21,7 @@ import Dispatch
             ("testCallAtOrder", testCallAtOrder),
             ("testSetReader", testSetReader),
             ("testSetWriter", testSetWriter),
-            ("testRemoveReader", testRemoveReader),
+            ("testRemoveReader", testRemoveReader)
         ]
     }
 #endif
@@ -43,10 +43,6 @@ class SelectorEventLoopTests: XCTestCase {
                 XCTFail("Time out")
             }
         }
-    }
-
-    override func tearDown() {
-        super.tearDown()
     }
 
     func testStop() {
@@ -218,7 +214,7 @@ class SelectorEventLoopTests: XCTestCase {
         }
         XCTAssertEqual(readData, ["hello", "baby"])
     }
-    
+
     func testEventLoopReferenceCycle() {
         // Notice: we had a reference cycle from the setReader callback to the
         // selector loop object before, we ensure that when loop is not hold
